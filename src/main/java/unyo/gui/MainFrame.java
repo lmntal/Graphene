@@ -22,8 +22,16 @@ import unyo.runtime.LMNtalRuntime;
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
 
+    private static MainFrame mainFrame = null;
+    public static MainFrame instance() {
+        if (mainFrame == null) {
+            mainFrame = new MainFrame();
+        }
+        return mainFrame;
+    }
 
-    public MainFrame() {
+
+    private MainFrame() {
         super();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -70,7 +78,8 @@ public class MainFrame extends JFrame {
         int selected = fileChooser.showOpenDialog(this);
         if (selected == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            LMNtalRuntime.execute(file, java.util.Arrays.asList("-O", "--hiderule", "--hideruleset"));
+            unyo.entity.Graph graph = LMNtalRuntime.execute(file, java.util.Arrays.asList("-O", "--hiderule", "--hideruleset"));
+            graphPanel.setGraph(graph);
         }
     }
 

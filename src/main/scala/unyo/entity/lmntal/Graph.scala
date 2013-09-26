@@ -28,6 +28,9 @@ object Membrane {
     graph
   }
 
+  var idSeed = 65535
+  def nextID = { idSeed += 1; idSeed }
+
   private def configureLinks(graph: Membrane, map: Map[Int, Atom]) {
     val newNodes = ArrayBuffer.empty[Atom]
     for (n <- graph.nodes) {
@@ -38,7 +41,7 @@ object Membrane {
             if ((attr & 0x80) == 0) {
               edges(i) = Link(map(data.toInt))
             } else {
-              val node = Atom(65536, data, 1, Array(Link(n)))
+              val node = Atom(nextID, data, 1, Array(Link(n)))
               edges(i) = Link(node)
               newNodes += node
             }

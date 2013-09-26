@@ -5,7 +5,7 @@ import unyo.gui.MainFrame;
 public class FrontEnd {
 
     public static void main(String[] args) {
-        MainFrame frame = new MainFrame();
+        MainFrame frame = MainFrame.instance();
         frame.setVisible(true);
     }
 

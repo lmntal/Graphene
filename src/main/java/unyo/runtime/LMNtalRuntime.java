@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import unyo.entity.Graphy;
+import unyo.entity.Graph;
+
 public class LMNtalRuntime {
 
     private static List<String> readStdout(Process process) {
@@ -56,7 +59,7 @@ public class LMNtalRuntime {
         return ret;
     }
 
-    public static void execute(File file, List<String> options) {
+    public static Graph execute(File file, List<String> options) {
 
         try {
             ProcessBuilder pb = new ProcessBuilder(java.util.Arrays.asList("/Users/charlie/Documents/slim/slim/src/slim", "--json-dump", file.getAbsolutePath()));
@@ -65,12 +68,12 @@ public class LMNtalRuntime {
             Process p = pb.start();
             List<String> lines = readStdout(p);
 
-            System.out.println(lines);
-            System.out.println(unyo.entity.Graphy.fromString(lines.get(0)));
-
+            return Graphy.fromString(lines.get(0));
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
 }
