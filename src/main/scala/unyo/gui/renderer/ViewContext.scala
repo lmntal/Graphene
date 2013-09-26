@@ -10,8 +10,8 @@ class ViewContext {
 
   val r = new util.Random
   def viewNodeOf(node: Node): ViewNode = {
-    viewNodeFromID.getOrElseUpdate(node.id, new ViewNode(r.nextDouble * 800, r.nextDouble * 800))
+    viewNodeFromID.getOrElseUpdate(node.id, new ViewNode(Point(r.nextDouble * 800, r.nextDouble * 800)))
   }
 }
 
-class ViewNode(val x: Double, val y: Double)
+class ViewNode(val pos: Point)
