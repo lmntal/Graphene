@@ -32,24 +32,31 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
   var visualGraph: VisualGraph = null
   def render(graph: VisualGraph) {
     visualGraph = graph
+    g.clearRect(0, 0, 2000, 2000)
     renderRoot(graph.graph)
   }
 
   def renderRoot(graph: Graph) {
     if (graph == null) return
     for (node <- graph.nodes) {
+      renderEdges(node)
+    }
+    for (node <- graph.nodes) {
       renderNode(node)
     }
   }
 
   def renderNode(node: Node) {
-    renderEdges(node)
     val viewNode = visualGraph.viewNodeOf(node)
+    g.setColor(new Color(52, 152, 219))
     g.fillOval(viewNode.pos - Point(20, 20), Dimension(40, 40))
+    g.setColor(Color.WHITE)
+    g.fillOval(viewNode.pos - Point(17, 17), Dimension(34, 34))
   }
 
   def renderEdges(node: Node) {
     val view1 = visualGraph.viewNodeOf(node)
+    g.setColor(new Color(52, 73, 94))
     for (i <- 0 until node.arity) {
       val buddy = node.buddyAt(i)
       val view2 = visualGraph.viewNodeOf(buddy)
@@ -83,7 +90,7 @@ class VisualNode(var pos: Point) {
   var speed = Point(0, 0)
 
   val mass = 10.0
-  val decayRate = 0.95
+  val decayRate = 0.90
   def force(f: Point, elapsed: Double) {
     speed = (speed + f * elapsed / mass) * decayRate
     pos = pos + speed * elapsed
