@@ -1,16 +1,18 @@
 package unyo.util
 
-object Point {
-  def apply(x: Double, y: Double) = new Point(x, y)
-}
-
 object Dimension {
   def apply(w: Double, h: Double) = new Dimension(w, h)
 }
 
-class Point(val x: Double, val y: Double) {
+case class Point(x: Double, y: Double) {
   def +(other: Point) = Point(x + other.x, y + other.y)
   def -(other: Point) = Point(x - other.x, y - other.y)
+  def *(other: Double) = Point(x * other, y * other)
+  def /(other: Double) = Point(x / other, y / other)
+  def dot(other: Point) = x*other.x + y*other.y
+  def sqabs: Double = dot(this)
+  def abs: Double = math.sqrt(sqabs)
+  def unit: Point = this / abs
 }
 
 class Dimension(val width: Double, val height: Double)

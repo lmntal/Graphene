@@ -4,22 +4,42 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+import unyo.gui.renderer.VisualGraph;
 import unyo.gui.renderer.DefaultRenderer;
-import unyo.gui.renderer.ViewContext;
+import unyo.gui.renderer.GraphicsContext;
+import unyo.gui.renderer.DefaultMover;
 import unyo.entity.Graph;
 
 @SuppressWarnings("serial")
 public class GraphPanel extends JPanel {
 
-    private Graph graph = null;
-    private ViewContext viewContext = new ViewContext();
+    private final VisualGraph visualGraph = new VisualGraph();
+    private GraphicsContext graphicsContext = new GraphicsContext();
+
+    private final DefaultMover mover = new DefaultMover();
 
     public GraphPanel() {
         super(true);
+
+        Thread th = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        mover.move(visualGraph);
+                        repaint();
+                        Thread.sleep(10);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        th.start();
     }
 
     public void setGraph(Graph graph) {
-        this.graph = graph;
+        visualGraph.rewrite(graph);
         repaint();
     }
 
@@ -27,9 +47,7 @@ public class GraphPanel extends JPanel {
     public void paintComponent(Graphics g){
         super.paintComponent(g);
 
-        if (graph == null) return;
-
-        DefaultRenderer r = new DefaultRenderer(g, viewContext);
-        r.render(graph);
+        DefaultRenderer r = new DefaultRenderer(g, graphicsContext);
+        r.render(visualGraph);
     }
 }
