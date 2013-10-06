@@ -13,6 +13,10 @@ libraryDependencies ++= Seq(
   "org.json4s" %% "json4s-native" % "3.2.2"
 )
 
+libraryDependencies <+= scalaVersion {
+   "org.scala-lang" % "scala-actors" % _
+}
+
 assemblySettings
 
 mergeStrategy in assembly ~= {

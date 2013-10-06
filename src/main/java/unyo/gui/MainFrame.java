@@ -70,6 +70,7 @@ public class MainFrame extends JFrame {
         add(graphPanel);
     }
 
+    private LMNtalRuntime runtime = null;
     void openFileChooser() {
         FileFilter filter = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
         JFileChooser fileChooser = new JFileChooser("~/");
@@ -78,7 +79,8 @@ public class MainFrame extends JFrame {
         int selected = fileChooser.showOpenDialog(this);
         if (selected == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            unyo.entity.Graph graph = LMNtalRuntime.execute(file, java.util.Arrays.asList("-O", "--hiderule", "--hideruleset"));
+            runtime = new LMNtalRuntime(file, java.util.Arrays.asList("-O", "--hide-rule", "--hide-ruleset"));
+            unyo.entity.Graph graph = runtime.next();
             graphPanel.setGraph(graph);
         }
     }
