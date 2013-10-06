@@ -3,7 +3,10 @@ package unyo.gui;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.InputEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import java.io.File;
 
@@ -38,6 +41,7 @@ public class MainFrame extends JFrame {
 
         initMenuBar();
         initPanel();
+        initListener();
     }
 
     private JMenuBar menuBar;
@@ -67,8 +71,40 @@ public class MainFrame extends JFrame {
     private GraphPanel graphPanel;
     public void initPanel() {
         graphPanel = new GraphPanel();
+        graphPanel.setFocusable(true);
+        graphPanel.addKeyListener(new KeyListener() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    if (runtime.hasNext()) {
+                        unyo.entity.Graph graph = runtime.next();
+                        graphPanel.setGraph(graph);
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+        });
         add(graphPanel);
     }
+
+    public void initListener() {
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (runtime != null) {
+                    runtime.exit();
+                }
+            }
+        });
+    }
+
 
     private LMNtalRuntime runtime = null;
     void openFileChooser() {
