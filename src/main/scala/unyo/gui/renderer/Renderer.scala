@@ -34,7 +34,27 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
   def render(graph: VisualGraph) {
     visualGraph = graph
     g.clearRect(0, 0, 2000, 2000)
+    renderGrid
     renderRoot(graph.graph)
+  }
+
+  def renderGrid {
+    val bx = context.wCenter.x - context.wSize.width / 2
+    val ex = context.wCenter.x + context.wSize.width / 2
+    val by = context.wCenter.y - context.wSize.height / 2
+    val ey = context.wCenter.y + context.wSize.height / 2
+    g.setColor(new Color(127, 140, 141))
+    for (x <- (bx.toInt/100*100).to(ex.toInt/100*100, 100)) {
+      val p1 = context.screenPointFrom(Point(x, by))
+      val p2 = context.screenPointFrom(Point(x, ey))
+      g.drawLine(p1, p2)
+    }
+
+    for (y <- (by.toInt/100*100).to(ey.toInt/100*100, 100)) {
+      val p1 = context.screenPointFrom(Point(bx, y))
+      val p2 = context.screenPointFrom(Point(ex, y))
+      g.drawLine(p1, p2)
+    }
   }
 
   def renderRoot(graph: Graph) {
@@ -105,10 +125,7 @@ class GraphicsContext(var sSize: Dimension) {
   var wCenter = Point(sSize.width / 2, sSize.height / 2)
   var magnificationRate: Double = 1.0 // screen / world
 
-  def wCorder = Point(
-    wCenter.x - sSize.width / 2 / magnificationRate,
-    wCenter.y - sSize.height / 2 / magnificationRate
-  )
+  def wSize = Dimension(sSize.width / magnificationRate, sSize.height / magnificationRate)
 
   def worldPointFrom(sp: Point): Point = Point(
     wCenter.x + (sp.x - sSize.width / 2) / magnificationRate,
