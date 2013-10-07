@@ -16,11 +16,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import java.awt.Dimension;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import unyo.runtime.LMNtalRuntime;
+import unyo.Env;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
@@ -70,7 +72,9 @@ public class MainFrame extends JFrame {
 
     private GraphPanel graphPanel;
     public void initPanel() {
+        Env env = new Env();
         graphPanel = new GraphPanel();
+        graphPanel.setPreferredSize(new Dimension(env.frameWidth(), env.frameHeight()));
         graphPanel.setFocusable(true);
         graphPanel.addKeyListener(new KeyListener() {
             @Override

@@ -1,6 +1,8 @@
 package unyo.gui;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
 
@@ -47,7 +49,10 @@ public class GraphPanel extends JPanel {
     public void paintComponent(Graphics g){
         super.paintComponent(g);
 
-        DefaultRenderer r = new DefaultRenderer(g, graphicsContext);
+        Graphics2D g2d = (Graphics2D)g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        DefaultRenderer r = new DefaultRenderer(g2d, graphicsContext);
         r.render(visualGraph);
     }
 }

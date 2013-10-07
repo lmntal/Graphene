@@ -56,7 +56,7 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
 
   def renderEdges(node: Node) {
     val view1 = visualGraph.viewNodeOf(node)
-    g.setColor(new Color(52, 73, 94))
+    g.setColor(new Color(41, 128, 185))
     for (i <- 0 until node.arity) {
       val buddy = node.buddyAt(i)
       val view2 = visualGraph.viewNodeOf(buddy)
