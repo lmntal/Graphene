@@ -9,13 +9,13 @@ trait Mover {
 class DefaultMover extends Mover {
 
   var visualGraph: VisualGraph = null
-  def move(visualGraph: VisualGraph) {
+  def move(visualGraph: VisualGraph, elapsedSec: Double) {
     if (visualGraph == null || visualGraph.graph == null) return
     this.visualGraph = visualGraph
-    move(visualGraph.graph)
+    move(visualGraph.graph, elapsedSec)
   }
 
-  def move(graph: Graph) {
+  def move(graph: Graph, elapsedSec: Double) {
     val allNodes = allNodesOf(graph)
     for (node <- graph.nodes) {
       val v1 = visualGraph.viewNodeOf(node)
@@ -25,7 +25,7 @@ class DefaultMover extends Mover {
       vec = vec + forceOfSpring(node)
 
 
-      v1.force(vec, 0.01)
+      v1.force(vec, elapsedSec)
 
     }
   }

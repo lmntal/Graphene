@@ -57,12 +57,18 @@ public class GraphPanel extends JPanel {
         addMouseMotionListener(adapter);
 
         Thread th = new Thread(new Runnable() {
+            long prevMsec = System.currentTimeMillis();
+
             @Override
             public void run() {
                 try {
                     while (true) {
-                        mover.move(visualGraph);
+                        long msec = System.currentTimeMillis();
+
+                        mover.move(visualGraph, 1.0 * (msec - prevMsec) / 1000);
                         repaint();
+
+                        prevMsec = msec;
                         Thread.sleep(10);
                     }
                 } catch (Exception e) {
