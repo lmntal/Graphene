@@ -72,9 +72,8 @@ public class MainFrame extends JFrame {
 
     private GraphPanel graphPanel;
     public void initPanel() {
-        Env env = new Env();
         graphPanel = new GraphPanel();
-        graphPanel.setPreferredSize(new Dimension(env.frameWidth(), env.frameHeight()));
+        graphPanel.setPreferredSize(new Dimension(Env.frameWidth(), Env.frameHeight()));
         graphPanel.setFocusable(true);
         graphPanel.addKeyListener(new KeyListener() {
             @Override

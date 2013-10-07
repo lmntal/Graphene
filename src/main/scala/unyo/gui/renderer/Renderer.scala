@@ -4,6 +4,7 @@ import java.awt.{Graphics,Color}
 
 import unyo.entity.{Graph,Node}
 import unyo.util._
+import unyo.util.Geometry._
 
 trait Renderer {
   implicit class GraphicsExt(val g: Graphics) {
@@ -49,9 +50,9 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
   def renderNode(node: Node) {
     val viewNode = visualGraph.viewNodeOf(node)
     g.setColor(new Color(52, 152, 219))
-    g.fillOval(viewNode.pos - Point(20, 20), Dimension(40, 40))
+    g.fillOval(context.screenPointFrom(viewNode.pos) - Point(20, 20), Dimension(40, 40))
     g.setColor(Color.WHITE)
-    g.fillOval(viewNode.pos - Point(17, 17), Dimension(34, 34))
+    g.fillOval(context.screenPointFrom(viewNode.pos) - Point(17, 17), Dimension(34, 34))
   }
 
   def renderEdges(node: Node) {
@@ -61,7 +62,10 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
       val buddy = node.buddyAt(i)
       val view2 = visualGraph.viewNodeOf(buddy)
 
-      g.drawLine(view1.pos, view2.pos)
+      g.drawLine(
+        context.screenPointFrom(view1.pos),
+        context.screenPointFrom(view2.pos)
+      )
     }
   }
 }
@@ -97,7 +101,26 @@ class VisualNode(var pos: Point) {
   }
 }
 
-class GraphicsContext {
-  var center = Point(0, 0)
-  var size = Dimension(800, 600)
+class GraphicsContext(var sSize: Dimension) {
+  var wCenter = Point(sSize.width / 2, sSize.height / 2)
+  var magnificationRate: Double = 1.0 // screen / world
+
+  def wCorder = Point(
+    wCenter.x - sSize.width / 2 / magnificationRate,
+    wCenter.y - sSize.height / 2 / magnificationRate
+  )
+
+  def worldPointFrom(sp: Point): Point = Point(
+    wCenter.x + (sp.x - sSize.width / 2) / magnificationRate,
+    wCenter.y + (sp.y - sSize.height/ 2) / magnificationRate
+  )
+  def screenPointFrom(wp: Point): Point = Point(
+    (wp.x - wCenter.x) * magnificationRate + sSize.width / 2,
+    (wp.y - wCenter.y) * magnificationRate + sSize.height/ 2
+  )
+
+  def moveBy(sv: Point) {
+    wCenter = wCenter + sv / magnificationRate
+  }
+
 }
