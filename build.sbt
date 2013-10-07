@@ -17,6 +17,10 @@ libraryDependencies <+= scalaVersion {
    "org.scala-lang" % "scala-actors" % _
 }
 
+libraryDependencies <+= scalaVersion {
+  "org.scala-lang" % "scala-swing" % _
+}
+
 assemblySettings
 
 mergeStrategy in assembly ~= {
