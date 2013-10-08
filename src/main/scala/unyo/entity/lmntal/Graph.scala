@@ -79,7 +79,8 @@ object Membrane {
   private def buildAtom(json: JValue): Atom = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
-    val JArray(links) = json \ "links"
+    var JArray(links) = json \ "links"
+    if (name == "$in" || name == "$out") links = links.take(2)
     Atom(id.toInt, name, links.size, links.map(buildEdge _).toArray)
   }
 
