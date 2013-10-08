@@ -36,7 +36,7 @@ class DefaultMover extends Mover {
     for (other <- allNodes) {
       if (self != other) {
         val v2 = visualGraph.viewNodeOf(other)
-        val d = v2.pos - v1.pos
+        val d = v2.rect.center - v1.rect.center
         val f = 1000000.0 / d.sqabs
         vec = vec - d.unit * f
       }
@@ -50,7 +50,7 @@ class DefaultMover extends Mover {
     for (i <- 0 until self.arity) {
       val other = self.buddyAt(i)
       val v2 = visualGraph.viewNodeOf(other)
-      val d = v2.pos - v1.pos
+      val d = v2.rect.center - v1.rect.center
       val f = 2.0 * (d.abs - 120)
       vec = vec + d.unit * f
     }

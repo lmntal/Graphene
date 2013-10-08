@@ -12,7 +12,7 @@ import unyo.Env
 class GraphPanel extends Panel() {
 
   val visualGraph = new VisualGraph
-  val graphicsContext = new GraphicsContext(Dimension(Env.frameWidth, Env.frameHeight))
+  val graphicsContext = new GraphicsContext
   val mover = new DefaultMover
 
   listenTo(this.mouse.clicks, this.mouse.moves)

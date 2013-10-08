@@ -21,8 +21,11 @@ trait Renderer {
     def fillOval(p: Point, w: Double, h: Double) {
       fillOval(p.x, p.y, w, h)
     }
-    def fillOval(p: Point, d: Dimension) {
+    def fillOval(p: Point, d: Dim) {
       fillOval(p, d.width, d.height)
+    }
+    def fillOval(r: Rect) {
+      fillOval(r.point, r.dim)
     }
   }
 }
@@ -67,12 +70,13 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
     }
   }
 
+
   def renderNode(node: Node) {
     val viewNode = visualGraph.viewNodeOf(node)
     g.setColor(new Color(52, 152, 219))
-    g.fillOval(context.screenPointFrom(viewNode.pos) - Point(20, 20), Dimension(40, 40))
+    g.fillOval(context.screenRectFrom(viewNode.rect))
     g.setColor(Color.WHITE)
-    g.fillOval(context.screenPointFrom(viewNode.pos) - Point(17, 17), Dimension(34, 34))
+    g.fillOval(context.screenRectFrom(viewNode.rect.pad(Padding(3, 3, 3, 3))))
   }
 
   def renderEdges(node: Node) {
@@ -83,8 +87,8 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
       val view2 = visualGraph.viewNodeOf(buddy)
 
       g.drawLine(
-        context.screenPointFrom(view1.pos),
-        context.screenPointFrom(view2.pos)
+        context.screenPointFrom(view1.rect.center),
+        context.screenPointFrom(view2.rect.center)
       )
     }
   }
@@ -94,7 +98,7 @@ class VisualGraph() {
   private val viewNodeFromID = collection.mutable.Map.empty[Int, VisualNode]
   val r = new util.Random
   def viewNodeOf(node: Node): VisualNode = {
-    viewNodeFromID.getOrElseUpdate(node.id, new VisualNode(Point(r.nextDouble * 800, r.nextDouble * 800)))
+    viewNodeFromID.getOrElseUpdate(node.id, new VisualNode(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40))))
   }
 
   var graph: Graph = null
@@ -106,38 +110,16 @@ class VisualGraph() {
     for (node <- g.nodes) viewNodeOf(node)
     for (graph <- g.graphs) updateGraph(graph)
   }
-
-
 }
 
-class VisualNode(var pos: Point) {
+class VisualNode(var rect: Rect) {
   var speed = Point(0, 0)
 
   val mass = 10.0
   val decayRate = 0.90
   def force(f: Point, elapsed: Double) {
     speed = (speed + f * elapsed / mass) * decayRate
-    pos = pos + speed * elapsed
+    rect = Rect(rect.point + speed * elapsed, rect.dim)
   }
 }
 
-class GraphicsContext(var sSize: Dimension) {
-  var wCenter = Point(sSize.width / 2, sSize.height / 2)
-  var magnificationRate: Double = 1.0 // screen / world
-
-  def wSize = Dimension(sSize.width / magnificationRate, sSize.height / magnificationRate)
-
-  def worldPointFrom(sp: Point): Point = Point(
-    wCenter.x + (sp.x - sSize.width / 2) / magnificationRate,
-    wCenter.y + (sp.y - sSize.height/ 2) / magnificationRate
-  )
-  def screenPointFrom(wp: Point): Point = Point(
-    (wp.x - wCenter.x) * magnificationRate + sSize.width / 2,
-    (wp.y - wCenter.y) * magnificationRate + sSize.height/ 2
-  )
-
-  def moveBy(sv: Point) {
-    wCenter = wCenter + sv / magnificationRate
-  }
-
-}
