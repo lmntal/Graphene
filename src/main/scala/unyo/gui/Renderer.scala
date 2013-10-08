@@ -27,6 +27,12 @@ trait Renderer {
     def fillOval(r: Rect) {
       fillOval(r.point, r.dim)
     }
+    def drawRect(r: Rect) {
+      g.drawRect(r.point.x.toInt, r.point.y.toInt, r.dim.width.toInt, r.dim.height.toInt)
+    }
+    def fillRect(r: Rect) {
+      g.fillRect(r.point.x.toInt, r.point.y.toInt, r.dim.width.toInt, r.dim.height.toInt)
+    }
   }
 }
 
@@ -38,7 +44,7 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
     visualGraph = graph
     g.clearRect(0, 0, 2000, 2000)
     renderGrid
-    renderRoot(graph.graph)
+    renderRoot(graph.rootGraph)
   }
 
   def renderGrid {
@@ -62,21 +68,27 @@ class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Ren
 
   def renderRoot(graph: Graph) {
     if (graph == null) return
-    for (node <- graph.nodes) {
-      renderEdges(node)
-    }
-    for (node <- graph.nodes) {
-      renderNode(node)
-    }
+    renderGraph(graph)
   }
 
+  def renderGraph(graph: Graph) {
+    val viewNode = visualGraph.viewNodeOf(graph)
+    g.setColor(new Color(52, 152, 219))
+    g.fillRect(context.screenRectFrom(viewNode.rect))
+    g.setColor(Color.WHITE)
+    g.fillRect(context.screenRectFrom(viewNode.rect).pad(Padding(2, 2, 2, 2)))
+
+    for (subgraph <- graph.graphs) renderGraph(subgraph)
+    for (node <- graph.nodes) renderEdges(node)
+    for (node <- graph.nodes) renderNode(node)
+  }
 
   def renderNode(node: Node) {
     val viewNode = visualGraph.viewNodeOf(node)
     g.setColor(new Color(52, 152, 219))
     g.fillOval(context.screenRectFrom(viewNode.rect))
     g.setColor(Color.WHITE)
-    g.fillOval(context.screenRectFrom(viewNode.rect.pad(Padding(3, 3, 3, 3))))
+    g.fillOval(context.screenRectFrom(viewNode.rect).pad(Padding(3, 3, 3, 3)))
   }
 
   def renderEdges(node: Node) {
@@ -100,11 +112,20 @@ class VisualGraph() {
   def viewNodeOf(node: Node): VisualNode = {
     viewNodeFromID.getOrElseUpdate(node.id, new VisualNode(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40))))
   }
+  def viewNodeOf(graph: Graph): VisualNode = {
+    viewNodeFromID.getOrElseUpdate(graph.id, {
+      new VisualNode(wrapGraphs(graph))
+    })
+  }
+  def wrapGraphs(g: Graph): Rect = {
+    val rects = g.graphs.map(viewNodeOf(_).rect) ++ g.nodes.map(viewNodeOf(_).rect)
+    if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80)) else rects.reduceLeft(_ << _)
+  }
 
-  var graph: Graph = null
+  var rootGraph: Graph = null
   def rewrite(g: Graph) {
-    graph = g
-    updateGraph(g)
+    rootGraph = g
+    updateGraph(rootGraph)
   }
   private def updateGraph(g: Graph) {
     for (node <- g.nodes) viewNodeOf(node)

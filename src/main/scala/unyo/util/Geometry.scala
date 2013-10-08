@@ -31,11 +31,24 @@ case class Rect(point: Point, dim: Dim) {
 
   def center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
 
+  val left   = point.x
+  val right  = point.x + dim.width
+  val top    = point.y
+  val bottom = point.y + dim.height
+
   def <<(p: Point) = {
-    val l = min(p.x, point.x)
-    val r = max(p.x, point.x + dim.width)
-    val t = min(p.y, point.y)
-    val b = max(p.y, point.y + dim.height)
+    val l = min(p.x, left)
+    val r = max(p.x, right)
+    val t = min(p.y, top)
+    val b = max(p.y, bottom)
+    Rect(Point(l, t), Dim(r-l, b-t))
+  }
+
+  def <<(rhs: Rect) = {
+    val l = min(rhs.left,  left)
+    val r = max(rhs.right, right)
+    val t = min(rhs.top,   top)
+    val b = max(rhs.bottom,bottom)
     Rect(Point(l, t), Dim(r-l, b-t))
   }
 

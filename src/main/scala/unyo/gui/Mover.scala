@@ -10,13 +10,16 @@ class DefaultMover extends Mover {
 
   var visualGraph: VisualGraph = null
   def move(visualGraph: VisualGraph, elapsedSec: Double) {
-    if (visualGraph == null || visualGraph.graph == null) return
+    if (visualGraph == null || visualGraph.rootGraph == null) return
     this.visualGraph = visualGraph
-    move(visualGraph.graph, elapsedSec)
+    move(visualGraph.rootGraph, elapsedSec)
   }
 
   def move(graph: Graph, elapsedSec: Double) {
     val allNodes = allNodesOf(graph)
+
+    for (subgraph <- graph.graphs) move(subgraph, elapsedSec)
+
     for (node <- graph.nodes) {
       val v1 = visualGraph.viewNodeOf(node)
       var vec = Point(0, 0)
@@ -24,10 +27,16 @@ class DefaultMover extends Mover {
       vec = vec + forceOfReplusion(node, allNodes)
       vec = vec + forceOfSpring(node)
 
-
       v1.force(vec, elapsedSec)
-
     }
+
+    resizeGraphArea(graph)
+  }
+
+  private def resizeGraphArea(graph: Graph) {
+    graph.graphs.foreach(resizeGraphArea(_))
+    val view = visualGraph.viewNodeOf(graph)
+    view.rect = visualGraph.wrapGraphs(graph)
   }
 
   private def forceOfReplusion(self: Node, allNodes: collection.Set[_ <: Node]): Point = {
