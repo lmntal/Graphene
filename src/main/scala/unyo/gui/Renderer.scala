@@ -1,4 +1,4 @@
-package unyo.gui.renderer
+package unyo.gui
 
 import java.awt.{Graphics,Color}
 

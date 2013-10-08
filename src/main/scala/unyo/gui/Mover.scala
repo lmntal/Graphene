@@ -1,4 +1,4 @@
-package unyo.gui.renderer
+package unyo.gui
 
 import unyo.entity.{Graph,Node}
 import unyo.util._
@@ -61,6 +61,6 @@ class DefaultMover extends Mover {
     val lhs: collection.Set[_ <: Node] = graph.nodes
     val rhs: collection.Set[_ <: Node] = graph.graphs.map(allNodesOf _).flatten
     lhs ++ rhs
-}
+  }
 
 }

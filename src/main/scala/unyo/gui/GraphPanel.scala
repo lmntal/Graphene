@@ -4,7 +4,6 @@ import scala.swing.{Panel,Graphics2D}
 import scala.swing.event.{MousePressed,MouseReleased,MouseDragged}
 import scala.actors.Actor._
 
-import unyo.gui.renderer.{VisualGraph,DefaultRenderer,GraphicsContext,DefaultMover}
 import unyo.entity.Graph;
 import unyo.util._
 import unyo.util.Geometry._
