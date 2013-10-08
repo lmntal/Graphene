@@ -2,6 +2,15 @@
 
 Version 4
 
+## Requires
+* Scala (version >= 2.10)
+* Java and JDK (version >= 1.7)
+* sbt (See http://scalajp.github.io/sbt-getting-started-guide-ja/setup/)
+
+## Build
+* sbt assembly
+* then UNYO-UNYO-assembly-x.x.x.jar will be generated
+
 ## コード内で使っている用語
 ### 座標系
 * スクリーン座標系とワールド座標系の2種類がある
