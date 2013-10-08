@@ -8,6 +8,8 @@ scalaVersion := "2.10.2"
 
 scalacOptions += "-deprecation"
 
+scalacOptions += "-feature"
+
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
   "org.json4s" %% "json4s-native" % "3.2.2"

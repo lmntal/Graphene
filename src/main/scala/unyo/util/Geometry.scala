@@ -1,6 +1,8 @@
 package unyo.util
 
 object Geometry {
+  import scala.language.implicitConversions
+
   implicit def toUnyoDimension(d: java.awt.Dimension) = Dimension(d.width, d.height)
   implicit def toAWTDimension(d: Dimension) = new java.awt.Dimension(d.width.toInt, d.height.toInt)
 
