@@ -6,7 +6,6 @@ import scala.swing.{Panel,Graphics2D}
 
 import java.awt.{Dimension}
 
-import unyo.plugin.lmntal.{Graph,VisualGraph,DefaultMover,DefaultRenderer}
 import unyo.util._
 import unyo.util.Geometry._
 import unyo.Env
@@ -40,10 +39,14 @@ class GraphPanel extends Panel {
   import scala.swing.event.{MousePressed,MouseReleased,MouseDragged}
   import scala.swing.event.{KeyPressed,Key}
   import scala.actors.Actor._
+  import unyo.plugin.lmntal.LMNtalPlugin
 
-  var visualGraph: VisualGraph = null
+  val plugin = LMNtalPlugin
+  var visualGraph: plugin.GraphType = null
   val graphicsContext = new GraphicsContext
-  val mover = new DefaultMover
+  val mover = plugin.movers(0)
+  val renderer = plugin.renderers(0)
+  val runtime = plugin.runtimes(0)
 
   preferredSize = new Dimension(Env.frameWidth, Env.frameHeight)
   focusable = true
@@ -68,7 +71,7 @@ class GraphPanel extends Panel {
     loop {
       val msec = System.currentTimeMillis
 
-      if (visualGraph != null) mover.move(visualGraph, 1.0 * (msec - prevMsec) / 100)
+      if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 100)
       repaint
 
       prevMsec = msec
@@ -82,13 +85,11 @@ class GraphPanel extends Panel {
     super.paint(g)
 
     g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-    val r = new DefaultRenderer
-    r.renderAll(g, graphicsContext, visualGraph)
+    renderer.renderAll(g, graphicsContext, visualGraph)
   }
 
   import unyo.plugin.lmntal.LMNtalRuntime
 
-  var runtime: LMNtalRuntime = null
   def openFileChooser {
     import javax.swing.filechooser.{FileFilter,FileNameExtensionFilter}
 
@@ -98,7 +99,6 @@ class GraphPanel extends Panel {
     val res = chooser.showOpenDialog(this)
     if (res == FileChooser.Result.Approve) {
       val file = chooser.selectedFile
-      runtime = new LMNtalRuntime
       visualGraph = runtime.exec(Seq("-O", "--hide-rule", "--hide-ruleset", file.getAbsolutePath))
       repaint
     }

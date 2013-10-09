@@ -2,12 +2,10 @@ package unyo.plugin.lmntal
 
 import unyo.util._
 
-trait Mover
-
-class DefaultMover extends Mover {
+class DefaultMover extends LMNtalPlugin.Mover {
 
   var visualGraph: VisualGraph = null
-  def move(visualGraph: VisualGraph, elapsedSec: Double) {
+  def moveAll(visualGraph: VisualGraph, elapsedSec: Double) {
     if (visualGraph == null || visualGraph.rootGraph == null) return
     this.visualGraph = visualGraph
     move(visualGraph.rootGraph, elapsedSec)

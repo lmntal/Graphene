@@ -7,7 +7,7 @@ import collection.JavaConversions._
 
 import scala.actors.Actor._
 
-class LMNtalRuntime {
+class LMNtalRuntime extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null
   var visualGraph: VisualGraph = null
   def exec(options: Seq[String]): VisualGraph = {

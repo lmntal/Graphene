@@ -12,7 +12,7 @@ trait Plugin {
   }
 
   trait Runtime {
-    def exec(options: Seq[String])
+    def exec(options: Seq[String]): GraphType
     def next: GraphType
     def hasNext: Boolean
   }

@@ -36,7 +36,7 @@ trait Renderer {
   }
 }
 
-class DefaultRenderer extends Renderer {
+class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
   var g: Graphics = null
   var context: GraphicsContext = null
