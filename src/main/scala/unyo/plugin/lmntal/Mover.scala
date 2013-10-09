@@ -1,10 +1,8 @@
-package unyo.gui
+package unyo.plugin.lmntal
 
-import unyo.entity.{Graph,Node}
 import unyo.util._
 
-trait Mover {
-}
+trait Mover
 
 class DefaultMover extends Mover {
 

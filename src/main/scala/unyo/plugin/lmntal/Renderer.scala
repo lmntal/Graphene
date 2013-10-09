@@ -1,10 +1,10 @@
-package unyo.gui
+package unyo.plugin.lmntal
 
 import java.awt.{Graphics,Color}
 
-import unyo.entity.{Graph,Node}
 import unyo.util._
 import unyo.util.Geometry._
+import unyo.gui.GraphicsContext
 
 trait Renderer {
   implicit class GraphicsExt(val g: Graphics) {
@@ -35,7 +35,6 @@ trait Renderer {
     }
   }
 }
-
 
 class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Renderer {
 

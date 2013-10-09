@@ -1,4 +1,4 @@
-package unyo.entity
+package unyo.plugin.lmntal
 
 trait Graph {
   def id: Int

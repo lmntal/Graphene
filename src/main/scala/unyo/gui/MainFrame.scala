@@ -6,7 +6,7 @@ import scala.swing.{Panel,Graphics2D}
 
 import java.awt.{Dimension}
 
-import unyo.entity.Graph;
+import unyo.plugin.lmntal.{Graph,VisualGraph,DefaultMover,DefaultRenderer}
 import unyo.util._
 import unyo.util.Geometry._
 import unyo.Env
@@ -91,7 +91,7 @@ class GraphPanel extends Panel {
     r.render(visualGraph)
   }
 
-  import unyo.runtime.LMNtalRuntime
+  import unyo.plugin.lmntal.LMNtalRuntime
 
   var runtime: LMNtalRuntime = null
   def openFileChooser {

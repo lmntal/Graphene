@@ -1,6 +1,4 @@
-package unyo.runtime
-
-import unyo.entity.{Graph, Membrane}
+package unyo.plugin.lmntal
 
 import java.io.{BufferedReader,InputStreamReader,PrintWriter,OutputStreamWriter}
 import java.io.{File,IOException}
@@ -55,5 +53,4 @@ class LMNtalRuntime(file: File, options: java.util.List[String]) {
   }
 
   def exit { reader ! "exit" }
-
 }
