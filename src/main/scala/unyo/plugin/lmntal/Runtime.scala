@@ -7,10 +7,26 @@ import collection.JavaConversions._
 
 import scala.actors.Actor._
 
-class LMNtalRuntime(file: File, options: java.util.List[String]) {
+class LMNtalRuntime {
+  var runner: SlimRunner = null
+  var visualGraph: VisualGraph = null
+  def exec(options: Seq[String]): VisualGraph = {
+    runner = new SlimRunner(options)
+    visualGraph = new VisualGraph
+    visualGraph.rewrite(runner.next)
+    visualGraph
+  }
+  def next = {
+    visualGraph.rewrite(runner.next)
+    visualGraph
+  }
+  def hasNext = runner.hasNext
+}
+
+class SlimRunner(options: Seq[String]) {
 
   val reader = scala.actors.Actor.actor {
-    val pb = new ProcessBuilder(Buffer("/Users/charlie/Documents/slim/slim/src/slim", "--json-dump") ++ options ++ Buffer(file.getAbsolutePath))
+    val pb = new ProcessBuilder(Buffer("/Users/charlie/Documents/slim/slim/src/slim", "--json-dump") ++ options)
     pb.redirectErrorStream(true)
     val p = pb.start
     val br = new BufferedReader(new InputStreamReader(p.getInputStream))
@@ -51,6 +67,4 @@ class LMNtalRuntime(file: File, options: java.util.List[String]) {
     _next = null
     Membrane.fromString(res)
   }
-
-  def exit { reader ! "exit" }
 }

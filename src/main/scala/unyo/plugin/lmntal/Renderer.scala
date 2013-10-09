@@ -36,13 +36,23 @@ trait Renderer {
   }
 }
 
-class DefaultRenderer(val g: Graphics, val context: GraphicsContext) extends Renderer {
+class DefaultRenderer extends Renderer {
+
+  var g: Graphics = null
+  var context: GraphicsContext = null
+  def renderAll(g: Graphics, context: GraphicsContext, graph: VisualGraph) {
+    this.g = g
+    this.context = context
+
+    g.clearRect(0, 0, 2000, 2000)
+    renderGrid
+
+    if (graph != null) render(graph)
+  }
 
   var visualGraph: VisualGraph = null
   def render(graph: VisualGraph) {
     visualGraph = graph
-    g.clearRect(0, 0, 2000, 2000)
-    renderGrid
     renderRoot(graph.rootGraph)
   }
 

@@ -41,7 +41,7 @@ class GraphPanel extends Panel {
   import scala.swing.event.{KeyPressed,Key}
   import scala.actors.Actor._
 
-  val visualGraph = new VisualGraph
+  var visualGraph: VisualGraph = null
   val graphicsContext = new GraphicsContext
   val mover = new DefaultMover
 
@@ -52,8 +52,8 @@ class GraphPanel extends Panel {
   var prevPoint: java.awt.Point = null
   reactions += {
     case KeyPressed(_, key, _, _) => if (key == Key.Space && runtime.hasNext) {
-      val graph = runtime.next
-      setGraph(graph)
+      visualGraph = runtime.next
+      repaint
     }
     case MousePressed(_, p, _, _, _) => prevPoint = p
     case MouseReleased(_, p, _, _, _) => prevPoint = null
@@ -68,17 +68,12 @@ class GraphPanel extends Panel {
     loop {
       val msec = System.currentTimeMillis
 
-      mover.move(visualGraph, 1.0 * (msec - prevMsec) / 100)
+      if (visualGraph != null) mover.move(visualGraph, 1.0 * (msec - prevMsec) / 100)
       repaint
 
       prevMsec = msec
       Thread.sleep(10)
     }
-  }
-
-  def setGraph(g: Graph) {
-    visualGraph.rewrite(g)
-    repaint
   }
 
   override def paint(g: Graphics2D) {
@@ -87,8 +82,8 @@ class GraphPanel extends Panel {
     super.paint(g)
 
     g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-    val r = new DefaultRenderer(g, graphicsContext)
-    r.render(visualGraph)
+    val r = new DefaultRenderer
+    r.renderAll(g, graphicsContext, visualGraph)
   }
 
   import unyo.plugin.lmntal.LMNtalRuntime
@@ -103,9 +98,9 @@ class GraphPanel extends Panel {
     val res = chooser.showOpenDialog(this)
     if (res == FileChooser.Result.Approve) {
       val file = chooser.selectedFile
-      runtime = new LMNtalRuntime(file, java.util.Arrays.asList("-O", "--hide-rule", "--hide-ruleset"))
-      val graph = runtime.next
-      setGraph(graph)
+      runtime = new LMNtalRuntime
+      visualGraph = runtime.exec(Seq("-O", "--hide-rule", "--hide-ruleset", file.getAbsolutePath))
+      repaint
     }
   }
 }

@@ -8,10 +8,11 @@ trait Plugin {
   def movers: Seq[Mover]
 
   trait Renderer {
-    def render(graph: GraphType)
+    def renderAll(g: java.awt.Graphics, context: unyo.gui.GraphicsContext, graph: GraphType)
   }
 
-  abstract class Runtime(val options: Seq[String]) {
+  trait Runtime {
+    def exec(options: Seq[String])
     def next: GraphType
     def hasNext: Boolean
   }
