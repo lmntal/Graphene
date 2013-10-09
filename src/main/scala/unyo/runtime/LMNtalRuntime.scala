@@ -1,6 +1,6 @@
 package unyo.runtime
 
-import unyo.entity.{Graph, Graphy}
+import unyo.entity.{Graph, Membrane}
 
 import java.io.{BufferedReader,InputStreamReader,PrintWriter,OutputStreamWriter}
 import java.io.{File,IOException}
@@ -10,7 +10,6 @@ import collection.JavaConversions._
 import scala.actors.Actor._
 
 class LMNtalRuntime(file: File, options: java.util.List[String]) {
-
 
   val reader = scala.actors.Actor.actor {
     val pb = new ProcessBuilder(Buffer("/Users/charlie/Documents/slim/slim/src/slim", "--json-dump") ++ options ++ Buffer(file.getAbsolutePath))
@@ -52,7 +51,7 @@ class LMNtalRuntime(file: File, options: java.util.List[String]) {
   def next: Graph = {
     val res = if (hasNext) { _next.get } else { throw new RuntimeException("no more element") }
     _next = null
-    Graphy.fromString(res)
+    Membrane.fromString(res)
   }
 
   def exit { reader ! "exit" }
