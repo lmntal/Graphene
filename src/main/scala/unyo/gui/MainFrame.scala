@@ -38,6 +38,7 @@ class MainFrame extends Frame {
 class GraphPanel extends Panel {
   import scala.swing.event.{MousePressed,MouseReleased,MouseDragged}
   import scala.swing.event.{KeyPressed,Key}
+  import scala.swing.event.{UIElementResized}
   import scala.actors.Actor._
   import unyo.plugin.lmntal.LMNtalPlugin
 
@@ -51,9 +52,10 @@ class GraphPanel extends Panel {
   preferredSize = new Dimension(Env.frameWidth, Env.frameHeight)
   focusable = true
 
-  listenTo(this.keys, this.mouse.clicks, this.mouse.moves)
+  listenTo(this.keys, this.mouse.clicks, this.mouse.moves, this)
   var prevPoint: java.awt.Point = null
   reactions += {
+    case UIElementResized(_) => graphicsContext.resize(this.size)
     case KeyPressed(_, key, _, _) => if (key == Key.Space && runtime.hasNext) {
       visualGraph = runtime.next
       repaint

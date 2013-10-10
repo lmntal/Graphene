@@ -28,4 +28,6 @@ class GraphicsContext {
     wCenter = wCenter + sv / magnificationRate
   }
 
+  def resize(sd: Dim) { sSize = sd }
+
 }
