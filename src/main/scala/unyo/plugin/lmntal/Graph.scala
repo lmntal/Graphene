@@ -6,8 +6,8 @@ trait Edge {
 
 import collection.mutable.Set
 
-case class Mem(id: Int, name: String, atoms: Set[Atom], mems: Set[Mem])
-case class Atom(id: Int, name: String, arity: Int, edges: Array[Edge]) {
+class Mem(val id: Int, val name: String, val parent: Mem, val atoms: Set[Atom], val mems: Set[Mem])
+class Atom(val id: Int, val name: String, val parent: Mem, val arity: Int, val edges: Array[Edge]) {
   def buddyAt(i: Int): Atom = edges(i).node
 }
 case class Raw(attr: Int, data: String) extends Edge {
@@ -22,7 +22,7 @@ object Mem {
   import collection.mutable.ArrayBuffer
 
   def fromString(s: String): Mem = {
-    val rootMem = buildMem(parse(s))
+    val rootMem = buildMem(parse(s), null)
     val nodeMap = atomMapIn(rootMem)
 
     configureLinks(rootMem, nodeMap)
@@ -43,7 +43,7 @@ object Mem {
             if ((attr & 0x80) == 0) {
               edges(i) = Link(map(data.toInt))
             } else {
-              val node = Atom(nextID, data, 1, Array(Link(n)))
+              val node = new Atom(nextID, data, mem, 1, Array(Link(n)))
               edges(i) = Link(node)
               newAtoms += node
             }
@@ -65,25 +65,23 @@ object Mem {
     b.result
   }
 
-  private def buildMem(json: JValue): Mem = {
+  private def buildMem(json: JValue, parent: Mem): Mem = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
     val JArray(mems) = json \ "membranes"
-    Mem(
-      id.toInt,
-      name,
-      Set() ++ atoms.map(buildAtom _),
-      Set() ++ mems.map(buildMem _)
-    )
+    val mem = new Mem(id.toInt, name, parent, Set(), Set())
+    mem.atoms ++= atoms.map(buildAtom(_, mem))
+    mem.mems ++= mems.map(buildMem(_, mem))
+    mem
   }
 
-  private def buildAtom(json: JValue): Atom = {
+  private def buildAtom(json: JValue, parent: Mem): Atom = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     var JArray(links) = json \ "links"
     if (name == "$in" || name == "$out") links = links.take(2)
-    Atom(id.toInt, name, links.size, links.map(buildEdge _).toArray)
+    new Atom(id.toInt, name, parent, links.size, links.map(buildEdge _).toArray)
   }
 
   private[this] val intAttr      = 0x80 | 0x00
