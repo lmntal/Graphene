@@ -12,15 +12,13 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   def move(graph: Mem, elapsedSec: Double) {
-    val allAtoms = allAtomsIn(graph)
-
     for (subgraph <- graph.mems) move(subgraph, elapsedSec)
 
     for (node <- graph.atoms) {
       val v1 = viewContext.viewOf(node)
       var vec = Point(0, 0)
 
-      vec = vec + forceOfReplusion(node, allAtoms)
+      vec = vec + forceOfReplusion(node)
       vec = vec + forceOfSpring(node)
 
       v1.force(vec, elapsedSec)
@@ -35,15 +33,25 @@ class DefaultMover extends LMNtalPlugin.Mover {
     view.rect = viewContext.coverableRect(graph)
   }
 
-  private def forceOfReplusion(self: Atom, allAtoms: collection.Set[Atom]): Point = {
+  private def forceOfReplusion(self: Atom): Point = {
     var vec = Point(0, 0)
     val v1 = viewContext.viewOf(self)
-    for (other <- allAtoms) {
-      if (self != other) {
+    for (other <- self.parent.atoms) {
+      if (self.id != other.id && self.parent.id == other.parent.id) {
         val v2 = viewContext.viewOf(other)
         val d = v2.rect.center - v1.rect.center
         val f = 1000000.0 / d.sqabs
         vec = vec - d.unit * f
+      }
+    }
+    for (other <- self.parent.mems) {
+      if (self.id != other.id && self.parent.id == other.parent.id) {
+        val v2 = viewContext.viewOf(other)
+        if (v1.rect.isCrossingWith(v2.rect)) {
+          val d = v2.rect.center - v1.rect.center
+          val f = 10000
+          vec = vec - d.unit * f
+        }
       }
     }
     vec
@@ -60,12 +68,6 @@ class DefaultMover extends LMNtalPlugin.Mover {
       vec = vec + d.unit * f
     }
     vec
-  }
-
-  private def allAtomsIn(graph: Mem): collection.Set[Atom] = {
-    val lhs: collection.Set[Atom] = graph.atoms
-    val rhs: collection.Set[Atom] = graph.mems.map(allAtomsIn _).flatten
-    lhs ++ rhs
   }
 
 }

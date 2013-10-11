@@ -56,6 +56,10 @@ case class Rect(point: Point, dim: Dim) {
     Point(point.x + p.left, point.y + p.top),
     Dim(dim.width - p.left - p.right, dim.height - p.top - p.bottom)
   )
+
+  def isCrossingWith(other: Rect) =
+    ((this.left < other.right) ^ (this.right < other.left)) &&
+    ((this.top < other.bottom) ^ (this.bottom < other.top))
 }
 
 case class Padding(top: Double, right: Double, bottom: Double, left: Double)
