@@ -40,7 +40,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
   var g: Graphics = null
   var context: GraphicsContext = null
-  def renderAll(g: Graphics, context: GraphicsContext, graph: VisualGraph) {
+  def renderAll(g: Graphics, context: GraphicsContext, graph: ViewContext) {
     this.g = g
     this.context = context
 
@@ -50,10 +50,10 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     if (graph != null) render(graph)
   }
 
-  var visualGraph: VisualGraph = null
-  def render(graph: VisualGraph) {
-    visualGraph = graph
-    renderRoot(graph.rootGraph)
+  var viewContext: ViewContext = null
+  def render(graph: ViewContext) {
+    viewContext = graph
+    renderRoot(graph.rootMem)
   }
 
   def renderGrid {
@@ -75,37 +75,37 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     }
   }
 
-  def renderRoot(graph: Graph) {
+  def renderRoot(graph: Mem) {
     if (graph == null) return
-    renderGraph(graph)
+    renderMem(graph)
   }
 
-  def renderGraph(graph: Graph) {
-    val viewNode = visualGraph.viewNodeOf(graph)
+  def renderMem(graph: Mem) {
+    val viewNode = viewContext.viewOf(graph)
     g.setColor(new Color(52, 152, 219))
     g.fillRect(context.screenRectFrom(viewNode.rect))
     g.setColor(Color.WHITE)
     g.fillRect(context.screenRectFrom(viewNode.rect).pad(Padding(2, 2, 2, 2)))
 
-    for (subgraph <- graph.graphs) renderGraph(subgraph)
-    for (node <- graph.nodes) renderEdges(node)
-    for (node <- graph.nodes) renderNode(node)
+    for (subgraph <- graph.mems) renderMem(subgraph)
+    for (node <- graph.atoms) renderEdges(node)
+    for (node <- graph.atoms) renderAtom(node)
   }
 
-  def renderNode(node: Node) {
-    val viewNode = visualGraph.viewNodeOf(node)
+  def renderAtom(node: Atom) {
+    val viewNode = viewContext.viewOf(node)
     g.setColor(new Color(52, 152, 219))
     g.fillOval(context.screenRectFrom(viewNode.rect))
     g.setColor(Color.WHITE)
     g.fillOval(context.screenRectFrom(viewNode.rect).pad(Padding(3, 3, 3, 3)))
   }
 
-  def renderEdges(node: Node) {
-    val view1 = visualGraph.viewNodeOf(node)
+  def renderEdges(node: Atom) {
+    val view1 = viewContext.viewOf(node)
     g.setColor(new Color(41, 128, 185))
     for (i <- 0 until node.arity) {
       val buddy = node.buddyAt(i)
-      val view2 = visualGraph.viewNodeOf(buddy)
+      val view2 = viewContext.viewOf(buddy)
 
       g.drawLine(
         context.screenPointFrom(view1.rect.center),
@@ -115,34 +115,34 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
   }
 }
 
-class VisualGraph() {
-  private val viewNodeFromID = collection.mutable.Map.empty[Int, VisualNode]
+class ViewContext() {
+  private val viewNodeFromID = collection.mutable.Map.empty[Int, View]
   val r = new util.Random
-  def viewNodeOf(node: Node): VisualNode = {
-    viewNodeFromID.getOrElseUpdate(node.id, new VisualNode(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40))))
+  def viewOf(node: Atom): View = {
+    viewNodeFromID.getOrElseUpdate(node.id, new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40))))
   }
-  def viewNodeOf(graph: Graph): VisualNode = {
+  def viewOf(graph: Mem): View = {
     viewNodeFromID.getOrElseUpdate(graph.id, {
-      new VisualNode(wrapGraphs(graph))
+      new View(coverableRect(graph))
     })
   }
-  def wrapGraphs(g: Graph): Rect = {
-    val rects = g.graphs.map(viewNodeOf(_).rect) ++ g.nodes.map(viewNodeOf(_).rect)
+  def coverableRect(g: Mem): Rect = {
+    val rects = g.mems.map(viewOf(_).rect) ++ g.atoms.map(viewOf(_).rect)
     if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80)) else rects.reduceLeft(_ << _)
   }
 
-  var rootGraph: Graph = null
-  def rewrite(g: Graph) {
-    rootGraph = g
-    updateGraph(rootGraph)
+  var rootMem: Mem = null
+  def rewrite(g: Mem) {
+    rootMem = g
+    updateMem(rootMem)
   }
-  private def updateGraph(g: Graph) {
-    for (node <- g.nodes) viewNodeOf(node)
-    for (graph <- g.graphs) updateGraph(graph)
+  private def updateMem(g: Mem) {
+    for (node <- g.atoms) viewOf(node)
+    for (graph <- g.mems) updateMem(graph)
   }
 }
 
-class VisualNode(var rect: Rect) {
+class View(var rect: Rect) {
   var speed = Point(0, 0)
 
   val mass = 10.0

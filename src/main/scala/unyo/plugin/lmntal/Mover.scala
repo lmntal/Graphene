@@ -4,23 +4,23 @@ import unyo.util._
 
 class DefaultMover extends LMNtalPlugin.Mover {
 
-  var visualGraph: VisualGraph = null
-  def moveAll(visualGraph: VisualGraph, elapsedSec: Double) {
-    if (visualGraph == null || visualGraph.rootGraph == null) return
-    this.visualGraph = visualGraph
-    move(visualGraph.rootGraph, elapsedSec)
+  var viewContext: ViewContext = null
+  def moveAll(viewContext: ViewContext, elapsedSec: Double) {
+    if (viewContext == null || viewContext.rootMem == null) return
+    this.viewContext = viewContext
+    move(viewContext.rootMem, elapsedSec)
   }
 
-  def move(graph: Graph, elapsedSec: Double) {
-    val allNodes = allNodesOf(graph)
+  def move(graph: Mem, elapsedSec: Double) {
+    val allAtoms = allAtomsIn(graph)
 
-    for (subgraph <- graph.graphs) move(subgraph, elapsedSec)
+    for (subgraph <- graph.mems) move(subgraph, elapsedSec)
 
-    for (node <- graph.nodes) {
-      val v1 = visualGraph.viewNodeOf(node)
+    for (node <- graph.atoms) {
+      val v1 = viewContext.viewOf(node)
       var vec = Point(0, 0)
 
-      vec = vec + forceOfReplusion(node, allNodes)
+      vec = vec + forceOfReplusion(node, allAtoms)
       vec = vec + forceOfSpring(node)
 
       v1.force(vec, elapsedSec)
@@ -29,18 +29,18 @@ class DefaultMover extends LMNtalPlugin.Mover {
     resizeGraphArea(graph)
   }
 
-  private def resizeGraphArea(graph: Graph) {
-    graph.graphs.foreach(resizeGraphArea(_))
-    val view = visualGraph.viewNodeOf(graph)
-    view.rect = visualGraph.wrapGraphs(graph)
+  private def resizeGraphArea(graph: Mem) {
+    graph.mems.foreach(resizeGraphArea(_))
+    val view = viewContext.viewOf(graph)
+    view.rect = viewContext.coverableRect(graph)
   }
 
-  private def forceOfReplusion(self: Node, allNodes: collection.Set[_ <: Node]): Point = {
+  private def forceOfReplusion(self: Atom, allAtoms: collection.Set[Atom]): Point = {
     var vec = Point(0, 0)
-    val v1 = visualGraph.viewNodeOf(self)
-    for (other <- allNodes) {
+    val v1 = viewContext.viewOf(self)
+    for (other <- allAtoms) {
       if (self != other) {
-        val v2 = visualGraph.viewNodeOf(other)
+        val v2 = viewContext.viewOf(other)
         val d = v2.rect.center - v1.rect.center
         val f = 1000000.0 / d.sqabs
         vec = vec - d.unit * f
@@ -49,12 +49,12 @@ class DefaultMover extends LMNtalPlugin.Mover {
     vec
   }
 
-  private def forceOfSpring(self: Node): Point = {
+  private def forceOfSpring(self: Atom): Point = {
     var vec = Point(0, 0)
-    val v1 = visualGraph.viewNodeOf(self)
+    val v1 = viewContext.viewOf(self)
     for (i <- 0 until self.arity) {
       val other = self.buddyAt(i)
-      val v2 = visualGraph.viewNodeOf(other)
+      val v2 = viewContext.viewOf(other)
       val d = v2.rect.center - v1.rect.center
       val f = 2.0 * (d.abs - 120)
       vec = vec + d.unit * f
@@ -62,9 +62,9 @@ class DefaultMover extends LMNtalPlugin.Mover {
     vec
   }
 
-  private def allNodesOf(graph: Graph): collection.Set[_ <: Node] = {
-    val lhs: collection.Set[_ <: Node] = graph.nodes
-    val rhs: collection.Set[_ <: Node] = graph.graphs.map(allNodesOf _).flatten
+  private def allAtomsIn(graph: Mem): collection.Set[Atom] = {
+    val lhs: collection.Set[Atom] = graph.atoms
+    val rhs: collection.Set[Atom] = graph.mems.map(allAtomsIn _).flatten
     lhs ++ rhs
   }
 

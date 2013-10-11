@@ -1,55 +1,41 @@
 package unyo.plugin.lmntal
 
-trait Graph {
-  def id: Int
-  def name: String
-  def nodes: collection.Set[_ <: Node]
-  def graphs: collection.Set[_ <: Graph]
-}
-
-trait Node {
-  def id: Int
-  def name: String
-  def arity: Int
-  def buddyAt(i: Int): Node
-}
-
 trait Edge {
-  def node: Node
+  def node: Atom
 }
 
 import collection.mutable.Set
 
-case class Membrane(id: Int, name: String, nodes: Set[Atom], graphs: Set[Membrane]) extends Graph
-case class Atom(id: Int, name: String, arity: Int, edges: Array[Edge]) extends Node {
-  def buddyAt(i: Int): Node = edges(i).node
+case class Mem(id: Int, name: String, atoms: Set[Atom], mems: Set[Mem])
+case class Atom(id: Int, name: String, arity: Int, edges: Array[Edge]) {
+  def buddyAt(i: Int): Atom = edges(i).node
 }
 case class Raw(attr: Int, data: String) extends Edge {
-  def node: Node = throw new RuntimeException("Raw link exists")
+  def node: Atom = throw new RuntimeException("Raw link exists")
 }
 case class Link(node: Atom) extends Edge
 
 
-object Membrane {
+object Mem {
   import org.json4s._
   import org.json4s.native.JsonMethods._
   import collection.mutable.ArrayBuffer
 
-  def fromString(s: String): Membrane = {
-    val graph = buildMembrane(parse(s))
-    val nodeMap = atomMapOf(graph)
+  def fromString(s: String): Mem = {
+    val rootMem = buildMem(parse(s))
+    val nodeMap = atomMapIn(rootMem)
 
-    configureLinks(graph, nodeMap)
+    configureLinks(rootMem, nodeMap)
 
-    graph
+    rootMem
   }
 
   var idSeed = 65535
   def nextID = { idSeed += 1; idSeed }
 
-  private def configureLinks(graph: Membrane, map: Map[Int, Atom]) {
-    val newNodes = ArrayBuffer.empty[Atom]
-    for (n <- graph.nodes) {
+  private def configureLinks(mem: Mem, map: Map[Int, Atom]) {
+    val newAtoms = ArrayBuffer.empty[Atom]
+    for (n <- mem.atoms) {
       val edges = n.edges
       for (i <- 0 until edges.size) {
         edges(i) match {
@@ -59,36 +45,36 @@ object Membrane {
             } else {
               val node = Atom(nextID, data, 1, Array(Link(n)))
               edges(i) = Link(node)
-              newNodes += node
+              newAtoms += node
             }
           }
           case _ =>
         }
       }
     }
-    for (g <- graph.graphs) configureLinks(g, map)
-    graph.nodes ++= newNodes
+    for (g <- mem.mems) configureLinks(g, map)
+    mem.atoms ++= newAtoms
   }
 
-  private def atomMapOf(graph: Membrane): Map[Int, Atom] = {
+  private def atomMapIn(mem: Mem): Map[Int, Atom] = {
     val b = Map.newBuilder[Int, Atom]
 
-    for (n <- graph.nodes) b += n.id -> n
-    for (n <- graph.graphs) b ++= atomMapOf(n)
+    for (n <- mem.atoms) b += n.id -> n
+    for (n <- mem.mems) b ++= atomMapIn(n)
 
     b.result
   }
 
-  private def buildMembrane(json: JValue): Membrane = {
+  private def buildMem(json: JValue): Mem = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
-    val JArray(nodes) = json \ "atoms"
-    val JArray(graphs) = json \ "membranes"
-    Membrane(
+    val JArray(atoms) = json \ "atoms"
+    val JArray(mems) = json \ "membranes"
+    Mem(
       id.toInt,
       name,
-      Set() ++ nodes.map(buildAtom _),
-      Set() ++ graphs.map(buildMembrane _)
+      Set() ++ atoms.map(buildAtom _),
+      Set() ++ mems.map(buildMem _)
     )
   }
 

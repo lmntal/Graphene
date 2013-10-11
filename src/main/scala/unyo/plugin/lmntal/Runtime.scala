@@ -9,16 +9,16 @@ import scala.actors.Actor._
 
 class LMNtalRuntime extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null
-  var visualGraph: VisualGraph = null
-  def exec(options: Seq[String]): VisualGraph = {
+  var viewContext: ViewContext = null
+  def exec(options: Seq[String]): ViewContext = {
     runner = new SlimRunner(options)
-    visualGraph = new VisualGraph
-    visualGraph.rewrite(runner.next)
-    visualGraph
+    viewContext = new ViewContext
+    viewContext.rewrite(runner.next)
+    viewContext
   }
   def next = {
-    visualGraph.rewrite(runner.next)
-    visualGraph
+    viewContext.rewrite(runner.next)
+    viewContext
   }
   def hasNext = runner.hasNext
 }
@@ -62,9 +62,9 @@ class SlimRunner(options: Seq[String]) {
     }
   }
 
-  def next: Graph = {
+  def next: Mem = {
     val res = if (hasNext) { _next.get } else { throw new RuntimeException("no more element") }
     _next = null
-    Membrane.fromString(res)
+    Mem.fromString(res)
   }
 }
