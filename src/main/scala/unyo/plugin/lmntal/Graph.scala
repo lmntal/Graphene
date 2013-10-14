@@ -101,3 +101,46 @@ object Mem {
     Raw(attr.toInt, data)
   }
 }
+
+
+import unyo.util._
+
+class ViewContext {
+  private val viewNodeFromID = collection.mutable.Map.empty[Int, View]
+  val r = new util.Random
+  def viewOf(node: Atom): View = {
+    viewNodeFromID.getOrElseUpdate(node.id, {
+      new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40)))
+    })
+  }
+  def viewOf(graph: Mem): View = {
+    viewNodeFromID.getOrElseUpdate(graph.id, {
+      new View(coverableRect(graph))
+    })
+  }
+  def coverableRect(g: Mem): Rect = {
+    val rects = g.mems.map(viewOf(_).rect) ++ g.atoms.map(viewOf(_).rect)
+    if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80)) else rects.reduceLeft(_ << _)
+  }
+
+  var rootMem: Mem = null
+  def rewrite(g: Mem) {
+    rootMem = g
+    updateMem(rootMem)
+  }
+  private def updateMem(g: Mem) {
+    for (node <- g.atoms) viewOf(node)
+    for (graph <- g.mems) updateMem(graph)
+  }
+}
+
+class View(var rect: Rect) {
+  var speed = Point(0, 0)
+
+  val mass = 10.0
+  val decayRate = 0.90
+  def force(f: Point, elapsed: Double) {
+    speed = (speed + f * elapsed / mass) * decayRate
+    rect = Rect(rect.point + speed * elapsed, rect.dim)
+  }
+}
