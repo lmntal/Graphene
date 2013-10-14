@@ -67,6 +67,7 @@ class GraphPanel extends Panel {
       prevPoint = p
     }
   }
+  reactions += plugin.observers(0).eventDispatched
 
   actor {
     var prevMsec = System.currentTimeMillis
