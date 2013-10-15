@@ -101,7 +101,7 @@ class GraphPanel extends Panel {
     val res = chooser.showOpenDialog(this)
     if (res == FileChooser.Result.Approve) {
       val file = chooser.selectedFile
-      visualGraph = runtime.exec(Seq("-O", "--hide-rule", "--hide-ruleset", file.getAbsolutePath))
+      visualGraph = runtime.exec(Seq(file.getAbsolutePath))
       repaint
     }
   }

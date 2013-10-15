@@ -26,7 +26,7 @@ class LMNtalRuntime extends LMNtalPlugin.Runtime {
 class SlimRunner(options: Seq[String]) {
 
   val reader = scala.actors.Actor.actor {
-    val pb = new ProcessBuilder(Buffer("/Users/charlie/Documents/slim/slim/src/slim", "--json-dump") ++ options)
+    val pb = new ProcessBuilder(Buffer("/Users/charlie/Documents/slim/slim/src/slim", "-t", "--dump-json", "--hl") ++ options)
     pb.redirectErrorStream(true)
     val p = pb.start
     val br = new BufferedReader(new InputStreamReader(p.getInputStream))
