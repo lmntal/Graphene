@@ -13,11 +13,13 @@ trait Plugin {
   }
 
   trait Observer {
-    def eventDispatched: swing.Reactions.Reaction
+    def listenOn(context: unyo.gui.GraphicsContext): swing.Reactions.Reaction
+    def canMoveScreen: Boolean
   }
 
   trait Runtime {
     def exec(options: Seq[String]): GraphType
+    def current: GraphType
     def next: GraphType
     def hasNext: Boolean
   }

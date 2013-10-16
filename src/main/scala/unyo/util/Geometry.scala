@@ -36,6 +36,10 @@ case class Rect(point: Point, dim: Dim) {
   val top    = point.y
   val bottom = point.y + dim.height
 
+  def contains(p: Point) =
+    left <= p.x && p.x <= right &&
+    top  <= p.y && p.y <= bottom
+
   def <<(p: Point) = {
     val l = min(p.x, left)
     val r = max(p.x, right)

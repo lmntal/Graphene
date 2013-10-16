@@ -16,6 +16,7 @@ class LMNtalRuntime extends LMNtalPlugin.Runtime {
     viewContext.rewrite(runner.next)
     viewContext
   }
+  def current = viewContext
   def next = {
     viewContext.rewrite(runner.next)
     viewContext

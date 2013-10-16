@@ -48,6 +48,7 @@ class GraphPanel extends Panel {
   val mover = plugin.movers(0)
   val renderer = plugin.renderers(0)
   val runtime = plugin.runtimes(0)
+  val observer = plugin.observers(0)
 
   preferredSize = new Dimension(Env.frameWidth, Env.frameHeight)
   focusable = true
@@ -60,14 +61,14 @@ class GraphPanel extends Panel {
       visualGraph = runtime.next
       repaint
     }
-    case MousePressed(_, p, _, _, _) => prevPoint = p
-    case MouseReleased(_, p, _, _, _) => prevPoint = null
-    case MouseDragged(_, p, _) => if (prevPoint != null) {
+    case MousePressed(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = p
+    case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
+    case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
       graphicsContext.moveBy(prevPoint - p)
       prevPoint = p
     }
   }
-  reactions += plugin.observers(0).eventDispatched
+  reactions += observer.listenOn(graphicsContext)
 
   actor {
     var prevMsec = System.currentTimeMillis
