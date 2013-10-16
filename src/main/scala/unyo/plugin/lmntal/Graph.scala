@@ -6,7 +6,16 @@ trait Edge {
 
 import collection.mutable.Set
 
-class Mem(val id: Int, val name: String, val parent: Mem, val atoms: Set[Atom], val mems: Set[Mem])
+class Mem(
+  val id: Int,
+  val name: String,
+  val parent: Mem,
+  val atoms: Set[Atom],
+  val mems: Set[Mem]
+) {
+  def allAtoms: Set[Atom] = atoms ++ mems.flatMap(_.allAtoms)
+  def allMems: Set[Mem] = mems ++ mems.flatMap(_.allMems)
+}
 class Atom(val id: Int, val name: String, val parent: Mem, val arity: Int, val edges: Array[Edge]) {
   def buddyAt(i: Int): Atom = edges(i).node
 }
@@ -131,6 +140,10 @@ class ViewContext {
   private def updateMem(g: Mem) {
     for (node <- g.atoms) viewOf(node)
     for (graph <- g.mems) updateMem(graph)
+  }
+
+  def viewOptAt(wp: Point): Option[View] = {
+    rootMem.allAtoms.map(viewOf(_)).find(_.rect.contains(wp))
   }
 }
 
