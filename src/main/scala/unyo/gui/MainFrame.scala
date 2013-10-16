@@ -36,7 +36,7 @@ class MainFrame extends Frame {
 }
 
 class GraphPanel extends Panel {
-  import scala.swing.event.{MousePressed,MouseReleased,MouseDragged}
+  import scala.swing.event.{MousePressed,MouseReleased,MouseDragged,MouseWheelMoved}
   import scala.swing.event.{KeyPressed,Key}
   import scala.swing.event.{UIElementResized}
   import scala.actors.Actor._
@@ -53,7 +53,7 @@ class GraphPanel extends Panel {
   preferredSize = new Dimension(Env.frameWidth, Env.frameHeight)
   focusable = true
 
-  listenTo(this.keys, this.mouse.clicks, this.mouse.moves, this)
+  listenTo(this.keys, this.mouse.clicks, this.mouse.moves, this.mouse.wheel, this)
   var prevPoint: java.awt.Point = null
   reactions += {
     case UIElementResized(_) => graphicsContext.resize(this.size)
@@ -66,6 +66,9 @@ class GraphPanel extends Panel {
     case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
       graphicsContext.moveBy(prevPoint - p)
       prevPoint = p
+    }
+    case MouseWheelMoved(_, _, _, rotation) => {
+      graphicsContext.magnificationRate *= math.pow(1.01, rotation)
     }
   }
   reactions += observer.listenOn(graphicsContext)
