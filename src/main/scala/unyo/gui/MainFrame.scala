@@ -6,37 +6,39 @@ import unyo.util._
 import unyo.util.Geometry._
 import unyo.Env
 
+import unyo.swing.scalalike.{JFrameExt,JPanelExt,JMenuBarExt,JMenuExt,JMenuItemExt}
+
 object MainFrame {
   def instance = new MainFrame
 }
 
-class MainFrame extends javax.swing.JFrame {
+class MainFrame extends javax.swing.JFrame with JFrameExt {
   import javax.swing.{JMenuBar}
 
-  setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
+  closeOperation_ = javax.swing.JFrame.EXIT_ON_CLOSE
 
   val graphPanel = new GraphPanel
-  add(graphPanel)
+  this << graphPanel
 
-  setJMenuBar(new JMenuBar {
+  menuBar_ = new JMenuBar with JMenuBarExt {
     import java.awt.event.{ActionListener,ActionEvent}
     import java.awt.event.{KeyEvent,InputEvent}
     import javax.swing.{JMenu,JMenuItem,KeyStroke}
 
-    add(new JMenu("File") {
-      setMnemonic(KeyEvent.VK_F)
+    this << new JMenu("File") with JMenuExt {
+      mnemonic_ = KeyEvent.VK_F
 
-      add(new JMenuItem("Open File") {
-        setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
+      this << new JMenuItem("Open File") with JMenuItemExt {
+        accelerator_ = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK)
         addActionListener(new ActionListener {
           override def actionPerformed(e: ActionEvent) = graphPanel.openFileChooser
         })
-      })
-    })
-  })
+      }
+    }
+  }
 }
 
-class GraphPanel extends javax.swing.JPanel {
+class GraphPanel extends javax.swing.JPanel with JPanelExt {
   import scala.actors.Actor._
   import unyo.plugin.lmntal.LMNtalPlugin
 
@@ -48,8 +50,8 @@ class GraphPanel extends javax.swing.JPanel {
   val runtime = plugin.runtimes(0)
   val observer = plugin.observers(0)
 
-  setPreferredSize(new Dimension(Env.frameWidth, Env.frameHeight))
-  setFocusable(true)
+  preferredSize_ = new Dimension(Env.frameWidth, Env.frameHeight)
+  focusable_ = true
 
   import java.awt.event.{MouseListener,MouseMotionListener,MouseEvent}
   import java.awt.event.{MouseWheelListener,MouseWheelEvent}
