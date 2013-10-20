@@ -1,9 +1,5 @@
 package unyo.gui
 
-import scala.swing.{Frame,FlowPanel,FileChooser}
-import scala.swing.{MenuBar,Menu,MenuItem,Action}
-import scala.swing.{Panel,Graphics2D}
-
 import java.awt.{Dimension}
 
 import unyo.util._
@@ -14,31 +10,33 @@ object MainFrame {
   def instance = new MainFrame
 }
 
-class MainFrame extends Frame {
-  import scala.swing.event.Key
-  import java.awt.event.{KeyEvent,InputEvent}
-  import javax.swing.KeyStroke
+class MainFrame extends javax.swing.JFrame {
+  import javax.swing.{JMenuBar}
 
-  override def closeOperation = dispose
+  setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
 
   val graphPanel = new GraphPanel
-  contents = graphPanel
+  add(graphPanel)
 
-  menuBar = new MenuBar {
-    contents += new Menu("File") {
-      mnemonic = Key.F
+  setJMenuBar(new JMenuBar {
+    import java.awt.event.{ActionListener,ActionEvent}
+    import java.awt.event.{KeyEvent,InputEvent}
+    import javax.swing.{JMenu,JMenuItem,KeyStroke}
 
-      val fileAction = Action("Open File") { graphPanel.openFileChooser }
-      fileAction.accelerator = Option(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
-      contents += new MenuItem(fileAction) { mnemonic = Key.O }
-    }
-  }
+    add(new JMenu("File") {
+      setMnemonic(KeyEvent.VK_F)
+
+      add(new JMenuItem("Open File") {
+        setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
+        addActionListener(new ActionListener {
+          override def actionPerformed(e: ActionEvent) = graphPanel.openFileChooser
+        })
+      })
+    })
+  })
 }
 
-class GraphPanel extends Panel {
-  import scala.swing.event.{MousePressed,MouseReleased,MouseDragged,MouseWheelMoved}
-  import scala.swing.event.{KeyPressed,Key}
-  import scala.swing.event.{UIElementResized}
+class GraphPanel extends javax.swing.JPanel {
   import scala.actors.Actor._
   import unyo.plugin.lmntal.LMNtalPlugin
 
@@ -50,28 +48,47 @@ class GraphPanel extends Panel {
   val runtime = plugin.runtimes(0)
   val observer = plugin.observers(0)
 
-  preferredSize = new Dimension(Env.frameWidth, Env.frameHeight)
-  focusable = true
+  setPreferredSize(new Dimension(Env.frameWidth, Env.frameHeight))
+  setFocusable(true)
 
-  listenTo(this.keys, this.mouse.clicks, this.mouse.moves, this.mouse.wheel, this)
+  import java.awt.event.{MouseListener,MouseMotionListener,MouseEvent}
+  import java.awt.event.{MouseWheelListener,MouseWheelEvent}
+  import java.awt.event.{KeyListener,KeyEvent}
+  import java.awt.event.{ComponentListener,ComponentEvent}
+
   var prevPoint: java.awt.Point = null
-  reactions += {
-    case UIElementResized(_) => graphicsContext.resize(this.size)
-    case KeyPressed(_, key, _, _) => if (key == Key.Space && runtime.hasNext) {
-      visualGraph = runtime.next
-      repaint
+  addMouseListener(new MouseListener {
+    override def mouseClicked(e: MouseEvent) = {}
+    override def mouseEntered(e: MouseEvent) = {}
+    override def mouseExited(e: MouseEvent) = {}
+    override def mousePressed(e: MouseEvent) = if (observer.canMoveScreen) prevPoint = e.getPoint
+    override def mouseReleased(e: MouseEvent) = if (observer.canMoveScreen) prevPoint = null
+  })
+
+  addMouseMotionListener(new MouseMotionListener {
+    override def mouseDragged(e: MouseEvent) = if (observer.canMoveScreen && prevPoint != null) {
+      graphicsContext.moveBy(prevPoint - e.getPoint)
+      prevPoint = e.getPoint
     }
-    case MousePressed(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = p
-    case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
-    case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
-      graphicsContext.moveBy(prevPoint - p)
-      prevPoint = p
-    }
-    case MouseWheelMoved(_, _, _, rotation) => {
-      graphicsContext.magnificationRate *= math.pow(1.01, rotation)
-    }
-  }
-  reactions += observer.listenOn(graphicsContext)
+    override def mouseMoved(e: MouseEvent) = {}
+  })
+
+  addMouseWheelListener(new MouseWheelListener {
+    override def mouseWheelMoved(e: MouseWheelEvent) = graphicsContext.magnificationRate *= math.pow(1.01, e.getWheelRotation)
+  })
+
+  addKeyListener(new KeyListener {
+    override def keyPressed(e: KeyEvent) = if (e.getKeyCode == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
+    override def keyReleased(e: KeyEvent) = {}
+    override def keyTyped(e: KeyEvent) = {}
+  })
+
+  addComponentListener(new ComponentListener {
+    override def componentHidden(e: ComponentEvent) = {}
+    override def componentMoved(e: ComponentEvent) = {}
+    override def componentResized(e: ComponentEvent) = graphicsContext.resize(getSize)
+    override def componentShown(e: ComponentEvent) = {}
+  })
 
   actor {
     var prevMsec = System.currentTimeMillis
@@ -79,17 +96,19 @@ class GraphPanel extends Panel {
       val msec = System.currentTimeMillis
 
       if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 100)
-      repaint
+      repaint()
 
       prevMsec = msec
       Thread.sleep(10)
     }
   }
 
-  override def paint(g: Graphics2D) {
+  override def paintComponent(gg: java.awt.Graphics) {
     import java.awt.RenderingHints._
 
-    super.paint(g)
+    val g = gg.asInstanceOf[java.awt.Graphics2D]
+
+    super.paintComponent(g)
 
     g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
     renderer.renderAll(g, graphicsContext, visualGraph)
@@ -98,16 +117,17 @@ class GraphPanel extends Panel {
   import unyo.plugin.lmntal.LMNtalRuntime
 
   def openFileChooser {
-    import javax.swing.filechooser.{FileFilter,FileNameExtensionFilter}
+    import javax.swing.{JFileChooser}
 
-    val chooser = new FileChooser(new java.io.File("~/")) {
-      fileFilter = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
+    val chooser = new JFileChooser(new java.io.File("~/")) {
+      val fileFilter = new javax.swing.filechooser.FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
+      setFileFilter(fileFilter)
     }
     val res = chooser.showOpenDialog(this)
-    if (res == FileChooser.Result.Approve) {
-      val file = chooser.selectedFile
+    if (res == JFileChooser.APPROVE_OPTION) {
+      val file = chooser.getSelectedFile
       visualGraph = runtime.exec(Seq(file.getAbsolutePath))
-      repaint
+      repaint()
     }
   }
 }
