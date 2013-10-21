@@ -6,7 +6,7 @@ import unyo.util._
 import unyo.util.Geometry._
 import unyo.Env
 
-import unyo.swing.scalalike.{JFrameExt,JPanelExt,JMenuBarExt,JMenuExt,JMenuItemExt}
+import unyo.swing.scalalike._
 
 object MainFrame {
   def instance = new MainFrame
@@ -59,38 +59,22 @@ class GraphPanel extends javax.swing.JPanel with JPanelExt {
   import java.awt.event.{ComponentListener,ComponentEvent}
 
   var prevPoint: java.awt.Point = null
-  addMouseListener(new MouseListener {
-    override def mouseClicked(e: MouseEvent) = {}
-    override def mouseEntered(e: MouseEvent) = {}
-    override def mouseExited(e: MouseEvent) = {}
-    override def mousePressed(e: MouseEvent) = if (observer.canMoveScreen) prevPoint = e.getPoint
-    override def mouseReleased(e: MouseEvent) = if (observer.canMoveScreen) prevPoint = null
-  })
-
-  addMouseMotionListener(new MouseMotionListener {
-    override def mouseDragged(e: MouseEvent) = if (observer.canMoveScreen && prevPoint != null) {
-      graphicsContext.moveBy(prevPoint - e.getPoint)
-      prevPoint = e.getPoint
+  listenToComponent
+  listenToMouse
+  listenToMouseMotion
+  listenToMouseWheel
+  listenToKey
+  reactions += {
+    case MousePressed(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = p
+    case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
+    case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
+      graphicsContext.moveBy(prevPoint - p)
+      prevPoint = p
     }
-    override def mouseMoved(e: MouseEvent) = {}
-  })
-
-  addMouseWheelListener(new MouseWheelListener {
-    override def mouseWheelMoved(e: MouseWheelEvent) = graphicsContext.magnificationRate *= math.pow(1.01, e.getWheelRotation)
-  })
-
-  addKeyListener(new KeyListener {
-    override def keyPressed(e: KeyEvent) = if (e.getKeyCode == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
-    override def keyReleased(e: KeyEvent) = {}
-    override def keyTyped(e: KeyEvent) = {}
-  })
-
-  addComponentListener(new ComponentListener {
-    override def componentHidden(e: ComponentEvent) = {}
-    override def componentMoved(e: ComponentEvent) = {}
-    override def componentResized(e: ComponentEvent) = graphicsContext.resize(getSize)
-    override def componentShown(e: ComponentEvent) = {}
-  })
+    case MouseWheelMoved(_, _, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
+    case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
+    case ComponentResized(_) => graphicsContext.resize(getSize)
+  }
 
   actor {
     var prevMsec = System.currentTimeMillis

@@ -6,8 +6,92 @@ scala.swingは使いにくい
 そんな時に役に立つかもしれないExtです
 */
 
+import java.awt.{Point,Component}
+
+
+trait Event
+case class MouseClicked(source: Component, point: Point, modifiers: Int, clicks: Int, triggersPopup: Boolean) extends Event
+case class MouseEntered(source: Component, point: Point, modifiers: Int) extends Event
+case class MouseExited(source: Component, point: Point, modifiers: Int) extends Event
+case class MousePressed(source: Component, point: Point, modifiers: Int, clicks: Int, triggersPopup: Boolean) extends Event
+case class MouseReleased(source: Component, point: Point, modifiers: Int, clicks: Int, triggersPopup: Boolean) extends Event
+case class MouseMoved(source: Component, point: Point, modifiers: Int) extends Event
+case class MouseDragged(source: Component, point: Point, modifiers: Int) extends Event
+case class MouseWheelMoved(source: Component, point: Point, modifiers: Int, rotation: Int) extends Event
+case class KeyPressed(source: Component, key: Int, modifiers: Int, location: Int) extends Event
+case class KeyReleased(source: Component, key: Int, modifiers: Int, location: Int) extends Event
+case class KeyTyped(source: Component, char: Char, modifiers: Int, location: Int) extends Event
+case class ComponentHidden(source: Component) extends Event
+case class ComponentMoved(source: Component) extends Event
+case class ComponentResized(source: Component) extends Event
+case class ComponentShown(source: Component) extends Event
+
+
 trait ComponentExt {
   self: java.awt.Component =>
+
+  import collection.mutable.Buffer
+
+  type Reaction = PartialFunction[Event,Unit]
+
+  val reactions = Buffer.empty[Reaction]
+
+  private def dispatch(e: Event) = for (r <- reactions) if (r.isDefinedAt(e)) r(e)
+
+  import java.awt.event.{ComponentListener,ComponentEvent}
+
+  def listenToComponent = addComponentListener(new ComponentListener {
+    override def componentHidden(e: ComponentEvent) =
+      dispatch(ComponentHidden(e.getComponent))
+    override def componentMoved(e: ComponentEvent) =
+      dispatch(ComponentMoved(e.getComponent))
+    override def componentResized(e: ComponentEvent) =
+      dispatch(ComponentResized(e.getComponent))
+    override def componentShown(e: ComponentEvent) =
+      dispatch(ComponentShown(e.getComponent))
+  })
+
+  import java.awt.event.{MouseListener,MouseEvent}
+
+  def listenToMouse = addMouseListener(new MouseListener {
+    override def mouseClicked(e: MouseEvent) =
+      dispatch(MouseClicked(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
+    override def mouseEntered(e: MouseEvent) =
+      dispatch(MouseEntered(e.getComponent, e.getPoint, e.getModifiers))
+    override def mouseExited(e: MouseEvent) =
+      dispatch(MouseExited(e.getComponent, e.getPoint, e.getModifiers))
+    override def mousePressed(e: MouseEvent) =
+      dispatch(MousePressed(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
+    override def mouseReleased(e: MouseEvent) =
+      dispatch(MouseReleased(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
+  })
+
+  import java.awt.event.{MouseMotionListener}
+
+  def listenToMouseMotion = addMouseMotionListener(new MouseMotionListener {
+    override def mouseMoved(e: MouseEvent) =
+      dispatch(MouseMoved(e.getComponent, e.getPoint, e.getModifiers))
+    override def mouseDragged(e: MouseEvent) =
+      dispatch(MouseDragged(e.getComponent, e.getPoint, e.getModifiers))
+  })
+
+  import java.awt.event.{MouseWheelListener,MouseWheelEvent}
+
+  def listenToMouseWheel = addMouseWheelListener(new MouseWheelListener {
+    override def mouseWheelMoved(e: MouseWheelEvent) =
+      dispatch(MouseWheelMoved(e.getComponent, e.getPoint, e.getModifiers, e.getWheelRotation))
+  })
+
+  import java.awt.event.{KeyListener,KeyEvent}
+
+  def listenToKey = addKeyListener(new KeyListener {
+    override def keyPressed(e: KeyEvent) =
+      dispatch(KeyPressed(e.getComponent, e.getKeyCode, e.getModifiers, e.getKeyLocation))
+    override def keyReleased(e: KeyEvent) =
+      dispatch(KeyReleased(e.getComponent, e.getKeyCode, e.getModifiers, e.getKeyLocation))
+    override def keyTyped(e: KeyEvent) =
+      dispatch(KeyTyped(e.getComponent, e.getKeyChar, e.getModifiers, e.getKeyLocation))
+  })
 
   def bounds_ = getBounds
   def bounds__=(v: java.awt.Rectangle) = setBounds(v)
