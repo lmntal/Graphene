@@ -294,3 +294,11 @@ trait JMenuExt extends JMenuItemExt {
   def <<(c: JMenuItem) = add(c)
 }
 
+trait JFileChooserExt extends JComponentExt {
+  self: javax.swing.JFileChooser =>
+
+  def fileFilter_ = getFileFilter
+  def fileFilter__= = setFileFilter _
+
+  def selectedFile = getSelectedFile
+}

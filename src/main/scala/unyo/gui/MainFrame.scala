@@ -104,16 +104,13 @@ class GraphPanel extends javax.swing.JPanel with JPanelExt {
 
   def openFileChooser {
     import javax.swing.{JFileChooser}
+    import javax.swing.filechooser.{FileNameExtensionFilter}
 
-    val chooser = new JFileChooser(new java.io.File("~/")) {
-      val fileFilter = new javax.swing.filechooser.FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
-      setFileFilter(fileFilter)
+    val chooser = new JFileChooser(new java.io.File("~/")) with JFileChooserExt {
+      fileFilter_ = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
     }
-    val res = chooser.showOpenDialog(this)
-    if (res == JFileChooser.APPROVE_OPTION) {
-      val file = chooser.getSelectedFile
-      visualGraph = runtime.exec(Seq(file.getAbsolutePath))
-      repaint()
+    if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
     }
   }
 }
