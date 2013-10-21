@@ -75,6 +75,7 @@ class GraphPanel extends javax.swing.JPanel with JPanelExt {
     case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
     case ComponentResized(_) => graphicsContext.resize(getSize)
   }
+  reactions += observer.listenOn(graphicsContext)
 
   actor {
     var prevMsec = System.currentTimeMillis

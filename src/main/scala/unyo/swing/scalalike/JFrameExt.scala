@@ -27,14 +27,16 @@ case class ComponentResized(source: Component) extends Event
 case class ComponentShown(source: Component) extends Event
 
 
+object Reactions {
+  type Reaction = PartialFunction[Event,Unit]
+}
+
 trait ComponentExt {
   self: java.awt.Component =>
 
   import collection.mutable.Buffer
 
-  type Reaction = PartialFunction[Event,Unit]
-
-  val reactions = Buffer.empty[Reaction]
+  val reactions = Buffer.empty[Reactions.Reaction]
 
   private def dispatch(e: Event) = for (r <- reactions) if (r.isDefinedAt(e)) r(e)
 
