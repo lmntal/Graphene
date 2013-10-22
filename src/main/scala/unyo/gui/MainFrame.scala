@@ -17,8 +17,8 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
 
   closeOperation_ = javax.swing.JFrame.EXIT_ON_CLOSE
 
-  val graphPanel = new GraphPanel
-  this << graphPanel
+  val mainPanel = new MainPanel
+  this << mainPanel
 
   menuBar_ = new JMenuBar with JMenuBarExt {
     import java.awt.event.{ActionListener,ActionEvent}
@@ -31,15 +31,15 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
       this << new JMenuItem("Open File") with JMenuItemExt {
         accelerator_ = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK)
         addActionListener(new ActionListener {
-          override def actionPerformed(e: ActionEvent) = graphPanel.openFileChooser
+          override def actionPerformed(e: ActionEvent) = mainPanel.openFileChooser
         })
       }
     }
   }
 }
 
-class GraphPanel extends javax.swing.JPanel with JPanelExt {
-  import scala.actors.Actor._
+class MainPanel extends javax.swing.JPanel with JPanelExt {
+
   import unyo.plugin.lmntal.LMNtalPlugin
 
   val plugin = LMNtalPlugin
@@ -50,58 +50,62 @@ class GraphPanel extends javax.swing.JPanel with JPanelExt {
   val runtime = plugin.runtimes(0)
   val observer = plugin.observers(0)
 
-  preferredSize_ = new Dimension(Env.frameWidth, Env.frameHeight)
-  focusable_ = true
+  layout_ = new java.awt.BorderLayout
 
-  import java.awt.event.{MouseListener,MouseMotionListener,MouseEvent}
-  import java.awt.event.{MouseWheelListener,MouseWheelEvent}
-  import java.awt.event.{KeyListener,KeyEvent}
-  import java.awt.event.{ComponentListener,ComponentEvent}
+  this << new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT) with JSplitPaneExt {
+    leftComponent_ = new javax.swing.JPanel with JPanelExt {
+      import scala.actors.Actor._
+      import java.awt.event.{KeyEvent}
 
-  var prevPoint: java.awt.Point = null
-  listenToComponent
-  listenToMouse
-  listenToMouseMotion
-  listenToMouseWheel
-  listenToKey
-  reactions += {
-    case MousePressed(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = p
-    case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
-    case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
-      graphicsContext.moveBy(prevPoint - p)
-      prevPoint = p
+      preferredSize_ = new Dimension(Env.frameWidth, Env.frameHeight)
+      focusable_ = true
+
+      var prevPoint: java.awt.Point = null
+      listenToComponent
+      listenToMouse
+      listenToMouseMotion
+      listenToMouseWheel
+      listenToKey
+      reactions += {
+        case MousePressed(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = p
+        case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
+        case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
+          graphicsContext.moveBy(prevPoint - p)
+          prevPoint = p
+        }
+        case MouseWheelMoved(_, _, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
+        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
+        case ComponentResized(_) => graphicsContext.resize(getSize)
+      }
+      reactions += observer.listenOn(graphicsContext)
+
+      actor {
+        var prevMsec = System.currentTimeMillis
+        loop {
+          val msec = System.currentTimeMillis
+
+          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 100)
+          repaint()
+
+          prevMsec = msec
+          Thread.sleep(10)
+        }
+      }
+
+      override def paintComponent(gg: java.awt.Graphics) {
+        import java.awt.RenderingHints._
+
+        val g = gg.asInstanceOf[java.awt.Graphics2D]
+
+        super.paintComponent(g)
+
+        g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
+        renderer.renderAll(g, graphicsContext, visualGraph)
+      }
+
     }
-    case MouseWheelMoved(_, _, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
-    case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
-    case ComponentResized(_) => graphicsContext.resize(getSize)
+    rightComponent_ = new javax.swing.JPanel
   }
-  reactions += observer.listenOn(graphicsContext)
-
-  actor {
-    var prevMsec = System.currentTimeMillis
-    loop {
-      val msec = System.currentTimeMillis
-
-      if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 100)
-      repaint()
-
-      prevMsec = msec
-      Thread.sleep(10)
-    }
-  }
-
-  override def paintComponent(gg: java.awt.Graphics) {
-    import java.awt.RenderingHints._
-
-    val g = gg.asInstanceOf[java.awt.Graphics2D]
-
-    super.paintComponent(g)
-
-    g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-    renderer.renderAll(g, graphicsContext, visualGraph)
-  }
-
-  import unyo.plugin.lmntal.LMNtalRuntime
 
   def openFileChooser {
     import javax.swing.{JFileChooser}
@@ -115,3 +119,4 @@ class GraphPanel extends javax.swing.JPanel with JPanelExt {
     }
   }
 }
+

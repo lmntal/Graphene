@@ -132,6 +132,8 @@ trait ComponentExt {
 trait ContainerExt extends ComponentExt {
   self: java.awt.Container =>
 
+  def <<(c: Component) = add(c)
+
   def layout_ = getLayout
   def layout__= = setLayout _
 }
@@ -174,6 +176,16 @@ trait JComponentExt extends ContainerExt {
 
   def visible_ = isVisible
   def visible__= = setVisible _
+}
+
+trait JSplitPaneExt extends JComponentExt {
+  self: javax.swing.JSplitPane =>
+
+  def leftComponent_ = getLeftComponent
+  def leftComponent__= = setLeftComponent _
+
+  def rightComponent_ = getRightComponent
+  def rightComponent__= = setRightComponent _
 }
 
 trait AbstractButtonExt extends JComponentExt {
@@ -256,7 +268,7 @@ trait JPanelExt extends JComponentExt{
   self: javax.swing.JPanel =>
 }
 
-trait JFrameExt {
+trait JFrameExt extends ContainerExt {
   self: javax.swing.JFrame =>
 
   import java.awt.{Component}
@@ -267,8 +279,6 @@ trait JFrameExt {
 
   def menuBar_ = getJMenuBar
   def menuBar__=(v: JMenuBar) = setJMenuBar(v)
-
-  def <<(c: Component) = add(c)
 }
 
 trait JMenuBarExt {
