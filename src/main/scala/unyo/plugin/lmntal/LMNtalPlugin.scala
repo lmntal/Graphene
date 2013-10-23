@@ -22,5 +22,5 @@ object LMNtalPlugin extends Plugin {
   val renderers = Seq(new DefaultRenderer)
   val observers = Seq(new unyo.plugin.lmntal.Observer(runtimes(0)))
   val movers = Seq(new DefaultMover(forces))
-  val controlPanel = new ControlPanel
+  val controlPanel = new ControlPanel(forces)
 }
