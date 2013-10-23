@@ -2,7 +2,7 @@ package unyo.plugin.lmntal
 
 import unyo.util._
 
-class DefaultMover extends LMNtalPlugin.Mover {
+class DefaultMover(forces: Forces) extends LMNtalPlugin.Mover {
 
   var viewContext: ViewContext = null
   def moveAll(viewContext: ViewContext, elapsedSec: Double) {
@@ -40,7 +40,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
       if (self.id != other.id && self.parent.id == other.parent.id) {
         val v2 = viewContext.viewOf(other)
         val d = v2.rect.center - v1.rect.center
-        val f = 1000000.0 / d.sqabs
+        val f = forces.replusion.forceBetweenAtoms / d.sqabs
         vec = vec - d.unit * f
       }
     }
@@ -49,7 +49,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
         val v2 = viewContext.viewOf(other)
         if (v1.rect.isCrossingWith(v2.rect)) {
           val d = v2.rect.center - v1.rect.center
-          val f = 10000
+          val f = forces.replusion.forceBetweenMems
           vec = vec - d.unit * f
         }
       }
@@ -64,7 +64,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
       val other = self.buddyAt(i)
       val v2 = viewContext.viewOf(other)
       val d = v2.rect.center - v1.rect.center
-      val f = 2.0 * (d.abs - 120)
+      val f = forces.spring.force * (d.abs - forces.spring.length)
       vec = vec + d.unit * f
     }
     vec

@@ -67,7 +67,10 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       listenToMouseWheel
       listenToKey
       reactions += {
-        case MousePressed(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = p
+        case MousePressed(_, p, _, _, _) => {
+          requestFocusInWindow
+          if (observer.canMoveScreen) prevPoint = p
+        }
         case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
         case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
           graphicsContext.moveBy(prevPoint - p)
