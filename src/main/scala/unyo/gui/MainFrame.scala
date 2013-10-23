@@ -104,7 +104,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       }
 
     }
-    rightComponent_ = new javax.swing.JPanel
+    rightComponent_ = plugin.controlPanel
   }
 
   def openFileChooser {
