@@ -7,13 +7,14 @@ trait Plugin {
   def observers: Seq[Observer]
   def runtimes: Seq[Runtime]
   def movers: Seq[Mover]
+  def controlPanel: javax.swing.JPanel
 
   trait Renderer {
     def renderAll(g: java.awt.Graphics, context: unyo.gui.GraphicsContext, graph: GraphType)
   }
 
   trait Observer {
-    def listenOn(context: unyo.gui.GraphicsContext): swing.Reactions.Reaction
+    def listenOn(context: unyo.gui.GraphicsContext): unyo.swing.scalalike.Reactions.Reaction
     def canMoveScreen: Boolean
   }
 
@@ -27,6 +28,7 @@ trait Plugin {
   trait Mover {
     def moveAll(graph: GraphType, elapsed: Double)
   }
+
 }
 
 

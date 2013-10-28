@@ -1,16 +1,17 @@
 package unyo.plugin.lmntal
 
-import swing.event.{Event,MousePressed,MouseReleased,MouseDragged}
-import swing.event.{Key,KeyPressed,KeyReleased}
+import unyo.swing.scalalike._
 
 import unyo.util._
 import unyo.util.Geometry._
 
 class Observer(val runtime: LMNtalPlugin.Runtime) extends LMNtalPlugin.Observer {
 
+  import java.awt.event.{KeyEvent}
+
   var view: View = null
   var isNodeHandlable = false
-  def listenOn(context: unyo.gui.GraphicsContext): swing.Reactions.Reaction = {
+  def listenOn(context: unyo.gui.GraphicsContext): Reactions.Reaction = {
     case MousePressed(_, p, _, _, _) => if (isNodeHandlable) {
       val viewContext = runtime.current
       val pos = context.worldPointFrom(p)
@@ -28,8 +29,8 @@ class Observer(val runtime: LMNtalPlugin.Runtime) extends LMNtalPlugin.Observer 
         view.rect = Rect(wp, view.rect.dim)
       }
     }
-    case KeyPressed(_, key, _, _) => if (key == Key.Control) isNodeHandlable = true
-    case KeyReleased(_, key, _, _) => if (key == Key.Control) isNodeHandlable = false
+    case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_CONTROL) isNodeHandlable = true
+    case KeyReleased(_, key, _, _) => if (key == KeyEvent.VK_CONTROL) isNodeHandlable = false
     case _ =>
   }
 

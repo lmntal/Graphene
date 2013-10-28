@@ -7,7 +7,7 @@ class GraphicsContext {
 
   var sSize = Dim(Env.frameWidth, Env.frameHeight)
   var wCenter = Point(sSize.width / 2, sSize.height / 2)
-  var magnificationRate: Double = 1.0 // screen / world
+  private var magnificationRate: Double = 1.0 // screen / world
 
   def wSize = Dim(sSize.width / magnificationRate, sSize.height / magnificationRate)
 
@@ -29,5 +29,10 @@ class GraphicsContext {
   }
 
   def resize(sd: Dim) { sSize = sd }
+  def zoom(m: Double) {
+    magnificationRate *= m
+    magnificationRate = math.min(magnificationRate, 10)
+    magnificationRate = math.max(0.2, magnificationRate)
+  }
 
 }

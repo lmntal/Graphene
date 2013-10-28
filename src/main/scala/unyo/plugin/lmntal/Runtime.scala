@@ -7,11 +7,11 @@ import collection.JavaConversions._
 
 import scala.actors.Actor._
 
-class LMNtalRuntime extends LMNtalPlugin.Runtime {
+class LMNtalRuntime(config: Config) extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null
   var viewContext: ViewContext = null
   def exec(options: Seq[String]): ViewContext = {
-    runner = new SlimRunner(options)
+    runner = new SlimRunner(config.slimPath, options)
     viewContext = new ViewContext
     viewContext.rewrite(runner.next)
     viewContext
@@ -24,10 +24,10 @@ class LMNtalRuntime extends LMNtalPlugin.Runtime {
   def hasNext = runner.hasNext
 }
 
-class SlimRunner(options: Seq[String]) {
+class SlimRunner(slimPath: String, options: Seq[String]) {
 
   val reader = scala.actors.Actor.actor {
-    val pb = new ProcessBuilder(Buffer("/Users/charlie/Documents/slim/slim/src/slim", "-t", "--dump-json", "--hl") ++ options)
+    val pb = new ProcessBuilder(Buffer(slimPath, "-t", "--dump-json", "--hl") ++ options)
     pb.redirectErrorStream(true)
     val p = pb.start
     val br = new BufferedReader(new InputStreamReader(p.getInputStream))

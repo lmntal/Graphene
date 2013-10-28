@@ -5,7 +5,7 @@ import unyo.gui.MainFrame
 object FrontEnd extends App {
 
   val frame = MainFrame.instance
-  frame.visible = true
+  frame.setVisible(true)
   frame.pack
 
 }
