@@ -92,8 +92,8 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     g.fillRect(context.screenRectFrom(viewNode.rect).pad(Padding(2, 2, 2, 2)))
 
     for (subgraph <- graph.mems) renderMem(subgraph)
-    for (node <- graph.atoms) renderEdges(node)
-    for (node <- graph.atoms) renderAtom(node)
+    for (node <- graph.atoms if !node.isProxy) renderEdges(node)
+    for (node <- graph.atoms if !node.isProxy) renderAtom(node)
   }
 
   def renderAtom(node: Atom) {
@@ -111,7 +111,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     val view1 = viewContext.viewOf(node)
     g.setColor(new Color(41, 128, 185))
     for (i <- 0 until node.arity) {
-      val buddy = node.buddyAt(i)
+      var buddy = node.buddyAt(i)
       val view2 = viewContext.viewOf(buddy)
 
       g.drawLine(

@@ -14,7 +14,7 @@ class DefaultMover(config: Config) extends LMNtalPlugin.Mover {
   def move(graph: Mem, elapsedSec: Double) {
     for (subgraph <- graph.mems) move(subgraph, elapsedSec)
 
-    for (node <- graph.atoms) {
+    for (node <- graph.atoms if !node.isProxy) {
       val v1 = viewContext.viewOf(node)
       var vec = Point(0, 0)
 
@@ -36,7 +36,7 @@ class DefaultMover(config: Config) extends LMNtalPlugin.Mover {
   private def forceOfReplusion(self: Atom): Point = {
     var vec = Point(0, 0)
     val v1 = viewContext.viewOf(self)
-    for (other <- self.parent.atoms) {
+    for (other <- self.parent.atoms if !other.isProxy) {
       if (self.id != other.id && self.parent.id == other.parent.id) {
         val v2 = viewContext.viewOf(other)
         val d = v2.rect.center - v1.rect.center

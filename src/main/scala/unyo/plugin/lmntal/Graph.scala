@@ -17,7 +17,12 @@ class Mem(
   def allMems: Set[Mem] = mems ++ mems.flatMap(_.allMems)
 }
 class Atom(val id: Int, val name: String, val parent: Mem, val arity: Int, val edges: Array[Edge]) {
-  def buddyAt(i: Int): Atom = edges(i).node
+  def buddyAt(i: Int): Atom = {
+    val buddy = actualBuddyAt(i)
+    if (buddy.isProxy) buddy.actualBuddyAt(0).buddyAt(1) else buddy
+  }
+  def actualBuddyAt(i: Int): Atom = edges(i).node
+  def isProxy = name == "$in" || name == "$out"
 }
 case class Raw(attr: Int, data: String) extends Edge {
   def node: Atom = throw new RuntimeException("Raw link exists")
@@ -128,8 +133,9 @@ class ViewContext {
     })
   }
   def coverableRect(g: Mem): Rect = {
-    val rects = g.mems.map(viewOf(_).rect) ++ g.atoms.map(viewOf(_).rect)
-    if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80)) else rects.reduceLeft(_ << _)
+    val rects = g.mems.map(viewOf(_).rect) ++ g.atoms.filter(!_.isProxy).map(viewOf(_).rect)
+    if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80))
+    else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
   var rootMem: Mem = null
