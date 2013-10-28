@@ -44,6 +44,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
   var g: Graphics = null
   var context: GraphicsContext = null
+  var viewContext: ViewContext = null
   def renderAll(g: Graphics, context: GraphicsContext, graph: ViewContext) {
     this.g = g
     this.context = context
@@ -51,13 +52,13 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     g.clearRect(0, 0, 2000, 2000)
     renderGrid
 
-    if (graph != null) render(graph)
-  }
+    if (graph == null) return
+    if (graph.rootMem == null) return
 
-  var viewContext: ViewContext = null
-  def render(graph: ViewContext) {
     viewContext = graph
-    renderRoot(graph.rootMem)
+    for (mem <- graph.rootMem.mems) renderMem(mem)
+    for (atom <- graph.rootMem.atoms) renderEdges(atom)
+    for (atom <- graph.rootMem.atoms) renderAtom(atom)
   }
 
   def renderGrid {
@@ -79,11 +80,6 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     }
   }
 
-  def renderRoot(graph: Mem) {
-    if (graph == null) return
-    renderMem(graph)
-  }
-
   def renderMem(graph: Mem) {
     val viewNode = viewContext.viewOf(graph)
     g.setColor(new Color(52, 152, 219))
@@ -92,26 +88,30 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     g.fillRect(context.screenRectFrom(viewNode.rect).pad(Padding(2, 2, 2, 2)))
 
     for (subgraph <- graph.mems) renderMem(subgraph)
-    for (node <- graph.atoms if !node.isProxy) renderEdges(node)
-    for (node <- graph.atoms if !node.isProxy) renderAtom(node)
+    for (node <- graph.atoms) renderEdges(node)
+    for (node <- graph.atoms) renderAtom(node)
   }
 
-  def renderAtom(node: Atom) {
-    val viewNode = viewContext.viewOf(node)
+  def renderAtom(atom: Atom) {
+    if (atom.isProxy) return
+
+    val viewNode = viewContext.viewOf(atom)
     val rect = context.screenRectFrom(viewNode.rect)
     g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
     g.setColor(new Color(52, 152, 219))
-    g.drawString(node.name, rect.point)
+    g.drawString(atom.name, rect.point)
     g.fillOval(rect)
     g.setColor(Color.WHITE)
     g.fillOval(rect.pad(Padding(3, 3, 3, 3)))
   }
 
-  def renderEdges(node: Atom) {
-    val view1 = viewContext.viewOf(node)
+  def renderEdges(atom: Atom) {
+    if (atom.isProxy) return
+
+    val view1 = viewContext.viewOf(atom)
     g.setColor(new Color(41, 128, 185))
-    for (i <- 0 until node.arity) {
-      var buddy = node.buddyAt(i)
+    for (i <- 0 until atom.arity) {
+      var buddy = atom.buddyAt(i)
       val view2 = viewContext.viewOf(buddy)
 
       g.drawLine(
