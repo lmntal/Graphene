@@ -1,10 +1,10 @@
 package unyo.plugin.lmntal
 
-import javax.swing.{JPanel,JSlider}
+import javax.swing.{JPanel,JSlider,JTextField}
 
 import unyo.swing.scalalike._
 
-class ControlPanel(forces: Forces) extends JPanel with JPanelExt {
+class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
   import java.awt.{Dimension}
   import java.awt.{BorderLayout}
@@ -17,12 +17,27 @@ class ControlPanel(forces: Forces) extends JPanel with JPanelExt {
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      border_ = new TitledBorder("SLIM Path")
+
+      import javax.swing.event.{DocumentListener,DocumentEvent}
+      this << new JTextField(config.slimPath) {
+        textField =>
+        getDocument.addDocumentListener(new DocumentListener {
+          override def changedUpdate(e: DocumentEvent) = {}
+          override def insertUpdate(e: DocumentEvent) = config.slimPath = textField.getText
+          override def removeUpdate(e: DocumentEvent) = config.slimPath = textField.getText
+        })
+      }
+    }
+
+    this << new JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Replusion")
       this << new JSlider(100000, 10000000, 1000000) {
         slider =>
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
-            forces.replusion.forceBetweenAtoms = slider.getValue
+            config.forces.replusion.forceBetweenAtoms = slider.getValue
           }
         })
       }
@@ -35,7 +50,7 @@ class ControlPanel(forces: Forces) extends JPanel with JPanelExt {
         slider =>
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
-            forces.spring.force = slider.getValue.toDouble / 10
+            config.forces.spring.force = slider.getValue.toDouble / 10
           }
         })
       }
@@ -48,7 +63,7 @@ class ControlPanel(forces: Forces) extends JPanel with JPanelExt {
         slider =>
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
-            forces.spring.length = slider.getValue
+            config.forces.spring.length = slider.getValue
           }
         })
       }

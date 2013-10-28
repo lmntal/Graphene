@@ -178,6 +178,15 @@ trait JComponentExt extends ContainerExt {
   def visible__= = setVisible _
 }
 
+trait JSliderExt extends JComponentExt {
+  self: javax.swing.JSlider =>
+
+  import javax.swing.event.{ChangeListener,ChangeEvent}
+
+  def action_(f: ChangeEvent => Unit) {
+  }
+}
+
 trait JSplitPaneExt extends JComponentExt {
   self: javax.swing.JSplitPane =>
 
