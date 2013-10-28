@@ -33,6 +33,10 @@ trait Renderer {
     def fillRect(r: Rect) {
       g.fillRect(r.point.x.toInt, r.point.y.toInt, r.dim.width.toInt, r.dim.height.toInt)
     }
+
+    def drawString(s: String, p: Point) {
+      g.drawString(s, p.x.toInt, p.y.toInt)
+    }
   }
 }
 
@@ -94,10 +98,13 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
   def renderAtom(node: Atom) {
     val viewNode = viewContext.viewOf(node)
+    val rect = context.screenRectFrom(viewNode.rect)
+    g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
     g.setColor(new Color(52, 152, 219))
-    g.fillOval(context.screenRectFrom(viewNode.rect))
+    g.drawString(node.name, rect.point)
+    g.fillOval(rect)
     g.setColor(Color.WHITE)
-    g.fillOval(context.screenRectFrom(viewNode.rect).pad(Padding(3, 3, 3, 3)))
+    g.fillOval(rect.pad(Padding(3, 3, 3, 3)))
   }
 
   def renderEdges(node: Atom) {
