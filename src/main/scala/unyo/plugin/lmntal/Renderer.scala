@@ -1,6 +1,6 @@
 package unyo.plugin.lmntal
 
-import java.awt.{Graphics,Color}
+import java.awt.{Graphics,Graphics2D,Color}
 
 import unyo.util._
 import unyo.util.Geometry._
@@ -42,12 +42,13 @@ trait Renderer {
 
 class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
-  var g: Graphics = null
+  var g: Graphics2D = null
   var context: GraphicsContext = null
-  var viewContext: ViewContext = null
-  def renderAll(g: Graphics, context: GraphicsContext, graph: ViewContext) {
-    this.g = g
+  var graph: ViewContext = null
+  def renderAll(gg: Graphics, context: GraphicsContext, graph: ViewContext) {
+    g = gg.asInstanceOf[Graphics2D];
     this.context = context
+    this.graph = graph
 
     g.clearRect(0, 0, 2000, 2000)
     renderGrid
@@ -55,7 +56,6 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     if (graph == null) return
     if (graph.rootMem == null) return
 
-    viewContext = graph
     for (mem <- graph.rootMem.mems) renderMem(mem)
     for (atom <- graph.rootMem.atoms) renderEdges(atom)
     for (atom <- graph.rootMem.atoms) renderAtom(atom)
@@ -80,22 +80,22 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     }
   }
 
-  def renderMem(graph: Mem) {
-    val viewNode = viewContext.viewOf(graph)
+  def renderMem(mem: Mem) {
+    val viewNode = graph.viewOf(mem)
     g.setColor(new Color(52, 152, 219))
     g.fillRect(context.screenRectFrom(viewNode.rect))
     g.setColor(Color.WHITE)
     g.fillRect(context.screenRectFrom(viewNode.rect).pad(Padding(2, 2, 2, 2)))
 
-    for (subgraph <- graph.mems) renderMem(subgraph)
-    for (node <- graph.atoms) renderEdges(node)
-    for (node <- graph.atoms) renderAtom(node)
+    for (submem <- mem.mems) renderMem(submem)
+    for (node <- mem.atoms) renderEdges(node)
+    for (node <- mem.atoms) renderAtom(node)
   }
 
   def renderAtom(atom: Atom) {
     if (atom.isProxy) return
 
-    val viewNode = viewContext.viewOf(atom)
+    val viewNode = graph.viewOf(atom)
     val rect = context.screenRectFrom(viewNode.rect)
     g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
     g.setColor(new Color(52, 152, 219))
@@ -108,11 +108,11 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
   def renderEdges(atom: Atom) {
     if (atom.isProxy) return
 
-    val view1 = viewContext.viewOf(atom)
+    val view1 = graph.viewOf(atom)
     g.setColor(new Color(41, 128, 185))
     for (i <- 0 until atom.arity) {
       var buddy = atom.buddyAt(i)
-      val view2 = viewContext.viewOf(buddy)
+      val view2 = graph.viewOf(buddy)
 
       g.drawLine(
         context.screenPointFrom(view1.rect.center),
