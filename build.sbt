@@ -1,6 +1,6 @@
 import AssemblyKeys._
 
-name := "UNYO UNYO"
+name := "UNYO-UNYO"
 
 version := "4.0.0"
 
