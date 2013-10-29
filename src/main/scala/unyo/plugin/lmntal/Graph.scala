@@ -1,9 +1,5 @@
 package unyo.plugin.lmntal
 
-trait Edge {
-  def node: Atom
-}
-
 import collection.mutable.Set
 
 trait ID
@@ -13,10 +9,11 @@ case class DataAtomID(id: ID, port: Int) extends ID
 class Mem(
   val id: ID,
   val name: String,
-  val parent: Mem,
-  val atoms: Set[Atom],
-  val mems: Set[Mem]
+  val parent: Mem
 ) {
+  val atoms = Set.empty[Atom]
+  val mems = Set.empty[Mem]
+
   def allAtoms: Set[Atom] = atoms ++ mems.flatMap(_.allAtoms)
   def allMems: Set[Mem] = mems ++ mems.flatMap(_.allMems)
 }
@@ -24,20 +21,28 @@ class Atom(
   val id: ID,
   val name: String,
   val parent: Mem,
-  val arity: Int,
-  val edges: Array[Edge]
+  val links: Array[Link]
 ) {
+  val arity = links.size
   def buddyAt(i: Int): Atom = {
     val buddy = actualBuddyAt(i)
     if (buddy.isProxy) buddy.actualBuddyAt(0).buddyAt(1) else buddy
   }
-  def actualBuddyAt(i: Int): Atom = edges(i).node
+  def actualBuddyAt(i: Int): Atom = links(i).node
   def isProxy = name == "$in" || name == "$out"
 }
-case class Raw(attr: Int, data: String) extends Edge {
+
+case class Attribute(value: Int) {
+  def isRef = (value & 0x80) == 0
+  def isData = !isRef
+}
+trait Link {
+  def node: Atom
+}
+case class Raw(attr: Attribute, data: String) extends Link {
   def node: Atom = throw new RuntimeException("Raw link exists")
 }
-case class Link(node: Atom) extends Edge
+case class Ref(node: Atom) extends Link
 
 
 object Mem {
@@ -47,36 +52,28 @@ object Mem {
 
   def fromString(s: String): Mem = {
     val rootMem = buildMem(parse(s), null)
-    val nodeMap = atomMapIn(rootMem)
-
-    configureLinks(rootMem, nodeMap)
-
+    val atomFromID = atomMapIn(rootMem)
+    configureLinks(rootMem, atomFromID)
     rootMem
   }
 
-  var idSeed = 65535
-  def nextID = { idSeed += 1; idSeed }
-
-  private def configureLinks(mem: Mem, map: Map[ID, Atom]) {
+  private def configureLinks(mem: Mem, atomFromID: Map[ID, Atom]) {
     val newAtoms = ArrayBuffer.empty[Atom]
-    for (n <- mem.atoms) {
-      val edges = n.edges
-      for (i <- 0 until edges.size) {
-        edges(i) match {
-          case Raw(attr, data) => {
-            if ((attr & 0x80) == 0) {
-              edges(i) = Link(map(IntID(data.toInt)))
-            } else {
-              val node = new Atom(IntID(nextID), data, mem, 1, Array(Link(n)))
-              edges(i) = Link(node)
-              newAtoms += node
-            }
+    for (atom <- mem.atoms) {
+      val links = atom.links
+      for ((link, i) <- links.zipWithIndex) link match {
+        case Raw(attr, data) => {
+          if (attr.isRef) {
+            links(i) = Ref(atomFromID(IntID(data.toInt)))
+          } else {
+            val node = new Atom(DataAtomID(atom.id, i), data, mem, Array(Ref(atom)))
+            links(i) = Ref(node)
+            newAtoms += node
           }
-          case _ =>
         }
       }
     }
-    for (g <- mem.mems) configureLinks(g, map)
+    for (g <- mem.mems) configureLinks(g, atomFromID)
     mem.atoms ++= newAtoms
   }
 
@@ -94,7 +91,7 @@ object Mem {
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
     val JArray(mems) = json \ "membranes"
-    val mem = new Mem(IntID(id.toInt), name, parent, Set(), Set())
+    val mem = new Mem(IntID(id.toInt), name, parent)
     mem.atoms ++= atoms.map(buildAtom(_, mem))
     mem.mems ++= mems.map(buildMem(_, mem))
     mem
@@ -105,16 +102,10 @@ object Mem {
     val JString(name) = json \ "name"
     var JArray(links) = json \ "links"
     if (name == "$in" || name == "$out") links = links.take(2)
-    new Atom(IntID(id.toInt), name, parent, links.size, links.map(buildEdge _).toArray)
+    new Atom(IntID(id.toInt), name, parent, links.map(buildLink _).toArray)
   }
 
-  private[this] val intAttr      = 0x80 | 0x00
-  private[this] val dblAttr      = 0x80 | 0x01
-  private[this] val strAttr      = 0x80 | 0x03
-  private[this] val constStrAttr = 0x80 | 0x04
-  private[this] val constDblAttr = 0x80 | 0x05
-  private[this] val constHLAttr  = 0x80 | 0x0a
-  private def buildEdge(json: JValue): Edge = {
+  private def buildLink(json: JValue): Link = {
     val JInt(attr) = json \ "attr"
     val data = (json \ "data") match {
       case JString(s) => s
@@ -122,7 +113,7 @@ object Mem {
       case JInt(i)    => i.toString
       case j          => throw new Exception("Unexpected data : " + j.toString)
     }
-    Raw(attr.toInt, data)
+    Raw(Attribute(attr.toInt), data)
   }
 }
 
@@ -132,16 +123,15 @@ import unyo.util._
 class ViewContext {
   private val viewNodeFromID = collection.mutable.Map.empty[ID, View]
   val r = new util.Random
-  def viewOf(node: Atom): View = {
-    viewNodeFromID.getOrElseUpdate(node.id, {
-      new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40)))
-    })
-  }
-  def viewOf(graph: Mem): View = {
-    viewNodeFromID.getOrElseUpdate(graph.id, {
-      new View(coverableRect(graph))
-    })
-  }
+
+  def viewOf(node: Atom): View = viewNodeFromID.getOrElseUpdate(node.id, {
+    new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40)))
+  })
+
+  def viewOf(graph: Mem): View = viewNodeFromID.getOrElseUpdate(graph.id, {
+    new View(coverableRect(graph))
+  })
+
   def coverableRect(g: Mem): Rect = {
     val rects = g.mems.map(viewOf(_).rect) ++ g.atoms.filter(!_.isProxy).map(viewOf(_).rect)
     if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80))
