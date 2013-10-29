@@ -11,6 +11,18 @@ Version 4
 * sbt assembly
 * then UNYO-UNYO-assembly-x.x.x.jar will be generated
 
+## Release
+* assemblyで出力したjarはとても大きいので、ProGuardを使って軽量化する
+* target内にUNYO-UNYO-assembly-x.x.x.jarが1種類だけある状態で、以下のコマンドを実行するとunyo-x.x.x.min.jarが生成される
+
+```
+./minify.sh
+```
+
+* リリース時にはbuild.sbtのバージョンを更新し、git tagでタグ付けをする
+* バージョンはx.x.xの形式にし、前から順にmajor、minor、patchとする
+* 詳しくは[http://semver.org/spec/v2.0.0.html]()を参考にする
+
 ## コード内で使っている用語
 ### 座標系
 * スクリーン座標系とワールド座標系の2種類がある
