@@ -5,6 +5,7 @@ import collection.mutable.Set
 trait ID
 case class IntID(value: Int) extends ID
 case class DataAtomID(id: ID, port: Int) extends ID
+case class HLAtomID(value: Int) extends ID
 
 class Mem(
   val id: ID,
@@ -35,6 +36,7 @@ class Atom(
 case class Attribute(value: Int) {
   def isRef = (value & 0x80) == 0
   def isData = !isRef
+  def isHL = value == 0x8a
 }
 trait Link {
   def node: Atom
@@ -66,7 +68,9 @@ object Mem {
           if (attr.isRef) {
             links(i) = Ref(atomFromID(IntID(data.toInt)))
           } else {
-            val node = new Atom(DataAtomID(atom.id, i), data, mem, Array(Ref(atom)))
+            val node =
+              if (attr.isHL) new Atom(HLAtomID(data.toInt), "!"+data, mem, Array(Ref(atom)))
+              else           new Atom(DataAtomID(atom.id, i), data, mem, Array(Ref(atom)))
             links(i) = Ref(node)
             newAtoms += node
           }
@@ -125,7 +129,11 @@ class ViewContext {
   val r = new util.Random
 
   def viewOf(node: Atom): View = viewNodeFromID.getOrElseUpdate(node.id, {
-    new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(40, 40)))
+    val dim = node.id match {
+      case HLAtomID(_) => Dim(10, 10)
+      case _           => Dim(40, 40)
+    }
+    new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), dim))
   })
 
   def viewOf(graph: Mem): View = viewNodeFromID.getOrElseUpdate(graph.id, {
