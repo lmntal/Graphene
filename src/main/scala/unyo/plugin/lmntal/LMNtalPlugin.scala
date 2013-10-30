@@ -3,7 +3,8 @@ package unyo.plugin.lmntal
 import unyo.plugin.Plugin
 
 class Config {
-  var slimPath = "/Users/charlie/Documents/slim/slim/src/slim"
+  var slimPath = ""
+  var baseDirectory = ""
   object forces {
     object replusion {
       var forceBetweenAtoms = 80000.0
@@ -19,11 +20,23 @@ class Config {
 object LMNtalPlugin extends Plugin {
   type GraphType = ViewContext
 
+  val name = "LMNtal"
+
   val config = new Config
 
-  val runtimes = Seq(new LMNtalRuntime(config))
-  val renderers = Seq(new DefaultRenderer)
-  val observers = Seq(new unyo.plugin.lmntal.Observer(runtimes(0)))
-  val movers = Seq(new DefaultMover(config))
-  val controlPanel = new ControlPanel(config)
+  def importSettings(settings: Map[String,String]) {
+    config.slimPath      = settings.getOrElse("slim_path", "")
+    config.baseDirectory = settings.getOrElse("base_directory", "~/")
+  }
+
+  def exportSettings: Map[String,String] = Map[String,String](
+    "slim_path" -> config.slimPath,
+    "base_directory" -> config.baseDirectory
+  )
+
+  def runtimes = Seq(new LMNtalRuntime(config))
+  def renderers = Seq(new DefaultRenderer)
+  def observers = Seq(new unyo.plugin.lmntal.Observer(runtimes(0)))
+  def movers = Seq(new DefaultMover(config))
+  def controlPanel = new ControlPanel(config)
 }
