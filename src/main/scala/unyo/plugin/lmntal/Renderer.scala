@@ -27,6 +27,9 @@ trait Renderer {
     def fillOval(r: Rect) {
       fillOval(r.point, r.dim)
     }
+    def clearRect(r: Rect) {
+      g.clearRect(r.point.x.toInt, r.point.y.toInt, r.dim.width.toInt, r.dim.height.toInt)
+    }
     def drawRect(r: Rect) {
       g.drawRect(r.point.x.toInt, r.point.y.toInt, r.dim.width.toInt, r.dim.height.toInt)
     }
@@ -50,7 +53,12 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     this.context = context
     this.graph = graph
 
-    g.clearRect(0, 0, 2000, 2000)
+    g.clearRect(Rect(Point(0,0), context.sSize))
+
+    g.translate(context.sSize.width/2, context.sSize.height/2)
+    g.scale(context.magnificationRate, context.magnificationRate)
+    g.translate(-context.wCenter.x, -context.wCenter.y)
+
     renderGrid
 
     if (graph == null) return
@@ -68,14 +76,14 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     val ey = context.wCenter.y + context.wSize.height / 2
     g.setColor(new Color(127, 140, 141))
     for (x <- (bx.toInt/100*100).to(ex.toInt/100*100, 100)) {
-      val p1 = context.screenPointFrom(Point(x, by))
-      val p2 = context.screenPointFrom(Point(x, ey))
+      val p1 = Point(x, by)
+      val p2 = Point(x, ey)
       g.drawLine(p1, p2)
     }
 
     for (y <- (by.toInt/100*100).to(ey.toInt/100*100, 100)) {
-      val p1 = context.screenPointFrom(Point(bx, y))
-      val p2 = context.screenPointFrom(Point(ex, y))
+      val p1 = Point(bx, y)
+      val p2 = Point(ex, y)
       g.drawLine(p1, p2)
     }
   }
@@ -83,9 +91,9 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
   def renderMem(mem: Mem) {
     val viewNode = graph.viewOf(mem)
     g.setColor(new Color(52, 152, 219))
-    g.fillRect(context.screenRectFrom(viewNode.rect))
+    g.fillRect(viewNode.rect)
     g.setColor(Color.WHITE)
-    g.fillRect(context.screenRectFrom(viewNode.rect).pad(Padding(2, 2, 2, 2)))
+    g.fillRect(viewNode.rect.pad(Padding(2, 2, 2, 2)))
 
     for (submem <- mem.mems) renderMem(submem)
     for (node <- mem.atoms) renderEdges(node)
@@ -96,7 +104,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     if (atom.isProxy) return
 
     val viewNode = graph.viewOf(atom)
-    val rect = context.screenRectFrom(viewNode.rect)
+    val rect = viewNode.rect
     g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
     g.setColor(new Color(52, 152, 219))
     g.drawString(atom.name, rect.point)
@@ -115,8 +123,8 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
       val view2 = graph.viewOf(buddy)
 
       g.drawLine(
-        context.screenPointFrom(view1.rect.center),
-        context.screenPointFrom(view2.rect.center)
+        view1.rect.center,
+        view2.rect.center
       )
     }
   }

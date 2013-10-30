@@ -31,8 +31,8 @@ class GraphicsContext {
   def resize(sd: Dim) { sSize = sd }
   def zoom(m: Double) {
     magnificationRate *= m
-    magnificationRate = math.min(magnificationRate, 10)
-    magnificationRate = math.max(0.2, magnificationRate)
+    magnificationRate = math.min(magnificationRate, 20)
+    magnificationRate = math.max(0.05, magnificationRate)
   }
 
 }
