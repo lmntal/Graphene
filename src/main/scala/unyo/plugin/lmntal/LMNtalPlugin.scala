@@ -6,12 +6,12 @@ class Config {
   var slimPath = "/Users/charlie/Documents/slim/slim/src/slim"
   object forces {
     object replusion {
-      var forceBetweenAtoms = 1000000.0
-      var forceBetweenMems  = 10000.0
+      var forceBetweenAtoms = 80000.0
+      var forceBetweenMems  = 800.0
     }
     object spring {
-      var force = 2.0
-      var length = 120.0
+      var force = 0.6
+      var length = 30.0
     }
   }
 }
