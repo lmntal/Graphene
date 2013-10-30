@@ -3,7 +3,7 @@ package unyo.plugin.lmntal
 import unyo.plugin.Plugin
 
 class Config {
-  var slimPath = "/Users/charlie/Documents/slim/slim/src/slim"
+  var slimPath = ""
   object forces {
     object replusion {
       var forceBetweenAtoms = 80000.0
@@ -19,7 +19,17 @@ class Config {
 object LMNtalPlugin extends Plugin {
   type GraphType = ViewContext
 
+  val name = "LMNtal"
+
   val config = new Config
+
+  def importSettings(settings: Map[String,String]) {
+    config.slimPath = settings.getOrElse("slim_path", "")
+  }
+
+  def exportSettings: Map[String,String] = Map[String,String](
+    "slim_path" -> config.slimPath
+  )
 
   val runtimes = Seq(new LMNtalRuntime(config))
   val renderers = Seq(new DefaultRenderer)

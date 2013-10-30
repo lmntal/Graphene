@@ -3,6 +3,11 @@ package unyo.plugin
 trait Plugin {
   type GraphType
 
+  def name: String
+
+  def importSettings(settings: Map[String,String]): Unit
+  def exportSettings: Map[String,String]
+
   def renderers: Seq[Renderer]
   def observers: Seq[Observer]
   def runtimes: Seq[Runtime]
