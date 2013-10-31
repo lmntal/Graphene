@@ -5,8 +5,8 @@ trait Plugin {
 
   def name: String
 
-  def importSettings(settings: Map[String,String]): Unit
-  def exportSettings: Map[String,String]
+  def importProperties(settings: java.util.Properties): Unit
+  def exportProperties: java.util.Properties
 
   def renderers: Seq[Renderer]
   def observers: Seq[Observer]

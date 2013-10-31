@@ -5,7 +5,7 @@ import java.awt.{Dimension}
 import unyo.util._
 import unyo.util.Geometry._
 import unyo.Env
-import unyo.Settings
+import unyo.Properties
 
 import unyo.swing.scalalike._
 
@@ -43,10 +43,10 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
 
   import unyo.plugin.lmntal.LMNtalPlugin
 
-  val settings = Settings.load
+  val properties = Properties.load("unyo.properties")
 
   val plugin = LMNtalPlugin
-  plugin.importSettings(settings(plugin.name))
+  plugin.importProperties(Properties.load(plugin.name + ".properties"))
   val mover = plugin.movers(0)
   val renderer = plugin.renderers(0)
   val runtime = plugin.runtimes(0)
@@ -61,11 +61,8 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
 
   Runtime.getRuntime.addShutdownHook(new Thread {
     override def run {
-      val settings = Map(
-        "system" -> Map.empty[String,String],
-        plugin.name -> plugin.exportSettings
-      )
-      Settings.save(settings)
+      Properties.save(new java.util.Properties, "unyo.properties")
+      Properties.save(plugin.exportProperties, plugin.name + ".properties")
     }
   })
 

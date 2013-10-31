@@ -24,15 +24,17 @@ object LMNtalPlugin extends Plugin {
 
   val config = new Config
 
-  def importSettings(settings: Map[String,String]) {
-    config.slimPath      = settings.getOrElse("slim_path", "")
-    config.baseDirectory = settings.getOrElse("base_directory", "~/")
+  def importProperties(properties: java.util.Properties) {
+    config.slimPath      = properties.getProperty("slim_path", "")
+    config.baseDirectory = properties.getProperty("base_directory", "~/")
   }
 
-  def exportSettings: Map[String,String] = Map[String,String](
-    "slim_path" -> config.slimPath,
-    "base_directory" -> config.baseDirectory
-  )
+  def exportProperties: java.util.Properties = {
+    val properties = new java.util.Properties
+    properties.setProperty("slim_path", config.slimPath)
+    properties.setProperty("base_directory", config.baseDirectory)
+    properties
+  }
 
   def runtimes = Seq(new LMNtalRuntime(config))
   def renderers = Seq(new DefaultRenderer)
