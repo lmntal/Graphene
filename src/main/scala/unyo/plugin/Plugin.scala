@@ -8,10 +8,10 @@ trait Plugin {
   def importProperties(settings: java.util.Properties): Unit
   def exportProperties: java.util.Properties
 
-  def renderers: Seq[Renderer]
-  def observers: Seq[Observer]
-  def runtimes: Seq[Runtime]
-  def movers: Seq[Mover]
+  def renderer: Renderer
+  def observer: Observer
+  def runtime: Runtime
+  def mover: Mover
   def controlPanel: javax.swing.JPanel
 
   trait Renderer {

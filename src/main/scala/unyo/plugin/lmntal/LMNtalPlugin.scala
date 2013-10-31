@@ -36,9 +36,9 @@ object LMNtalPlugin extends Plugin {
     properties
   }
 
-  def runtimes = Seq(new LMNtalRuntime(config))
-  def renderers = Seq(new DefaultRenderer)
-  def observers = Seq(new unyo.plugin.lmntal.Observer(runtimes(0)))
-  def movers = Seq(new DefaultMover(config))
+  val runtime = new LMNtalRuntime
+  val renderer = new DefaultRenderer
+  val observer = new unyo.plugin.lmntal.Observer
+  val mover = new DefaultMover
   def controlPanel = new ControlPanel(config)
 }

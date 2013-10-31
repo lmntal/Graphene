@@ -47,10 +47,10 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
 
   val plugin = LMNtalPlugin
   plugin.importProperties(Properties.load(plugin.name + ".properties"))
-  val mover = plugin.movers(0)
-  val renderer = plugin.renderers(0)
-  val runtime = plugin.runtimes(0)
-  val observer = plugin.observers(0)
+  val mover = plugin.mover
+  val renderer = plugin.renderer
+  val runtime = plugin.runtime
+  val observer = plugin.observer
   val controlPanel = plugin.controlPanel
 
   var visualGraph: plugin.GraphType = null
