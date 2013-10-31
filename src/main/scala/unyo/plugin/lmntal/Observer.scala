@@ -29,8 +29,8 @@ class Observer extends LMNtalPlugin.Observer {
         view.rect = Rect(wp, view.rect.dim)
       }
     }
-    case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_CONTROL) isNodeHandlable = true
-    case KeyReleased(_, key, _, _) => if (key == KeyEvent.VK_CONTROL) isNodeHandlable = false
+    case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_Z) isNodeHandlable = true
+    case KeyReleased(_, key, _, _) => if (key == KeyEvent.VK_Z) isNodeHandlable = false
     case _ =>
   }
 
