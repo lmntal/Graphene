@@ -7,11 +7,11 @@ import collection.JavaConversions._
 
 import scala.actors.Actor._
 
-class LMNtalRuntime(config: Config) extends LMNtalPlugin.Runtime {
+class LMNtalRuntime extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null
   var viewContext: ViewContext = null
   def exec(options: Seq[String]): ViewContext = {
-    runner = new SlimRunner(config.slimPath, options)
+    runner = new SlimRunner(LMNtalPlugin.config.slimPath, options)
     viewContext = new ViewContext
     viewContext.rewrite(runner.next)
     viewContext

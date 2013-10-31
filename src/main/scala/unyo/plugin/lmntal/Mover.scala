@@ -2,7 +2,7 @@ package unyo.plugin.lmntal
 
 import unyo.util._
 
-class DefaultMover(config: Config) extends LMNtalPlugin.Mover {
+class DefaultMover extends LMNtalPlugin.Mover {
 
   var viewContext: ViewContext = null
   def moveAll(viewContext: ViewContext, elapsedSec: Double) {
@@ -34,6 +34,8 @@ class DefaultMover(config: Config) extends LMNtalPlugin.Mover {
   }
 
   private def forceOfReplusion(self: Atom): Point = {
+    val config = LMNtalPlugin.config
+
     var vec = Point(0, 0)
     val v1 = viewContext.viewOf(self)
     for (other <- self.parent.atoms if !other.isProxy) {
@@ -58,6 +60,8 @@ class DefaultMover(config: Config) extends LMNtalPlugin.Mover {
   }
 
   private def forceOfSpring(self: Atom): Point = {
+    val config = LMNtalPlugin.config
+
     var vec = Point(0, 0)
     val v1 = viewContext.viewOf(self)
     for (i <- 0 until self.arity) {

@@ -5,6 +5,7 @@ import java.awt.{Dimension}
 import unyo.util._
 import unyo.util.Geometry._
 import unyo.Env
+import unyo.Properties
 
 import unyo.swing.scalalike._
 
@@ -42,15 +43,28 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
 
   import unyo.plugin.lmntal.LMNtalPlugin
 
+  val properties = Properties.load("unyo.properties")
+
   val plugin = LMNtalPlugin
+  plugin.importProperties(Properties.load(plugin.name + ".properties"))
+  val mover = plugin.mover
+  val renderer = plugin.renderer
+  val runtime = plugin.runtime
+  val observer = plugin.observer
+  val controlPanel = plugin.controlPanel
+
   var visualGraph: plugin.GraphType = null
   val graphicsContext = new GraphicsContext
-  val mover = plugin.movers(0)
-  val renderer = plugin.renderers(0)
-  val runtime = plugin.runtimes(0)
-  val observer = plugin.observers(0)
 
   layout_ = new java.awt.BorderLayout
+
+
+  Runtime.getRuntime.addShutdownHook(new Thread {
+    override def run {
+      Properties.save(new java.util.Properties, "unyo.properties")
+      Properties.save(plugin.exportProperties, plugin.name + ".properties")
+    }
+  })
 
   this << new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT) with JSplitPaneExt {
     leftComponent_ = new javax.swing.JPanel with JPanelExt {
@@ -107,7 +121,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       }
 
     }
-    rightComponent_ = plugin.controlPanel
+    rightComponent_ = controlPanel
   }
 
   def openFileChooser {

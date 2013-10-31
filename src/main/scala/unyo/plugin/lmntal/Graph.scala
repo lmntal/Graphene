@@ -131,7 +131,7 @@ class ViewContext {
   def viewOf(node: Atom): View = viewNodeFromID.getOrElseUpdate(node.id, {
     val dim = node.id match {
       case HLAtomID(_) => Dim(10, 10)
-      case _           => Dim(40, 40)
+      case _           => Dim(24, 24)
     }
     new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), dim))
   })
@@ -164,7 +164,7 @@ class ViewContext {
 class View(var rect: Rect) {
   var speed = Point(0, 0)
 
-  val mass = 10.0
+  val mass = 8.0
   val decayRate = 0.90
   def force(f: Point, elapsed: Double) {
     speed = (speed + f * elapsed / mass) * decayRate

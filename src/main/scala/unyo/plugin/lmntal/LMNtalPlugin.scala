@@ -3,15 +3,16 @@ package unyo.plugin.lmntal
 import unyo.plugin.Plugin
 
 class Config {
-  var slimPath = "/Users/charlie/Documents/slim/slim/src/slim"
+  var slimPath = ""
+  var baseDirectory = ""
   object forces {
     object replusion {
-      var forceBetweenAtoms = 1000000.0
-      var forceBetweenMems  = 10000.0
+      var forceBetweenAtoms = 80000.0
+      var forceBetweenMems  = 800.0
     }
     object spring {
-      var force = 2.0
-      var length = 120.0
+      var force = 0.6
+      var length = 30.0
     }
   }
 }
@@ -19,11 +20,25 @@ class Config {
 object LMNtalPlugin extends Plugin {
   type GraphType = ViewContext
 
+  val name = "LMNtal"
+
   val config = new Config
 
-  val runtimes = Seq(new LMNtalRuntime(config))
-  val renderers = Seq(new DefaultRenderer)
-  val observers = Seq(new unyo.plugin.lmntal.Observer(runtimes(0)))
-  val movers = Seq(new DefaultMover(config))
-  val controlPanel = new ControlPanel(config)
+  def importProperties(properties: java.util.Properties) {
+    config.slimPath      = properties.getProperty("slim_path", "")
+    config.baseDirectory = properties.getProperty("base_directory", "~/")
+  }
+
+  def exportProperties: java.util.Properties = {
+    val properties = new java.util.Properties
+    properties.setProperty("slim_path", config.slimPath)
+    properties.setProperty("base_directory", config.baseDirectory)
+    properties
+  }
+
+  val runtime = new LMNtalRuntime
+  val renderer = new DefaultRenderer
+  val observer = new unyo.plugin.lmntal.Observer
+  val mover = new DefaultMover
+  def controlPanel = new ControlPanel(config)
 }
