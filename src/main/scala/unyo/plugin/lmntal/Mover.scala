@@ -18,7 +18,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
       val v1 = viewContext.viewOf(node)
       var vec = Point(0, 0)
 
-      vec = vec + forceOfReplusion(node)
+      vec = vec + forceOfRepulsion(node)
       vec = vec + forceOfSpring(node)
 
       v1.force(vec, elapsedSec)
@@ -33,7 +33,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
     view.rect = viewContext.coverableRect(graph)
   }
 
-  private def forceOfReplusion(self: Atom): Point = {
+  private def forceOfRepulsion(self: Atom): Point = {
     val config = LMNtalPlugin.config
 
     var vec = Point(0, 0)
@@ -42,7 +42,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
       if (self.id != other.id && self.parent.id == other.parent.id) {
         val v2 = viewContext.viewOf(other)
         val d = v2.rect.center - v1.rect.center
-        val f = config.forces.replusion.forceBetweenAtoms / d.sqabs
+        val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
         vec = vec - d.unit * f
       }
     }
@@ -51,7 +51,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
         val v2 = viewContext.viewOf(other)
         if (v1.rect.isCrossingWith(v2.rect)) {
           val d = v2.rect.center - v1.rect.center
-          val f = config.forces.replusion.forceBetweenMems
+          val f = config.forces.repulsion.forceBetweenMems
           vec = vec - d.unit * f
         }
       }

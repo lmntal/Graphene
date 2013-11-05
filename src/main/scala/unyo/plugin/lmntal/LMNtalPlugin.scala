@@ -6,7 +6,7 @@ class Config {
   var slimPath = ""
   var baseDirectory = ""
   object forces {
-    object replusion {
+    object repulsion {
       var forceBetweenAtoms = 80000.0
       var forceBetweenMems  = 800.0
     }

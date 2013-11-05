@@ -32,12 +32,12 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
-      border_ = new TitledBorder("Replusion")
+      border_ = new TitledBorder("Repulsion")
       this << new JSlider(100000, 10000000, 1000000) {
         slider =>
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
-            config.forces.replusion.forceBetweenAtoms = slider.getValue
+            config.forces.repulsion.forceBetweenAtoms = slider.getValue
           }
         })
       }
