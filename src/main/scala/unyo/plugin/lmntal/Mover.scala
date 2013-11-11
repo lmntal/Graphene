@@ -25,54 +25,45 @@ class DefaultMover extends LMNtalPlugin.Mover {
       v1.force(vec, elapsedSec)
     }
 
-    // resizeGraphArea(node)
+    resizeGraphArea(node)
   }
 
   private def resizeGraphArea(node: Node) {
-    node.childNodes.foreach(resizeGraphArea(_))
-    val view = vctx.viewOf(node)
-    view.rect = vctx.coverableRect(node)
+    if (!node.childNodes.isEmpty) {
+      node.attribute match {
+        case Mem() => {
+          for (n <- node.childNodes) resizeGraphArea(n)
+          vctx.viewOf(node).rect = vctx.coverableRect(node)
+        }
+        case _     =>
+      }
+    }
   }
 
   private def forceOfRepulsion(self: Node): Point = {
-    val config = LMNtalPlugin.config
+    self.parent.childNodes.view.filter { other =>
+      self.id != other.id && self.parent.id == other.parent.id
+    }.foldLeft(Point(0,0)) { (res, other) =>
+      res + forceOfRepulsionBetween(self, other)
+    }
+  }
 
-    var vec = Point(0, 0)
-    val v1 = vctx.viewOf(self)
-    for (other <- self.parent.childNodes) {
-      if (self.id != other.id && self.parent.id == other.parent.id) {
-        val v2 = vctx.viewOf(other)
-        val d = v2.rect.center - v1.rect.center
-        val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
-        vec = vec - d.unit * f
-      }
-    }
-    for (other <- self.parent.childNodes) {
-      if (self.id != other.id && self.parent.id == other.parent.id) {
-        val v2 = vctx.viewOf(other)
-        if (v1.rect.isCrossingWith(v2.rect)) {
-          val d = v2.rect.center - v1.rect.center
-          val f = config.forces.repulsion.forceBetweenMems
-          vec = vec - d.unit * f
-        }
-      }
-    }
-    vec
+  private def forceOfRepulsionBetween(lhs: Node, rhs: Node): Point = {
+    val config = LMNtalPlugin.config
+    val d = vctx.viewOf(lhs).rect.center - vctx.viewOf(rhs).rect.center
+    val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
+    d.unit * f
   }
 
   private def forceOfSpring(self: Node): Point = {
-    val config = LMNtalPlugin.config
+    self.neighborNodes.foldLeft(Point(0,0)) { (res, other) => res + forceOfStringBetween(self, other) }
+  }
 
-    var vec = Point(0, 0)
-    val v1 = vctx.viewOf(self)
-    for (i <- 0 until self.neighborNodes.size) {
-      val other = self.neighborNodes(i)
-      val v2 = vctx.viewOf(other)
-      val d = v2.rect.center - v1.rect.center
-      val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
-      vec = vec + d.unit * f
-    }
-    vec
+  private def forceOfStringBetween(lhs: Node, rhs: Node): Point = {
+    val config = LMNtalPlugin.config
+    val d = vctx.viewOf(rhs).rect.center - vctx.viewOf(lhs).rect.center
+    val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
+    d.unit * f
   }
 
 }
