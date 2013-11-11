@@ -110,8 +110,8 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
     val view1 = vctx.viewOf(node)
     g.setColor(new Color(41, 128, 185))
-    for (i <- 0 until node.childNodes.size) {
-      var buddy = node.childNodes(i)
+    for (i <- 0 until node.neighborNodes.size) {
+      var buddy = node.neighborNodes(i)
       val view2 = vctx.viewOf(buddy)
 
       g.drawLine(

@@ -54,17 +54,11 @@ object LMN {
 
   def buildLink(builder: Builder, json: JValue, parent: MutableNode, buddy: MutableNode, pos: Int) {
     val JInt(attr) = json \ "attr"
-    val data = (json \ "data") match {
-      case JString(s) => s
-      case JDouble(d) => d.toString
-      case JInt(i)    => i.toString
-      case j          => throw new Exception("Unexpected data : " + j.toString)
-    }
     val attribute = Attribute(attr.toInt)
     if (attribute.isRef) {
       (json \ "data") match {
         case JInt(i) => builder.addEdge(buddy.id, pos, IntID(i.toInt), attribute.targetPos)
-        case j          => throw new Exception("Unexpected data : " + j.toString)
+        case j       => throw new Exception("Unexpected data : " + j.toString)
       }
     } else {
       val data = (json \ "data") match {
@@ -77,6 +71,7 @@ object LMN {
       val node = builder.addNode(id, data, parent)
       node.attribute = DataAtom()
       builder.addEdge(buddy.id, pos, id, 0)
+      builder.addEdge(id, 0, buddy.id, pos)
     }
   }
 

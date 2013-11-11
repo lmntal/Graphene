@@ -37,8 +37,8 @@ object Builder {
     var parent: Node = null
     var attribute: Attr = null
     def addNode(node: Node) {}
-    def neighborNodes: Seq[Node] = null
-    def allChildNodes = childNodes ++ childNodes.flatMap(_.childNodes)
+    def neighborNodes: Seq[Node] = edges.map(_.targetNode)
+    def allChildNodes = childNodes ++ childNodes.flatMap(_.allChildNodes)
   }
 
   case class Port(id: ID, pos: Int)
@@ -50,7 +50,21 @@ object Builder {
     var targetNode: Node = null
   }
 
-  case class GraphImpl(rootNode: Node) extends Graph
+  case class GraphImpl(rootNode: Node) extends Graph {
+    def allNodes: Seq[Node] = rootNode.allChildNodes :+ rootNode
+    override def toString = {
+      def nodeToString(sb: StringBuilder, node: Node, depth: Int) {
+        sb ++= " " * depth
+        sb ++= s"Node(${node.id}, ${node.name})\n"
+        for (n <- node.childNodes) nodeToString(sb, n, depth + 1)
+      }
+      val sb = new StringBuilder
+      sb ++= "Graph(\n"
+      nodeToString(sb, rootNode, 1)
+      sb ++= ")"
+      sb.toString
+    }
+  }
 }
 
 class Builder {
@@ -76,6 +90,11 @@ class Builder {
 
   def build: Graph = {
     val graph = GraphImpl(buildNode(root))
+    val concreteNodeFromID = graph.allNodes.map { n => (n.id, n) }.toMap
+    for (edge <- edgesFromID.values.flatten) {
+      edge.sourceNode = concreteNodeFromID(edge.source.id)
+      edge.targetNode = concreteNodeFromID(edge.target.id)
+    }
     graph
   }
 

@@ -65,8 +65,8 @@ class DefaultMover extends LMNtalPlugin.Mover {
 
     var vec = Point(0, 0)
     val v1 = vctx.viewOf(self)
-    for (i <- 0 until self.childNodes.size) {
-      val other = self.childNodes(i)
+    for (i <- 0 until self.neighborNodes.size) {
+      val other = self.neighborNodes(i)
       val v2 = vctx.viewOf(other)
       val d = v2.rect.center - v1.rect.center
       val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
