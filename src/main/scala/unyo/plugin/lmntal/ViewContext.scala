@@ -1,7 +1,7 @@
 package unyo.plugin.lmntal
 
 
-import unyo.util._
+import unyo.utility._
 
 class ViewContext {
   private val viewNodeFromID = collection.mutable.Map.empty[ID, View]

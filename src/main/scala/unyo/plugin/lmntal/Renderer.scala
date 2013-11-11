@@ -2,8 +2,8 @@ package unyo.plugin.lmntal
 
 import java.awt.{Graphics,Graphics2D,Color}
 
-import unyo.util._
-import unyo.util.Geometry._
+import unyo.utility._
+import unyo.utility.Geometry._
 import unyo.gui.GraphicsContext
 
 trait Renderer {

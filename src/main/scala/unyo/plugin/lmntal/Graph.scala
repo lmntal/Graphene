@@ -51,8 +51,8 @@ object LMN {
 
   import org.json4s._
   import org.json4s.native.JsonMethods._
-  import unyo.model.{Builder,Graph}
-  import unyo.model.Builder.MutableNode
+  import unyo.utility.model.{Builder,Graph}
+  import unyo.utility.model.Builder.MutableNode
 
   def fromString(s: String): Graph = {
     val builder = new Builder
@@ -60,8 +60,8 @@ object LMN {
     builder.build
   }
 
-  case class IntID(value: Int) extends unyo.model.ID
-  case class DataAtomID(id: unyo.model.ID, pos: Int) extends unyo.model.ID
+  case class IntID(value: Int) extends unyo.utility.model.ID
+  case class DataAtomID(id: unyo.utility.model.ID, pos: Int) extends unyo.utility.model.ID
 
   def buildMem(builder: Builder, json: JValue, parent: MutableNode) {
     val JInt(id) = json \ "id"

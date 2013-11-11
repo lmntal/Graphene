@@ -2,8 +2,8 @@ package unyo.gui
 
 import java.awt.{Dimension}
 
-import unyo.util._
-import unyo.util.Geometry._
+import unyo.utility._
+import unyo.utility.Geometry._
 import unyo.Env
 import unyo.Properties
 

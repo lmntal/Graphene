@@ -1,6 +1,6 @@
 package unyo.plugin.lmntal
 
-import unyo.util._
+import unyo.utility._
 
 class DefaultMover extends LMNtalPlugin.Mover {
 

@@ -1,7 +1,7 @@
-package unyo.model
+package unyo.utility.model
 
 trait ID
-trait Attributes
+trait Attr
 
 trait Edge {
   def sourceNode: Node
@@ -16,7 +16,7 @@ trait Node {
   def edges: Seq[Edge]
   def neighborNodes: Seq[Node]
   def childNodes: Seq[Node]
-  def attributes: Attributes
+  def attribute: Attr
 }
 
 trait Graph {
@@ -32,7 +32,7 @@ object Builder {
   case class NodeImpl(id: ID, name: String, edges: Seq[Edge], childNodes: Seq[Node]) extends Node {
     def addNode(node: Node) {}
     def neighborNodes: Seq[Node] = null
-    def attributes: Attributes = null
+    def attribute: Attr = null
   }
 
   case class Port(id: ID, pos: Int)
@@ -50,7 +50,7 @@ object Builder {
 class Builder {
 
   import collection.mutable.{ArrayBuffer,Map}
-  import unyo.util.Tapper._
+  import unyo.utility.Tapper._
   import Builder._
 
   private val nodeFromID = Map.empty[ID, MutableNode]
