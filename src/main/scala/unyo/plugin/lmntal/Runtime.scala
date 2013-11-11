@@ -7,6 +7,8 @@ import collection.JavaConversions._
 
 import scala.actors.Actor._
 
+import unyo.utility.model._
+
 class LMNtalRuntime extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null
   var viewContext: ViewContext = null
@@ -63,9 +65,9 @@ class SlimRunner(slimPath: String, options: Seq[String]) {
     }
   }
 
-  def next: Mem = {
+  def next: Graph = {
     val res = if (hasNext) { _next.get } else { throw new RuntimeException("no more element") }
     _next = null
-    Mem.fromString(res)
+    LMN.fromString(res)
   }
 }

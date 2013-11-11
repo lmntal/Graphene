@@ -45,35 +45,36 @@ trait Renderer {
 
 class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
+  import unyo.utility.model._
+
   var g: Graphics2D = null
-  var context: GraphicsContext = null
-  var graph: ViewContext = null
-  def renderAll(gg: Graphics, context: GraphicsContext, graph: ViewContext) {
+  var gctx: GraphicsContext = null
+  var vctx: ViewContext = null
+  def renderAll(gg: Graphics, gctx: GraphicsContext, vctx: ViewContext) {
     g = gg.asInstanceOf[Graphics2D];
-    this.context = context
-    this.graph = graph
+    this.gctx = gctx
+    this.vctx = vctx
 
-    g.clearRect(Rect(Point(0,0), context.sSize))
+    g.clearRect(Rect(Point(0,0), gctx.sSize))
 
-    g.translate(context.sSize.width/2, context.sSize.height/2)
-    g.scale(context.magnificationRate, context.magnificationRate)
-    g.translate(-context.wCenter.x, -context.wCenter.y)
+    g.translate(gctx.sSize.width/2, gctx.sSize.height/2)
+    g.scale(gctx.magnificationRate, gctx.magnificationRate)
+    g.translate(-gctx.wCenter.x, -gctx.wCenter.y)
 
     renderGrid
 
-    if (graph == null) return
-    if (graph.rootMem == null) return
+    if (vctx == null) return
+    if (vctx.graph == null) return
 
-    for (mem <- graph.rootMem.mems) renderMem(mem)
-    for (atom <- graph.rootMem.atoms) renderEdges(atom)
-    for (atom <- graph.rootMem.atoms) renderAtom(atom)
+    for (node <- vctx.graph.rootNode.childNodes) renderEdges(node)
+    for (node <- vctx.graph.rootNode.childNodes) renderNode(node)
   }
 
   def renderGrid {
-    val bx = context.wCenter.x - context.wSize.width / 2
-    val ex = context.wCenter.x + context.wSize.width / 2
-    val by = context.wCenter.y - context.wSize.height / 2
-    val ey = context.wCenter.y + context.wSize.height / 2
+    val bx = gctx.wCenter.x - gctx.wSize.width / 2
+    val ex = gctx.wCenter.x + gctx.wSize.width / 2
+    val by = gctx.wCenter.y - gctx.wSize.height / 2
+    val ey = gctx.wCenter.y + gctx.wSize.height / 2
     g.setColor(new Color(127, 140, 141))
     for (x <- (bx.toInt/100*100).to(ex.toInt/100*100, 100)) {
       val p1 = Point(x, by)
@@ -88,39 +89,30 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     }
   }
 
-  def renderMem(mem: Mem) {
-    val viewNode = graph.viewOf(mem)
-    g.setColor(new Color(52, 152, 219))
-    g.fillRect(viewNode.rect)
-    g.setColor(Color.WHITE)
-    g.fillRect(viewNode.rect.pad(Padding(2, 2, 2, 2)))
+  def renderNode(node: Node) {
+    // if (node.isProxy) return
 
-    for (submem <- mem.mems) renderMem(submem)
-    for (node <- mem.atoms) renderEdges(node)
-    for (node <- mem.atoms) renderAtom(node)
-  }
-
-  def renderAtom(atom: Atom) {
-    if (atom.isProxy) return
-
-    val viewNode = graph.viewOf(atom)
+    val viewNode = vctx.viewOf(node)
     val rect = viewNode.rect
     g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
     g.setColor(new Color(52, 152, 219))
-    g.drawString(atom.name, rect.point)
+    g.drawString(node.name, rect.point)
     g.fillOval(rect)
     g.setColor(Color.WHITE)
     g.fillOval(rect.pad(Padding(3, 3, 3, 3)))
+
+    for (n <- node.childNodes) renderEdges(n)
+    for (n <- node.childNodes) renderNode(n)
   }
 
-  def renderEdges(atom: Atom) {
-    if (atom.isProxy) return
+  def renderEdges(node: Node) {
+    // if (node.isProxy) return
 
-    val view1 = graph.viewOf(atom)
+    val view1 = vctx.viewOf(node)
     g.setColor(new Color(41, 128, 185))
-    for (i <- 0 until atom.arity) {
-      var buddy = atom.buddyAt(i)
-      val view2 = graph.viewOf(buddy)
+    for (i <- 0 until node.childNodes.size) {
+      var buddy = node.childNodes(i)
+      val view2 = vctx.viewOf(buddy)
 
       g.drawLine(
         view1.rect.center,

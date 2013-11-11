@@ -1,54 +1,55 @@
 package unyo.plugin.lmntal
 
 import unyo.utility._
+import unyo.utility.model._
 
 class DefaultMover extends LMNtalPlugin.Mover {
 
-  var viewContext: ViewContext = null
-  def moveAll(viewContext: ViewContext, elapsedSec: Double) {
-    if (viewContext == null || viewContext.rootMem == null) return
-    this.viewContext = viewContext
-    move(viewContext.rootMem, elapsedSec)
+  var vctx: ViewContext = null
+  def moveAll(vctx: ViewContext, elapsedSec: Double) {
+    if (vctx == null || vctx.graph == null) return
+    this.vctx = vctx
+    move(vctx.graph.rootNode, elapsedSec)
   }
 
-  def move(graph: Mem, elapsedSec: Double) {
-    for (subgraph <- graph.mems) move(subgraph, elapsedSec)
+  def move(node: Node, elapsedSec: Double) {
+    for (n <- node.childNodes) move(n, elapsedSec)
 
-    for (node <- graph.atoms if !node.isProxy) {
-      val v1 = viewContext.viewOf(node)
+    for (n <- node.childNodes) {
+      val v1 = vctx.viewOf(n)
       var vec = Point(0, 0)
 
-      vec = vec + forceOfRepulsion(node)
-      vec = vec + forceOfSpring(node)
+      vec = vec + forceOfRepulsion(n)
+      vec = vec + forceOfSpring(n)
 
       v1.force(vec, elapsedSec)
     }
 
-    resizeGraphArea(graph)
+    // resizeGraphArea(node)
   }
 
-  private def resizeGraphArea(graph: Mem) {
-    graph.mems.foreach(resizeGraphArea(_))
-    val view = viewContext.viewOf(graph)
-    view.rect = viewContext.coverableRect(graph)
+  private def resizeGraphArea(node: Node) {
+    node.childNodes.foreach(resizeGraphArea(_))
+    val view = vctx.viewOf(node)
+    view.rect = vctx.coverableRect(node)
   }
 
-  private def forceOfRepulsion(self: Atom): Point = {
+  private def forceOfRepulsion(self: Node): Point = {
     val config = LMNtalPlugin.config
 
     var vec = Point(0, 0)
-    val v1 = viewContext.viewOf(self)
-    for (other <- self.parent.atoms if !other.isProxy) {
+    val v1 = vctx.viewOf(self)
+    for (other <- self.parent.childNodes) {
       if (self.id != other.id && self.parent.id == other.parent.id) {
-        val v2 = viewContext.viewOf(other)
+        val v2 = vctx.viewOf(other)
         val d = v2.rect.center - v1.rect.center
         val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
         vec = vec - d.unit * f
       }
     }
-    for (other <- self.parent.mems) {
+    for (other <- self.parent.childNodes) {
       if (self.id != other.id && self.parent.id == other.parent.id) {
-        val v2 = viewContext.viewOf(other)
+        val v2 = vctx.viewOf(other)
         if (v1.rect.isCrossingWith(v2.rect)) {
           val d = v2.rect.center - v1.rect.center
           val f = config.forces.repulsion.forceBetweenMems
@@ -59,14 +60,14 @@ class DefaultMover extends LMNtalPlugin.Mover {
     vec
   }
 
-  private def forceOfSpring(self: Atom): Point = {
+  private def forceOfSpring(self: Node): Point = {
     val config = LMNtalPlugin.config
 
     var vec = Point(0, 0)
-    val v1 = viewContext.viewOf(self)
-    for (i <- 0 until self.arity) {
-      val other = self.buddyAt(i)
-      val v2 = viewContext.viewOf(other)
+    val v1 = vctx.viewOf(self)
+    for (i <- 0 until self.childNodes.size) {
+      val other = self.childNodes(i)
+      val v2 = vctx.viewOf(other)
       val d = v2.rect.center - v1.rect.center
       val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
       vec = vec + d.unit * f

@@ -2,41 +2,39 @@ package unyo.plugin.lmntal
 
 
 import unyo.utility._
+import unyo.utility.model._
 
 class ViewContext {
   private val viewNodeFromID = collection.mutable.Map.empty[ID, View]
   val r = new util.Random
 
-  def viewOf(node: Atom): View = viewNodeFromID.getOrElseUpdate(node.id, {
-    val dim = node.id match {
-      case HLAtomID(_) => Dim(10, 10)
-      case _           => Dim(24, 24)
+  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, {
+    val rect = node.attribute match {
+      case Mem() => coverableRect(node)
+      case _     => Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(24, 24))
     }
-    new View(Rect(Point(r.nextDouble * 800, r.nextDouble * 800), dim))
+    new View(rect)
   })
 
-  def viewOf(graph: Mem): View = viewNodeFromID.getOrElseUpdate(graph.id, {
-    new View(coverableRect(graph))
-  })
-
-  def coverableRect(g: Mem): Rect = {
-    val rects = g.mems.map(viewOf(_).rect) ++ g.atoms.filter(!_.isProxy).map(viewOf(_).rect)
+  def coverableRect(g: Node): Rect = {
+    val rects = g.childNodes.map(viewOf(_).rect)
     if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80))
     else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
-  var rootMem: Mem = null
-  def rewrite(g: Mem) {
-    rootMem = g
-    updateMem(rootMem)
+  var graph: Graph = null
+  def rewrite(g: Graph) {
+    graph = g
+    updateGraph(graph)
   }
-  private def updateMem(g: Mem) {
-    for (node <- g.atoms) viewOf(node)
-    for (graph <- g.mems) updateMem(graph)
+  private def updateGraph(graph: Graph) = updateNode(graph.rootNode)
+  private def updateNode(node: Node) {
+    for (n <- node.childNodes) viewOf(n)
+    for (n <- node.childNodes) updateNode(n)
   }
 
   def viewOptAt(wp: Point): Option[View] = {
-    rootMem.allAtoms.map(viewOf(_)).find(_.rect.contains(wp))
+    graph.rootNode.allChildNodes.map(viewOf(_)).find(_.rect.contains(wp))
   }
 }
 
@@ -49,4 +47,6 @@ class View(var rect: Rect) {
     speed = (speed + f * elapsed / mass) * decayRate
     rect = Rect(rect.point + speed * elapsed, rect.dim)
   }
+
+  override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
 }

@@ -17,6 +17,7 @@ trait Node {
   def edges: Seq[Edge]
   def neighborNodes: Seq[Node]
   def childNodes: Seq[Node]
+  def allChildNodes: Seq[Node]
   def attribute: Attr
 }
 
@@ -28,13 +29,16 @@ object Builder {
 
   import collection.mutable.{ArrayBuffer,Map}
 
-  case class MutableNode(val id: ID, var name: String)
+  case class MutableNode(val id: ID, var name: String) {
+    var attribute: Attr = null
+  }
 
   case class NodeImpl(id: ID, name: String, edges: Seq[Edge], childNodes: Seq[Node]) extends Node {
     var parent: Node = null
+    var attribute: Attr = null
     def addNode(node: Node) {}
     def neighborNodes: Seq[Node] = null
-    def attribute: Attr = null
+    def allChildNodes = childNodes ++ childNodes.flatMap(_.childNodes)
   }
 
   case class Port(id: ID, pos: Int)
@@ -80,6 +84,7 @@ class Builder {
     val childNodes = nodesFromParentID.getOrElse(mnode.id, ArrayBuffer.empty[MutableNode]).map(buildNode _)
 
     val node = NodeImpl(mnode.id, mnode.name, edges, childNodes)
+    node.attribute = mnode.attribute
     for (n <- childNodes) n.parent = node
     node
   }
