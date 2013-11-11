@@ -13,6 +13,7 @@ trait Edge {
 trait Node {
   def id: ID
   def name: String
+  def parent: Node
   def edges: Seq[Edge]
   def neighborNodes: Seq[Node]
   def childNodes: Seq[Node]
@@ -30,6 +31,7 @@ object Builder {
   case class MutableNode(val id: ID, var name: String)
 
   case class NodeImpl(id: ID, name: String, edges: Seq[Edge], childNodes: Seq[Node]) extends Node {
+    var parent: Node = null
     def addNode(node: Node) {}
     def neighborNodes: Seq[Node] = null
     def attribute: Attr = null
@@ -73,11 +75,13 @@ class Builder {
     graph
   }
 
-  private def buildNode(mnode: MutableNode): Node = {
+  private def buildNode(mnode: MutableNode): NodeImpl = {
     val edges = edgesFromID.getOrElse(mnode.id, Seq.empty[EdgeImpl]).sortWith(_.source.pos < _.target.pos)
     val childNodes = nodesFromParentID.getOrElse(mnode.id, ArrayBuffer.empty[MutableNode]).map(buildNode _)
 
-    NodeImpl(mnode.id, mnode.name, edges, childNodes)
+    val node = NodeImpl(mnode.id, mnode.name, edges, childNodes)
+    for (n <- childNodes) n.parent = node
+    node
   }
 
   private def allChildNodesOf(node: Node): Seq[Node] = node.childNodes ++ node.childNodes.flatMap(allChildNodesOf(_))
