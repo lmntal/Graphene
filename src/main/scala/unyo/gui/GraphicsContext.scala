@@ -1,6 +1,6 @@
 package unyo.gui
 
-import unyo.util._
+import unyo.utility._
 import unyo.Env
 
 class GraphicsContext {

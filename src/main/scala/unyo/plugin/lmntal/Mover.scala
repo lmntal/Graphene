@@ -1,77 +1,69 @@
 package unyo.plugin.lmntal
 
-import unyo.util._
+import unyo.utility._
+import unyo.utility.model._
 
 class DefaultMover extends LMNtalPlugin.Mover {
 
-  var viewContext: ViewContext = null
-  def moveAll(viewContext: ViewContext, elapsedSec: Double) {
-    if (viewContext == null || viewContext.rootMem == null) return
-    this.viewContext = viewContext
-    move(viewContext.rootMem, elapsedSec)
+  var vctx: ViewContext = null
+  def moveAll(vctx: ViewContext, elapsedSec: Double) {
+    if (vctx == null || vctx.graph == null) return
+    this.vctx = vctx
+    move(vctx.graph.rootNode, elapsedSec)
   }
 
-  def move(graph: Mem, elapsedSec: Double) {
-    for (subgraph <- graph.mems) move(subgraph, elapsedSec)
+  def move(node: Node, elapsedSec: Double) {
+    for (n <- node.childNodes) move(n, elapsedSec)
 
-    for (node <- graph.atoms if !node.isProxy) {
-      val v1 = viewContext.viewOf(node)
+    for (n <- node.childNodes) {
+      val v1 = vctx.viewOf(n)
       var vec = Point(0, 0)
 
-      vec = vec + forceOfRepulsion(node)
-      vec = vec + forceOfSpring(node)
+      vec = vec + forceOfRepulsion(n)
+      vec = vec + forceOfSpring(n)
 
       v1.force(vec, elapsedSec)
     }
 
-    resizeGraphArea(graph)
+    resizeGraphArea(node)
   }
 
-  private def resizeGraphArea(graph: Mem) {
-    graph.mems.foreach(resizeGraphArea(_))
-    val view = viewContext.viewOf(graph)
-    view.rect = viewContext.coverableRect(graph)
-  }
-
-  private def forceOfRepulsion(self: Atom): Point = {
-    val config = LMNtalPlugin.config
-
-    var vec = Point(0, 0)
-    val v1 = viewContext.viewOf(self)
-    for (other <- self.parent.atoms if !other.isProxy) {
-      if (self.id != other.id && self.parent.id == other.parent.id) {
-        val v2 = viewContext.viewOf(other)
-        val d = v2.rect.center - v1.rect.center
-        val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
-        vec = vec - d.unit * f
-      }
-    }
-    for (other <- self.parent.mems) {
-      if (self.id != other.id && self.parent.id == other.parent.id) {
-        val v2 = viewContext.viewOf(other)
-        if (v1.rect.isCrossingWith(v2.rect)) {
-          val d = v2.rect.center - v1.rect.center
-          val f = config.forces.repulsion.forceBetweenMems
-          vec = vec - d.unit * f
+  private def resizeGraphArea(node: Node) {
+    if (!node.childNodes.isEmpty) {
+      node.attribute match {
+        case Mem() => {
+          for (n <- node.childNodes) resizeGraphArea(n)
+          vctx.viewOf(node).rect = vctx.coverableRect(node)
         }
+        case _     =>
       }
     }
-    vec
   }
 
-  private def forceOfSpring(self: Atom): Point = {
-    val config = LMNtalPlugin.config
-
-    var vec = Point(0, 0)
-    val v1 = viewContext.viewOf(self)
-    for (i <- 0 until self.arity) {
-      val other = self.buddyAt(i)
-      val v2 = viewContext.viewOf(other)
-      val d = v2.rect.center - v1.rect.center
-      val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
-      vec = vec + d.unit * f
+  private def forceOfRepulsion(self: Node): Point = {
+    self.parent.childNodes.view.filter { other =>
+      self.id != other.id && self.parent.id == other.parent.id
+    }.foldLeft(Point(0,0)) { (res, other) =>
+      res + forceOfRepulsionBetween(self, other)
     }
-    vec
+  }
+
+  private def forceOfRepulsionBetween(lhs: Node, rhs: Node): Point = {
+    val config = LMNtalPlugin.config
+    val d = vctx.viewOf(lhs).rect.center - vctx.viewOf(rhs).rect.center
+    val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
+    d.unit * f
+  }
+
+  private def forceOfSpring(self: Node): Point = {
+    self.neighborNodes.foldLeft(Point(0,0)) { (res, other) => res + forceOfStringBetween(self, other) }
+  }
+
+  private def forceOfStringBetween(lhs: Node, rhs: Node): Point = {
+    val config = LMNtalPlugin.config
+    val d = vctx.viewOf(rhs).rect.center - vctx.viewOf(lhs).rect.center
+    val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
+    d.unit * f
   }
 
 }

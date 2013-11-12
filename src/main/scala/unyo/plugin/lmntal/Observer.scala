@@ -2,8 +2,8 @@ package unyo.plugin.lmntal
 
 import unyo.swing.scalalike._
 
-import unyo.util._
-import unyo.util.Geometry._
+import unyo.utility._
+import unyo.utility.Geometry._
 
 class Observer extends LMNtalPlugin.Observer {
 
