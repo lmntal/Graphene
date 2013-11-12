@@ -10,7 +10,7 @@ case class Attribute(value: Int) {
 }
 
 case class Atom() extends unyo.utility.model.Attr
-case class DataAtom() extends unyo.utility.model.Attr
+case class HLAtom() extends unyo.utility.model.Attr
 case class Mem() extends unyo.utility.model.Attr
 
 object LMN {
@@ -28,6 +28,7 @@ object LMN {
 
   case class IntID(value: Int) extends unyo.utility.model.ID
   case class DataAtomID(id: unyo.utility.model.ID, pos: Int) extends unyo.utility.model.ID
+  case class HLAtomID(value: Int) extends unyo.utility.model.ID
 
   def buildMem(builder: Builder, json: JValue, parent: MutableNode) {
     val JInt(id) = json \ "id"
@@ -67,9 +68,9 @@ object LMN {
         case JInt(i)    => i.toString
         case j          => throw new Exception("Unexpected data : " + j.toString)
       }
-      val id = DataAtomID(buddy.id, pos)
+      val id = if (attribute.isHL) HLAtomID(data.toInt) else DataAtomID(buddy.id, pos)
       val node = builder.addNode(id, data, parent)
-      node.attribute = DataAtom()
+      node.attribute = if (attribute.isHL) HLAtom() else Atom()
       builder.addEdge(buddy.id, pos, id, 0)
       builder.addEdge(id, 0, buddy.id, pos)
     }

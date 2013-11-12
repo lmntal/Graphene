@@ -104,6 +104,12 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
         g.setColor(Color.WHITE)
         g.fillOval(rect.pad(Padding(3, 3, 3, 3)))
       }
+      case HLAtom() => {
+        g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
+        g.setColor(new Color(52, 152, 219))
+        g.drawString(node.name, rect.point)
+        g.fillOval(rect)
+      }
       case Mem() => {
         g.setColor(new Color(52, 152, 219))
         g.fillRect(rect)

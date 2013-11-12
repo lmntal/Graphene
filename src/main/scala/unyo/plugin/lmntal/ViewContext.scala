@@ -10,8 +10,10 @@ class ViewContext {
 
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, {
     val rect = node.attribute match {
-      case Mem() => coverableRect(node)
-      case _     => Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(24, 24))
+      case Atom()   => Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(24, 24))
+      case HLAtom() => Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(12, 12))
+      case Mem()    => coverableRect(node)
+      case _        => Rect(Point(0, 0), Dim(0, 0))
     }
     new View(rect)
   })
