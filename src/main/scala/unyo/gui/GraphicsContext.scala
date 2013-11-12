@@ -29,10 +29,13 @@ class GraphicsContext {
   }
 
   def resize(sd: Dim) { sSize = sd }
-  def zoom(m: Double) {
+  def zoom(m: Double, sBase: Point) {
+    val sCenter = Point(sSize.width / 2, sSize.height / 2)
+    wCenter += (sBase - sCenter) / magnificationRate
     magnificationRate *= m
     magnificationRate = math.min(magnificationRate, 20)
     magnificationRate = math.max(0.05, magnificationRate)
+    wCenter -= (sBase - sCenter) / magnificationRate
   }
 
 }

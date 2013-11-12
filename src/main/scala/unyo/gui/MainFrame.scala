@@ -90,7 +90,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
           graphicsContext.moveBy(prevPoint - p)
           prevPoint = p
         }
-        case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
+        case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot), p)
         case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
