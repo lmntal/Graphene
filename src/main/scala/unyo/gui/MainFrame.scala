@@ -90,7 +90,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
           graphicsContext.moveBy(prevPoint - p)
           prevPoint = p
         }
-        case MouseWheelMoved(_, _, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
+        case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
         case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
@@ -115,6 +115,17 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         val g = gg.asInstanceOf[java.awt.Graphics2D]
 
         super.paintComponent(g)
+
+        g.clearRect(
+          0,
+          0,
+          graphicsContext.sSize.width.toInt,
+          graphicsContext.sSize.height.toInt
+        )
+
+        g.translate(graphicsContext.sSize.width/2, graphicsContext.sSize.height/2)
+        g.scale(graphicsContext.magnificationRate, graphicsContext.magnificationRate)
+        g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
         g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
         renderer.renderAll(g, graphicsContext, visualGraph)

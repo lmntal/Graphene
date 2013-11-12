@@ -55,12 +55,6 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     this.gctx = gctx
     this.vctx = vctx
 
-    g.clearRect(Rect(Point(0,0), gctx.sSize))
-
-    g.translate(gctx.sSize.width/2, gctx.sSize.height/2)
-    g.scale(gctx.magnificationRate, gctx.magnificationRate)
-    g.translate(-gctx.wCenter.x, -gctx.wCenter.y)
-
     renderGrid
 
     if (vctx == null) return
