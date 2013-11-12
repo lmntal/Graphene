@@ -43,7 +43,7 @@ class ViewContext {
 class View(var rect: Rect) {
   var speed = Point(0, 0)
 
-  val mass = 8.0
+  val mass = 0.1
   val decayRate = 0.90
   def force(f: Point, elapsed: Double) {
     speed = (speed + f * elapsed / mass) * decayRate

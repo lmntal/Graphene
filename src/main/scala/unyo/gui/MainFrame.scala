@@ -101,7 +101,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         loop {
           val msec = System.currentTimeMillis
 
-          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 100)
+          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 1000)
           repaint()
 
           prevMsec = msec
