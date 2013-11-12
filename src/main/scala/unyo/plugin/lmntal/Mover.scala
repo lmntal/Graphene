@@ -9,16 +9,18 @@ class DefaultMover extends LMNtalPlugin.Mover {
   def moveAll(vctx: ViewContext, elapsedSec: Double) {
     if (vctx == null || vctx.graph == null) return
     this.vctx = vctx
-    move(vctx.graph.rootNode, elapsedSec)
+    move(vctx.graph.rootNode, elapsedSec, Point(0, 0))
   }
 
-  def move(node: Node, elapsedSec: Double) {
+  def move(node: Node, elapsedSec: Double, parentSpeed: Point) {
     val vec = forceOfRepulsion(node) +
               forceOfSpring(node)
+    val view = vctx.viewOf(node)
 
-    vctx.viewOf(node).force(vec, elapsedSec)
+    view.gainForce(vec, elapsedSec)
+    view.gainSpeed(parentSpeed, elapsedSec)
 
-    for (n <- node.childNodes) move(n, elapsedSec)
+    for (n <- node.childNodes) move(n, elapsedSec, view.speed)
 
     resizeGraphArea(node)
   }

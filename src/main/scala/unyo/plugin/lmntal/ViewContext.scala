@@ -46,9 +46,12 @@ class View(var rect: Rect) {
 
   val mass = 0.1
   val decayRate = 0.90
-  def force(f: Point, elapsed: Double) {
+  def gainForce(f: Point, elapsed: Double) {
     speed = (speed + f * elapsed / mass) * decayRate
     rect = Rect(rect.point + speed * elapsed, rect.dim)
+  }
+  def gainSpeed(s: Point, elapsed: Double) {
+    rect = Rect(rect.point + s * elapsed, rect.dim)
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
