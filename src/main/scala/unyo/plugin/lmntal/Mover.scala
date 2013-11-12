@@ -13,17 +13,12 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   def move(node: Node, elapsedSec: Double) {
+    val vec = forceOfRepulsion(node) +
+              forceOfSpring(node)
+
+    vctx.viewOf(node).force(vec, elapsedSec)
+
     for (n <- node.childNodes) move(n, elapsedSec)
-
-    for (n <- node.childNodes) {
-      val v1 = vctx.viewOf(n)
-      var vec = Point(0, 0)
-
-      vec = vec + forceOfRepulsion(n)
-      vec = vec + forceOfSpring(n)
-
-      v1.force(vec, elapsedSec)
-    }
 
     resizeGraphArea(node)
   }
@@ -41,10 +36,14 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   private def forceOfRepulsion(self: Node): Point = {
-    self.parent.childNodes.view.filter { other =>
-      self.id != other.id && self.parent.id == other.parent.id
-    }.foldLeft(Point(0,0)) { (res, other) =>
-      res + forceOfRepulsionBetween(self, other)
+    if (self.parent == null) {
+      Point(0, 0)
+    } else {
+      self.parent.childNodes.view.filter { other =>
+        self.id != other.id && self.parent.id == other.parent.id
+      }.foldLeft(Point(0,0)) { (res, other) =>
+        res + forceOfRepulsionBetween(self, other)
+      }
     }
   }
 
