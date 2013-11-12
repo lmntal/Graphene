@@ -10,7 +10,7 @@ import unyo.Properties
 import unyo.swing.scalalike._
 
 object MainFrame {
-  def instance = new MainFrame
+  val instance = new MainFrame
 }
 
 class MainFrame extends javax.swing.JFrame with JFrameExt {

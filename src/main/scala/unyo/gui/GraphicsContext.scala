@@ -10,6 +10,10 @@ class GraphicsContext {
   var magnificationRate: Double = 1.0 // screen / world
 
   def wSize = Dim(sSize.width / magnificationRate, sSize.height / magnificationRate)
+  def wRect = Rect(
+    Point(wCenter.x - wSize.width / 2, wCenter.y - wSize.height / 2),
+    wSize
+  )
 
   def worldPointFrom(sp: Point) = Point(
     wCenter.x + (sp.x - sSize.width / 2) / magnificationRate,

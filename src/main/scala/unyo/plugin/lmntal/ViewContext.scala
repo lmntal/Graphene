@@ -6,21 +6,22 @@ import unyo.utility.model._
 
 class ViewContext {
   private val viewNodeFromID = collection.mutable.Map.empty[ID, View]
-  val r = new util.Random
 
-  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, {
-    val rect = node.attribute match {
-      case Atom()   => Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(24, 24))
-      case HLAtom() => Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(12, 12))
+  lazy val gctx = unyo.gui.MainFrame.instance.mainPanel.graphicsContext
+  private def initView(node: Node): Rect = {
+    node.attribute match {
+      case Atom()   => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
+      case HLAtom() => Rect(Point.randomPointIn(gctx.wRect), Dim(12, 12))
       case Mem()    => coverableRect(node)
       case _        => Rect(Point(0, 0), Dim(0, 0))
     }
-    new View(rect)
-  })
+  }
+
+  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(initView(node)))
 
   def coverableRect(g: Node): Rect = {
     val rects = g.childNodes.map(viewOf(_).rect)
-    if (rects.isEmpty) Rect(Point(r.nextDouble * 800, r.nextDouble * 800), Dim(80, 80))
+    if (rects.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
     else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 

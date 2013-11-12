@@ -15,6 +15,14 @@ case class Dim(width: Double, height: Double) {
   require(height >= 0, "height of Dim should be positive")
 }
 
+object Point {
+  def randomPointIn(rect: Rect) = {
+    val x = rect.dim.width  * Random.double + rect.point.x
+    val y = rect.dim.height * Random.double + rect.point.y
+    Point(x, y)
+  }
+}
+
 case class Point(x: Double, y: Double) {
   def +(other: Point) = Point(x + other.x, y + other.y)
   def -(other: Point) = Point(x - other.x, y - other.y)
