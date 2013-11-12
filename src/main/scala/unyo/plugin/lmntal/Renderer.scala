@@ -94,12 +94,24 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
     val viewNode = vctx.viewOf(node)
     val rect = viewNode.rect
-    g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
-    g.setColor(new Color(52, 152, 219))
-    g.drawString(node.name, rect.point)
-    g.fillOval(rect)
-    g.setColor(Color.WHITE)
-    g.fillOval(rect.pad(Padding(3, 3, 3, 3)))
+
+    node.attribute match {
+      case Atom() => {
+        g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
+        g.setColor(new Color(52, 152, 219))
+        g.drawString(node.name, rect.point)
+        g.fillOval(rect)
+        g.setColor(Color.WHITE)
+        g.fillOval(rect.pad(Padding(3, 3, 3, 3)))
+      }
+      case Mem() => {
+        g.setColor(new Color(52, 152, 219))
+        g.fillRect(rect)
+        g.setColor(Color.WHITE)
+        g.fillRect(rect.pad(Padding(3, 3, 3, 3)))
+      }
+      case _ =>
+    }
 
     for (n <- node.childNodes) renderEdges(n)
     for (n <- node.childNodes) renderNode(n)
