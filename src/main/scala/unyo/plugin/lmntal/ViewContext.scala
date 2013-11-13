@@ -17,7 +17,7 @@ class ViewContext {
     }
   }
 
-  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(initView(node)))
+  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
 
   def coverableRect(g: Node): Rect = {
     val rects = g.childNodes.map(viewOf(_).rect)
@@ -41,13 +41,13 @@ class ViewContext {
   }
 }
 
-class View(var rect: Rect) {
+class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
 
-  val mass = 0.1
+  val mass = (node.allChildNodes.size + 1) * 0.1
   val decayRate = 0.90
   def affect(s: Point, f: Point, elapsedSec: Double) {
-    speed = (speed + f / mass * elapsedSec) * decayRate
+    speed = speed * decayRate + f / mass * elapsedSec
     rect = Rect(rect.point + (speed + s) * elapsedSec, rect.dim)
   }
 
