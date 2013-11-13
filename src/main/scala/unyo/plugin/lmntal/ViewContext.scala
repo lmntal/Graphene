@@ -39,16 +39,29 @@ class ViewContext {
   def viewOptAt(wp: Point): Option[View] = {
     graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
   }
+
+  def transaction(f: => Unit) {
+    for ((_, view) <- viewNodeFromID) view.reset
+    f
+    for ((_, view) <- viewNodeFromID) view.move
+  }
 }
 
 class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
+  var diff = Point(0, 0)
 
   val mass = (node.allChildNodes.size + 1) * 0.1
   val decayRate = 0.90
+  def reset() {
+    diff = Point(0, 0)
+  }
   def affect(s: Point, f: Point, elapsedSec: Double) {
     speed = speed * decayRate + f / mass * elapsedSec
-    rect = Rect(rect.point + (speed + s) * elapsedSec, rect.dim)
+    diff = (speed + s) * elapsedSec
+  }
+  def move() {
+    rect = Rect(rect.point + diff, rect.dim)
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"

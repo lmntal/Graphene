@@ -9,7 +9,9 @@ class DefaultMover extends LMNtalPlugin.Mover {
   def moveAll(vctx: ViewContext, elapsedSec: Double) {
     if (vctx == null || vctx.graph == null) return
     this.vctx = vctx
-    move(vctx.graph.rootNode, elapsedSec, Point(0, 0))
+    vctx.transaction {
+      move(vctx.graph.rootNode, elapsedSec, Point(0, 0))
+    }
     resize(vctx.graph.rootNode)
   }
 
