@@ -14,7 +14,8 @@ class DefaultMover extends LMNtalPlugin.Mover {
 
   def move(node: Node, elapsedSec: Double, parentSpeed: Point) {
     val vec = forceOfRepulsion(node) +
-              forceOfSpring(node)
+              forceOfSpring(node) +
+              forceOfContraction(node)
     val view = vctx.viewOf(node)
 
     view.gainForce(vec, elapsedSec)
@@ -65,6 +66,18 @@ class DefaultMover extends LMNtalPlugin.Mover {
     val d = vctx.viewOf(rhs).rect.center - vctx.viewOf(lhs).rect.center
     val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
     d.unit * f
+  }
+
+  private def forceOfContraction(self: Node): Point = {
+    // TODO: a bit dirty
+    if (self.parent == null || self.parent.parent == null) {
+      Point(0, 0)
+    } else {
+      val parentView = vctx.viewOf(self.parent)
+      val view = vctx.viewOf(self)
+      val d = parentView.rect.center - view.rect.center
+      d / 4
+    }
   }
 
 }
