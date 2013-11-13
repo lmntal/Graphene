@@ -47,7 +47,7 @@ class View(var rect: Rect) {
   val mass = 0.1
   val decayRate = 0.90
   def affect(s: Point, f: Point, elapsedSec: Double) {
-    speed = (speed + f * elapsedSec / mass) * decayRate
+    speed = (speed + f / mass * elapsedSec) * decayRate
     rect = Rect(rect.point + (speed + s) * elapsedSec, rect.dim)
   }
 

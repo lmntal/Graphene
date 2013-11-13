@@ -21,7 +21,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
 
     view.affect(parentSpeed, vec, elapsedSec)
 
-    for (n <- node.childNodes) move(n, elapsedSec, view.speed)
+    for (n <- node.childNodes) move(n, elapsedSec, parentSpeed + view.speed)
   }
 
   private def resize(node: Node) {
@@ -71,7 +71,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
   private def forceOfContraction(self: Node): Point = {
     // TODO: a bit dirty
     val view = vctx.viewOf(self)
-    if (self.parent == null || self.parent.parent == null) {
+    if (self.parent == null) {
       Point(0, 0)
     } else {
       forceOfContraction(self.parent, self)
@@ -82,7 +82,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
     val parentView = vctx.viewOf(parent)
     val childView = vctx.viewOf(child)
     val d = parentView.rect.center - childView.rect.center
-    d
+    d / 10
   }
 
 }
