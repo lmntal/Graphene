@@ -76,6 +76,16 @@ case class Rect(point: Point, dim: Dim) {
   def isCrossingWith(other: Rect) =
     ((this.left < other.right) ^ (this.right < other.left)) &&
     ((this.top < other.bottom) ^ (this.bottom < other.top))
+
+  def distanceWith(other: Rect) = {
+    if (isCrossingWith(other)) {
+      0
+    } else {
+      val xdiff = math.min((this.left - other.right).abs, (this.right - other.left).abs)
+      val ydiff = math.min((this.top - other.bottom).abs, (this.bottom - other.top).abs)
+      math.sqrt(xdiff * xdiff + ydiff * ydiff)
+    }
+  }
 }
 
 case class Padding(top: Double, right: Double, bottom: Double, left: Double)
