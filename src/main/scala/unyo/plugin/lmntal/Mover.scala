@@ -73,18 +73,20 @@ class DefaultMover extends LMNtalPlugin.Mover {
   private def forceOfContraction(self: Node): Point = {
     // TODO: a bit dirty
     val view = vctx.viewOf(self)
-    if (self.parent == null || self.parent.parent == null) {
-      Point(0, 0)
-    } else {
-      forceOfContraction(self.parent, self)
-    } - (if (self.parent == null) Point(0, 0) else self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _))
+    val f1 = if (self.parent == null) Point(0, 0) else forceOfContraction(self.parent, self)
+    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
+    f1 - f2
   }
 
   private def forceOfContraction(parent: Node, child: Node): Point = {
-    val parentView = vctx.viewOf(parent)
-    val childView = vctx.viewOf(child)
-    val d = parentView.rect.center - childView.rect.center
-    d
+    if (parent.isRoot) {
+      Point(0, 0)
+    } else {
+      val parentView = vctx.viewOf(parent)
+      val childView = vctx.viewOf(child)
+      val d = parentView.rect.center - childView.rect.center
+      d
+    }
   }
 
 }

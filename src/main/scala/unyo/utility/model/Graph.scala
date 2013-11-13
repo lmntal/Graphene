@@ -10,15 +10,17 @@ trait Edge {
   def targetPos: Int
 }
 
-trait Node {
+abstract class Node {
   def id: ID
   def name: String
   def parent: Node
   def edges: Seq[Edge]
-  def neighborNodes: Seq[Node]
   def childNodes: Seq[Node]
-  def allChildNodes: Seq[Node]
   def attribute: Attr
+
+  def isRoot = parent == null
+  def neighborNodes = edges.map(_.targetNode)
+  def allChildNodes: Seq[Node] = childNodes ++ childNodes.flatMap(_.allChildNodes)
 }
 
 trait Graph {
@@ -37,8 +39,6 @@ object Builder {
     var parent: Node = null
     var attribute: Attr = null
     def addNode(node: Node) {}
-    def neighborNodes: Seq[Node] = edges.map(_.targetNode)
-    def allChildNodes = childNodes ++ childNodes.flatMap(_.allChildNodes)
   }
 
   case class Port(id: ID, pos: Int)
