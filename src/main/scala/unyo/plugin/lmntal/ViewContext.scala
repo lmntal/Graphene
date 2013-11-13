@@ -37,7 +37,7 @@ class ViewContext {
   }
 
   def viewOptAt(wp: Point): Option[View] = {
-    graph.rootNode.allChildNodes.map(viewOf(_)).find(_.rect.contains(wp))
+    graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
   }
 }
 
