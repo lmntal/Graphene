@@ -13,6 +13,8 @@ object Geometry {
 case class Dim(width: Double, height: Double) {
   require(width >= 0, "width of Dim should be positive")
   require(height >= 0, "height of Dim should be positive")
+
+  def area = width * height
 }
 
 object Point {
@@ -43,6 +45,8 @@ case class Rect(point: Point, dim: Dim) {
   val right  = point.x + dim.width
   val top    = point.y
   val bottom = point.y + dim.height
+
+  def area = dim.area
 
   def contains(p: Point) =
     left <= p.x && p.x <= right &&
