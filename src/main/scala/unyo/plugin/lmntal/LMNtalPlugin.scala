@@ -5,6 +5,7 @@ import unyo.plugin.Plugin
 class Config {
   var slimPath = ""
   var baseDirectory = ""
+  var isProxyVisible = false
   object forces {
     object repulsion {
       var forceBetweenAtoms = 80000.0

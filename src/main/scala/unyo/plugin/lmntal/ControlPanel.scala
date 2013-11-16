@@ -1,6 +1,6 @@
 package unyo.plugin.lmntal
 
-import javax.swing.{JPanel,JSlider,JTextField}
+import javax.swing.{JPanel,JSlider,JTextField,JCheckBox}
 
 import unyo.swing.scalalike._
 
@@ -8,6 +8,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
   import java.awt.{Dimension}
   import java.awt.{BorderLayout}
+  import java.awt.event.{ActionListener,ActionEvent}
   import javax.swing.{BoxLayout}
   import javax.swing.border.{TitledBorder}
   import javax.swing.event.{ChangeListener,ChangeEvent}
@@ -64,6 +65,19 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
             config.forces.spring.length = slider.getValue
+          }
+        })
+      }
+    }
+
+    this << new JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      border_ = new TitledBorder("Options")
+      this << new JCheckBox("Show proxy") {
+        checkBox =>
+        addActionListener(new ActionListener {
+          override def actionPerformed(e: ActionEvent) {
+            config.isProxyVisible = checkBox.isSelected
           }
         })
       }

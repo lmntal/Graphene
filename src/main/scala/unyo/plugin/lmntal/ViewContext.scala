@@ -7,6 +7,8 @@ import unyo.utility.model._
 class ViewContext {
   private val viewNodeFromID = collection.mutable.Map.empty[ID, View]
 
+  lazy val config = LMNtalPlugin.config
+
   lazy val gctx = unyo.gui.MainFrame.instance.mainPanel.graphicsContext
   private def initView(node: Node): Rect = {
     node.attribute match {
@@ -19,10 +21,10 @@ class ViewContext {
 
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
   def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
-  def actualNode(node: Node): Node = if (isProxy(node)) actualNode(node.neighborNodes(1).neighborNodes(0)) else node
+  def actualNode(node: Node): Node = if (!isProxy(node) || config.isProxyVisible) node else actualNode(node.neighborNodes(1).neighborNodes(0))
   def neighborNodesOf(node: Node) = node.neighborNodes.map(actualNode(_))
-  def childNodesOf(node: Node) = node.childNodes.filter(!isProxy(_))
-  def allChildNodesOf(node: Node) = node.allChildNodes.filter(!isProxy(_))
+  def childNodesOf(node: Node) = node.childNodes.filter(!isProxy(_) || config.isProxyVisible)
+  def allChildNodesOf(node: Node) = node.allChildNodes.filter(!isProxy(_) || config.isProxyVisible)
 
   def coverableRect(g: Node): Rect = {
     val rects = childNodesOf(g).map(viewOf(_).rect)
