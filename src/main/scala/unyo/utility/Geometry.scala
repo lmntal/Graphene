@@ -11,8 +11,8 @@ object Geometry {
 }
 
 case class Dim(width: Double, height: Double) {
-  require(width >= 0, "width of Dim should be positive")
-  require(height >= 0, "height of Dim should be positive")
+  require(width >= 0, s"width of ${this} should be positive")
+  require(height >= 0, s"height of ${this} should be positive")
 
   def area = width * height
 }
@@ -26,6 +26,9 @@ object Point {
 }
 
 case class Point(x: Double, y: Double) {
+  require(!x.isNaN, s"x of ${this} should not be NaN")
+  require(!y.isNaN, s"y of ${this} should not be NaN")
+
   def +(other: Point) = Point(x + other.x, y + other.y)
   def -(other: Point) = Point(x - other.x, y - other.y)
   def *(other: Double) = Point(x * other, y * other)
@@ -33,7 +36,7 @@ case class Point(x: Double, y: Double) {
   def dot(other: Point) = x*other.x + y*other.y
   def sqabs: Double = dot(this)
   def abs: Double = math.sqrt(sqabs)
-  def unit: Point = this / abs
+  def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point(0, 0) else this / abs
 }
 
 case class Rect(point: Point, dim: Dim) {
