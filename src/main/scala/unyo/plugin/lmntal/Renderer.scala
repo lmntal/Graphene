@@ -60,8 +60,8 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     if (vctx == null) return
     if (vctx.graph == null) return
 
-    for (node <- vctx.graph.rootNode.childNodes) renderEdges(node)
-    for (node <- vctx.graph.rootNode.childNodes) renderNode(node)
+    for (node <- vctx.childNodesOf(vctx.graph.rootNode)) renderEdges(node)
+    for (node <- vctx.childNodesOf(vctx.graph.rootNode)) renderNode(node)
   }
 
   def renderGrid {
@@ -113,8 +113,8 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
       case _ =>
     }
 
-    for (n <- node.childNodes) renderEdges(n)
-    for (n <- node.childNodes) renderNode(n)
+    for (n <- vctx.childNodesOf(node)) renderEdges(n)
+    for (n <- vctx.childNodesOf(node)) renderNode(n)
   }
 
   def renderEdges(node: Node) {
@@ -122,8 +122,8 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
     val view1 = vctx.viewOf(node)
     g.setColor(new Color(41, 128, 185))
-    for (i <- 0 until node.neighborNodes.size) {
-      var buddy = node.neighborNodes(i)
+    for (i <- 0 until vctx.neighborNodesOf(node).size) {
+      var buddy = vctx.neighborNodesOf(node)(i)
       val view2 = vctx.viewOf(buddy)
 
       g.drawLine(

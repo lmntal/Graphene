@@ -18,9 +18,14 @@ class ViewContext {
   }
 
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
+  def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
+  def actualNode(node: Node): Node = if (isProxy(node)) actualNode(node.neighborNodes(1).neighborNodes(0)) else node
+  def neighborNodesOf(node: Node) = node.neighborNodes.map(actualNode(_))
+  def childNodesOf(node: Node) = node.childNodes.filter(!isProxy(_))
+  def allChildNodesOf(node: Node) = node.allChildNodes.filter(!isProxy(_))
 
   def coverableRect(g: Node): Rect = {
-    val rects = g.childNodes.map(viewOf(_).rect)
+    val rects = childNodesOf(g).map(viewOf(_).rect)
     if (rects.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
     else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
@@ -32,12 +37,12 @@ class ViewContext {
   }
   private def updateGraph(graph: Graph) = updateNode(graph.rootNode)
   private def updateNode(node: Node) {
-    for (n <- node.childNodes) viewOf(n)
-    for (n <- node.childNodes) updateNode(n)
+    for (n <- childNodesOf(node)) viewOf(n)
+    for (n <- childNodesOf(node)) updateNode(n)
   }
 
   def viewOptAt(wp: Point): Option[View] = {
-    graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
+    graph.rootNode.allChildNodes.filter(childNodesOf(_).isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
   }
 
   def transaction(f: => Unit) {
@@ -51,7 +56,7 @@ class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
   var diff = Point(0, 0)
 
-  val mass = (node.allChildNodes.size + 1) * 0.1
+  val mass = 0.1
   val decayRate = 0.90
   def reset() {
     diff = Point(0, 0)
