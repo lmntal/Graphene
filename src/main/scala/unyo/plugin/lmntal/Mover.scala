@@ -9,49 +9,53 @@ class DefaultMover extends LMNtalPlugin.Mover {
   def moveAll(vctx: ViewContext, elapsedSec: Double) {
     if (vctx == null || vctx.graph == null) return
     this.vctx = vctx
-    move(vctx.graph.rootNode, elapsedSec)
-  }
-
-  def move(node: Node, elapsedSec: Double) {
-    for (n <- node.childNodes) move(n, elapsedSec)
-
-    for (n <- node.childNodes) {
-      val v1 = vctx.viewOf(n)
-      var vec = Point(0, 0)
-
-      vec = vec + forceOfRepulsion(n)
-      vec = vec + forceOfSpring(n)
-
-      v1.force(vec, elapsedSec)
+    vctx.transaction {
+      move(vctx.graph.rootNode, elapsedSec, Point(0, 0))
     }
-
-    resizeGraphArea(node)
+    resize(vctx.graph.rootNode)
   }
 
-  private def resizeGraphArea(node: Node) {
+  private def move(node: Node, elapsedSec: Double, parentSpeed: Point) {
+    val vec = forceOfRepulsion(node) +
+              forceOfSpring(node) +
+              forceOfContraction(node)
+    val view = vctx.viewOf(node)
+
+    view.affect(parentSpeed, vec, elapsedSec)
+
+    for (n <- node.childNodes) move(n, elapsedSec, parentSpeed + view.speed)
+  }
+
+  private def resize(node: Node) {
+    for (n <- node.childNodes) resize(n)
+
     if (!node.childNodes.isEmpty) {
       node.attribute match {
-        case Mem() => {
-          for (n <- node.childNodes) resizeGraphArea(n)
-          vctx.viewOf(node).rect = vctx.coverableRect(node)
-        }
+        case Mem() => vctx.viewOf(node).rect = vctx.coverableRect(node)
         case _     =>
       }
     }
   }
 
   private def forceOfRepulsion(self: Node): Point = {
-    self.parent.childNodes.view.filter { other =>
-      self.id != other.id && self.parent.id == other.parent.id
-    }.foldLeft(Point(0,0)) { (res, other) =>
-      res + forceOfRepulsionBetween(self, other)
+    if (self.parent == null) {
+      Point(0, 0)
+    } else {
+      self.parent.childNodes.view.filter { other =>
+        self.id != other.id && self.parent.id == other.parent.id
+      }.foldLeft(Point(0,0)) { (res, other) =>
+        res + forceOfRepulsionBetween(self, other)
+      }
     }
   }
 
   private def forceOfRepulsionBetween(lhs: Node, rhs: Node): Point = {
     val config = LMNtalPlugin.config
+    val lrect = vctx.viewOf(lhs).rect
+    val rrect = vctx.viewOf(rhs).rect
     val d = vctx.viewOf(lhs).rect.center - vctx.viewOf(rhs).rect.center
-    val f = config.forces.repulsion.forceBetweenAtoms / d.sqabs
+    val distance = lrect.distanceWith(rrect)
+    val f = config.forces.repulsion.forceBetweenAtoms * (0.001 / (distance * distance / 1000 + 1))
     d.unit * f
   }
 
@@ -64,6 +68,26 @@ class DefaultMover extends LMNtalPlugin.Mover {
     val d = vctx.viewOf(rhs).rect.center - vctx.viewOf(lhs).rect.center
     val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
     d.unit * f
+  }
+
+  private def forceOfContraction(self: Node): Point = {
+    // TODO: a bit dirty
+    val view = vctx.viewOf(self)
+    val f1 = if (self.parent == null) Point(0, 0) else forceOfContraction(self.parent, self)
+    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
+    f1 - f2
+  }
+
+  private def forceOfContraction(parent: Node, child: Node): Point = {
+    val surplusArea = vctx.viewOf(parent).rect.area - parent.allChildNodes.size * 10000
+    if (parent.isRoot || surplusArea < 100) {
+      Point(0, 0)
+    } else {
+      val parentView = vctx.viewOf(parent)
+      val childView = vctx.viewOf(child)
+      val d = parentView.rect.center - childView.rect.center
+      d.unit * math.sqrt(d.abs * math.sqrt(surplusArea)) / 2
+    }
   }
 
 }

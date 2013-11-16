@@ -17,7 +17,7 @@ class ViewContext {
     }
   }
 
-  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(initView(node)))
+  def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
 
   def coverableRect(g: Node): Rect = {
     val rects = g.childNodes.map(viewOf(_).rect)
@@ -37,18 +37,31 @@ class ViewContext {
   }
 
   def viewOptAt(wp: Point): Option[View] = {
-    graph.rootNode.allChildNodes.map(viewOf(_)).find(_.rect.contains(wp))
+    graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
+  }
+
+  def transaction(f: => Unit) {
+    for ((_, view) <- viewNodeFromID) view.reset
+    f
+    for ((_, view) <- viewNodeFromID) view.move
   }
 }
 
-class View(var rect: Rect) {
+class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
+  var diff = Point(0, 0)
 
-  val mass = 0.1
+  val mass = (node.allChildNodes.size + 1) * 0.1
   val decayRate = 0.90
-  def force(f: Point, elapsed: Double) {
-    speed = (speed + f * elapsed / mass) * decayRate
-    rect = Rect(rect.point + speed * elapsed, rect.dim)
+  def reset() {
+    diff = Point(0, 0)
+  }
+  def affect(s: Point, f: Point, elapsedSec: Double) {
+    speed = speed * decayRate + f / mass * elapsedSec
+    diff = (speed + s) * elapsedSec
+  }
+  def move() {
+    rect = Rect(rect.point + diff, rect.dim)
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
