@@ -39,6 +39,7 @@ object Builder {
     var parent: Node = null
     var attribute: Attr = null
     def addNode(node: Node) {}
+    override val allChildNodes: Seq[Node] = childNodes ++ childNodes.flatMap(_.allChildNodes)
   }
 
   case class Port(id: ID, pos: Int)
