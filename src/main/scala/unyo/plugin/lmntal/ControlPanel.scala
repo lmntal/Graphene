@@ -38,7 +38,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
         slider =>
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
-            config.forces.repulsion.forceBetweenAtoms = slider.getValue
+            config.forces.repulsion.coef1 = slider.getValue
           }
         })
       }
@@ -51,7 +51,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
         slider =>
         addChangeListener(new ChangeListener {
           override def stateChanged(e: ChangeEvent) {
-            config.forces.spring.force = slider.getValue.toDouble / 10
+            config.forces.spring.constant = slider.getValue.toDouble / 10
           }
         })
       }

@@ -51,12 +51,12 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   private def forceOfRepulsionBetween(lhs: Node, rhs: Node): Point = {
-    val config = LMNtalPlugin.config
+    val params = LMNtalPlugin.config.forces.repulsion
     val lrect = vctx.viewOf(lhs).rect
     val rrect = vctx.viewOf(rhs).rect
     val d = vctx.viewOf(lhs).rect.center - vctx.viewOf(rhs).rect.center
     val distance = lrect.distanceWith(rrect)
-    val f = config.forces.repulsion.forceBetweenAtoms * (0.001 / (distance * distance / 1000 + 1))
+    val f = params.coef1 / (distance * distance / params.coef2 + 1)
     d.unit * f
   }
 
@@ -65,9 +65,9 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   private def forceOfStringBetween(lhs: Node, rhs: Node): Point = {
-    val config = LMNtalPlugin.config
+    val params = LMNtalPlugin.config.forces.spring
     val d = vctx.viewOf(rhs).rect.center - vctx.viewOf(lhs).rect.center
-    val f = config.forces.spring.force * (d.abs - config.forces.spring.length)
+    val f = params.constant * (d.abs - params.length)
     d.unit * f
   }
 
@@ -80,14 +80,15 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   private def forceOfContraction(parent: Node, child: Node): Point = {
-    val surplusArea = vctx.viewOf(parent).rect.area - vctx.allChildNodesOf(parent).size * 10000
-    if (parent.isRoot || surplusArea < 100) {
+    val params = LMNtalPlugin.config.forces.contraction
+    val surplusArea = vctx.viewOf(parent).rect.area - vctx.allChildNodesOf(parent).size * params.areaPerNode
+    if (parent.isRoot || surplusArea < params.threshold) {
       Point(0, 0)
     } else {
       val parentView = vctx.viewOf(parent)
       val childView = vctx.viewOf(child)
       val d = parentView.rect.center - childView.rect.center
-      d.unit * math.sqrt(d.abs * math.sqrt(surplusArea)) / 2
+      d.unit * params.coef *  math.sqrt(d.abs * math.sqrt(surplusArea))
     }
   }
 
