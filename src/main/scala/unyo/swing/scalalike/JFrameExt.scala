@@ -183,8 +183,12 @@ trait JSliderExt extends JComponentExt {
 
   import javax.swing.event.{ChangeListener,ChangeEvent}
 
-  def action_(f: ChangeEvent => Unit) {
+  def onStateChanged(f: ChangeEvent => Unit) {
+    addChangeListener(new ChangeListener {
+      override def stateChanged(e: ChangeEvent) { f(e) }
+    })
   }
+
 }
 
 trait JSplitPaneExt extends JComponentExt {
@@ -199,6 +203,14 @@ trait JSplitPaneExt extends JComponentExt {
 
 trait AbstractButtonExt extends JComponentExt {
   self: javax.swing.AbstractButton =>
+
+  import java.awt.event.{ActionListener,ActionEvent}
+
+  def onActionPerformed(f: ActionEvent => Unit) {
+    addActionListener(new ActionListener {
+      override def actionPerformed(e: ActionEvent) { f(e) }
+    })
+  }
 
   def action_ = getAction
   def action__= = setAction _
@@ -322,4 +334,31 @@ trait JFileChooserExt extends JComponentExt {
   def fileFilter__= = setFileFilter _
 
   def selectedFile = getSelectedFile
+}
+
+trait JToggleButtonExt extends AbstractButtonExt {
+  self: javax.swing.JToggleButton =>
+}
+
+trait JCheckBoxExt extends JToggleButtonExt {
+  self: javax.swing.JCheckBox =>
+}
+
+
+trait JTextComponentExt extends JComponentExt {
+  self: javax.swing.text.JTextComponent =>
+
+  import javax.swing.event.{DocumentListener,DocumentEvent}
+
+  def onTextUpdate(f: DocumentEvent => Unit) {
+    getDocument.addDocumentListener(new DocumentListener {
+      override def changedUpdate(e: DocumentEvent) { f(e) }
+      override def insertUpdate(e: DocumentEvent) { f(e) }
+      override def removeUpdate(e: DocumentEvent) { f(e) }
+    })
+  }
+}
+
+trait JTextFieldExt extends JTextComponentExt {
+  self: javax.swing.JTextField =>
 }
