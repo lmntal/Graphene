@@ -362,3 +362,7 @@ trait JTextComponentExt extends JComponentExt {
 trait JTextFieldExt extends JTextComponentExt {
   self: javax.swing.JTextField =>
 }
+
+trait JLabelExt extends JComponentExt {
+  self: javax.swing.JLabel =>
+}
