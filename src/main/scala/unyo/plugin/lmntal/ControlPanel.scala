@@ -14,7 +14,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
   val panel = new JPanel with JPanelExt {
 
-    import unyo.utility.view.{LogParamControls}
+    import unyo.utility.view.{ParamControls,LogParamControls}
 
     layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
     background_ = Color.WHITE
@@ -31,38 +31,70 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       }
     }
 
-    this << new JPanel with JPanelExt {
-      layout_ = new BoxLayout(this, BoxLayout.X_AXIS)
-      border_ = new TitledBorder("Repulsion")
+    class ParamPanel(title: String, axis: Int) extends JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, axis)
+      border_ = new TitledBorder(title)
       background_ = Color.WHITE
-
-      val paramControls = new LogParamControls(1, 100000, config.forces.repulsion.coef1)
-      paramControls.onValueChanged { config.forces.repulsion.coef1 = _ }
-      this << paramControls.slider
-      this << paramControls.label
     }
 
-    this << new JPanel with JPanelExt {
-      layout_ = new BoxLayout(this, BoxLayout.X_AXIS)
-      border_ = new TitledBorder("Spring force")
-      background_ = Color.WHITE
+    this << new ParamPanel("Repulsion", BoxLayout.Y_AXIS) {
+      val param = config.forces.repulsion
+      this << new ParamPanel("Coefficient 1", BoxLayout.X_AXIS) {
+        val paramControls = new LogParamControls(1, 100000, param.coef1)
+        paramControls.onValueChanged { param.coef1 = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
 
-      val paramControls = new LogParamControls(0.1, 1000, config.forces.spring.constant)
-      paramControls.onValueChanged { config.forces.spring.constant = _ }
-      this << paramControls.slider
-      this << paramControls.label
+      this << new ParamPanel("Coefficient 2", BoxLayout.X_AXIS) {
+        val paramControls = new LogParamControls(1, 100000, param.coef2)
+        paramControls.onValueChanged { param.coef2 = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
     }
 
-    this << new JPanel with JPanelExt {
-      layout_ = new BoxLayout(this, BoxLayout.X_AXIS)
-      border_ = new TitledBorder("Spring length")
-      background_ = Color.WHITE
+    this << new ParamPanel("Spring", BoxLayout.Y_AXIS) {
+      val param = config.forces.spring
+      this << new ParamPanel("Force", BoxLayout.X_AXIS) {
+        val paramControls = new LogParamControls(0.1, 1000, param.constant)
+        paramControls.onValueChanged { param.constant = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
 
-      val paramControls = new LogParamControls(1, 1000, config.forces.spring.length)
-      paramControls.onValueChanged { config.forces.spring.length = _ }
-      this << paramControls.slider
-      this << paramControls.label
+      this << new ParamPanel("Length", BoxLayout.X_AXIS) {
+        val paramControls = new LogParamControls(10, 1000, param.length)
+        paramControls.onValueChanged { param.length = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
     }
+
+    this << new ParamPanel("Contraction", BoxLayout.Y_AXIS) {
+      val param = config.forces.contraction
+      this << new ParamPanel("Coefficient", BoxLayout.X_AXIS) {
+        val paramControls = new LogParamControls(0.01, 100, param.coef)
+        paramControls.onValueChanged { param.coef = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
+
+      this << new ParamPanel("Threshold of Surplus Area", BoxLayout.X_AXIS) {
+        val paramControls = new ParamControls(0, 100000, param.threshold)
+        paramControls.onValueChanged { param.threshold = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
+
+      this << new ParamPanel("Ideal Area per Node", BoxLayout.X_AXIS) {
+        val paramControls = new LogParamControls(1000, 100000, param.areaPerNode)
+        paramControls.onValueChanged { param.areaPerNode = _ }
+        this << paramControls.slider
+        this << paramControls.label
+      }
+    }
+
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
