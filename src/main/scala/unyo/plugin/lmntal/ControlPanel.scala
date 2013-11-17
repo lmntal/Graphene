@@ -13,6 +13,9 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
   import javax.swing.event.{ChangeListener,ChangeEvent}
 
   val panel = new JPanel with JPanelExt {
+
+    import unyo.utility.view.{LogParamControls}
+
     layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
     background_ = Color.WHITE
 
@@ -33,34 +36,32 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       border_ = new TitledBorder("Repulsion")
       background_ = Color.WHITE
 
-      this << new JSlider(100000, 10000000, 1000000) with JSliderExt { slider =>
-        onStateChanged { _ => config.forces.repulsion.coef1 = slider.getValue }
-      }
-      this << new JTextField with JTextFieldExt {
-        println(preferredSize_)
-        preferredSize_ = new Dimension(80, 28)
-        maximumSize_ = new Dimension(80, 28)
-      }
+      val paramControls = new LogParamControls(1, 100000, config.forces.repulsion.coef1)
+      paramControls.onValueChanged { config.forces.repulsion.coef1 = _ }
+      this << paramControls.slider
+      this << paramControls.label
     }
 
     this << new JPanel with JPanelExt {
-      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      layout_ = new BoxLayout(this, BoxLayout.X_AXIS)
       border_ = new TitledBorder("Spring force")
       background_ = Color.WHITE
 
-      this << new JSlider(1, 1000, 20) with JSliderExt { slider =>
-        onStateChanged { _ => config.forces.spring.constant = slider.getValue.toDouble / 10 }
-      }
+      val paramControls = new LogParamControls(0.1, 1000, config.forces.spring.constant)
+      paramControls.onValueChanged { config.forces.spring.constant = _ }
+      this << paramControls.slider
+      this << paramControls.label
     }
 
     this << new JPanel with JPanelExt {
-      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      layout_ = new BoxLayout(this, BoxLayout.X_AXIS)
       border_ = new TitledBorder("Spring length")
       background_ = Color.WHITE
 
-      this << new JSlider(1, 1000, 120) with JSliderExt { slider =>
-        onStateChanged { _ => config.forces.spring.length = slider.getValue }
-      }
+      val paramControls = new LogParamControls(1, 1000, config.forces.spring.length)
+      paramControls.onValueChanged { config.forces.spring.length = _ }
+      this << paramControls.slider
+      this << paramControls.label
     }
 
     this << new JPanel with JPanelExt {
