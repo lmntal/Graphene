@@ -19,6 +19,7 @@ class ViewContext {
     }
   }
 
+  def viewOf(id: ID): View = viewNodeFromID(id)
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
   def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
   def actualNode(node: Node): Node = if (!isProxy(node) || config.isProxyVisible) node else actualNode(node.neighborNodes(1).neighborNodes(0))
@@ -33,9 +34,21 @@ class ViewContext {
   }
 
   var graph: Graph = null
+  var isDiffAnimationEnabled = true
   def rewrite(g: Graph) {
-    graph = g
-    updateGraph(graph)
+    if (graph != null && isDiffAnimationEnabled) {
+      val newIDs = g.allNodes.map(_.id).toSet
+      for (n <- graph.allNodes if !newIDs.contains(n.id)) viewOf(n).willDisappear = true
+      actors.Actor.actor {
+        Thread.sleep(1000)
+        for (n <- graph.allNodes) viewOf(n).willDisappear = false
+        graph = g
+        updateGraph(graph)
+      }
+    } else {
+      graph = g
+      updateGraph(graph)
+    }
   }
   private def updateGraph(graph: Graph) = updateNode(graph.rootNode)
   private def updateNode(node: Node) {
@@ -58,6 +71,8 @@ class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
   var diff = Point(0, 0)
   var fixed = false
+  var didAppear = false
+  var willDisappear = false
 
   val mass = 0.1
   val decayRate = 0.90

@@ -25,6 +25,7 @@ abstract class Node {
 
 trait Graph {
   def rootNode: Node
+  def allNodes: Seq[Node]
 }
 
 object Builder {

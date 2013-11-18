@@ -89,6 +89,13 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     val viewNode = vctx.viewOf(node)
     val rect = viewNode.rect
 
+    if (viewNode.willDisappear) {
+      val oldPaint = g.getPaint
+      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toInt, rect.center.y.toInt, 30, Array(0.0f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
+      g.fillOval(rect.pad(Padding(-30, -30, -30, -30)))
+      g.setPaint(oldPaint)
+    }
+
     node.attribute match {
       case Atom() => {
         g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
