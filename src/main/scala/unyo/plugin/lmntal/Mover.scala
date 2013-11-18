@@ -22,6 +22,8 @@ class DefaultMover extends LMNtalPlugin.Mover {
               parentForce
     val view = vctx.viewOf(node)
 
+    if (view.fixed) return
+
     view.affect(Point(0, 0), vec, elapsedSec)
 
     for (n <- vctx.childNodesOf(node)) move(n, elapsedSec, vec / vctx.childNodesOf(node).size)
