@@ -16,11 +16,12 @@ class Observer extends LMNtalPlugin.Observer {
       val viewContext = LMNtalPlugin.runtime.current
       val pos = context.worldPointFrom(p)
       viewContext.viewOptAt(pos) match {
-        case Some(v) => view = v
+        case Some(v) => { view = v; v.fixed = true }
         case None =>
       }
     }
     case MouseReleased(_, p, _, _, _) => if (isNodeHandlable) {
+      view.fixed = false
       view = null
     }
     case MouseDragged(_, p, _) => if (isNodeHandlable) {

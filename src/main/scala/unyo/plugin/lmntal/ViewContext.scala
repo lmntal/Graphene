@@ -57,6 +57,7 @@ class ViewContext {
 class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
   var diff = Point(0, 0)
+  var fixed = false
 
   val mass = 0.1
   val decayRate = 0.90
