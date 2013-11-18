@@ -34,9 +34,8 @@ class ViewContext {
   }
 
   var graph: Graph = null
-  var isDiffAnimationEnabled = true
   def rewrite(g: Graph) {
-    if (graph != null && isDiffAnimationEnabled) {
+    if (graph != null && config.isDiffAnimationEnabled) {
       val newIDs = g.allNodes.map(_.id).toSet
       for (n <- graph.allNodes if !newIDs.contains(n.id)) viewOf(n).willDisappear = true
       actors.Actor.actor {
