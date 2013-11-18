@@ -19,6 +19,7 @@ class ViewContext {
     }
   }
 
+  def viewOf(id: ID): View = viewNodeFromID(id)
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
   def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
   def actualNode(node: Node): Node = if (!isProxy(node) || config.isProxyVisible) node else actualNode(node.neighborNodes(1).neighborNodes(0))
@@ -32,10 +33,41 @@ class ViewContext {
     else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
+  private def playDiffAnimation(g: Graph) {
+    val newNodes = {
+      val oldIDs = graph.allNodes.map(_.id).toSet
+      for (n <- g.allNodes if !oldIDs.contains(n.id)) yield n
+    }
+    val oldNodes = {
+      val newIDs = g.allNodes.map(_.id).toSet
+      for (n <- graph.allNodes if !newIDs.contains(n.id)) yield n
+    }
+
+    for (n <- oldNodes) viewOf(n).willDisappear = true
+
+    actors.Actor.actor {
+      Thread.sleep(1000)
+      for (n <- oldNodes) viewOf(n).willDisappear = false
+
+      graph = g
+      updateGraph(graph)
+
+      for (n <- newNodes) viewOf(n).didAppear = true
+      actors.Actor.actor {
+        Thread.sleep(1500)
+        for (n <- newNodes) viewOf(n).didAppear = false
+      }
+    }
+  }
+
   var graph: Graph = null
   def rewrite(g: Graph) {
-    graph = g
-    updateGraph(graph)
+    if (graph != null && config.isDiffAnimationEnabled) {
+      playDiffAnimation(g)
+    } else {
+      graph = g
+      updateGraph(graph)
+    }
   }
   private def updateGraph(graph: Graph) = updateNode(graph.rootNode)
   private def updateNode(node: Node) {
@@ -58,6 +90,8 @@ class View(node: Node, var rect: Rect) {
   var speed = Point(0, 0)
   var diff = Point(0, 0)
   var fixed = false
+  var didAppear = false
+  var willDisappear = false
 
   val mass = 0.1
   val decayRate = 0.90

@@ -104,6 +104,9 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       this << new JCheckBox("Show proxy") with JCheckBoxExt { checkBox =>
         onActionPerformed { _ => config.isProxyVisible = checkBox.isSelected }
       }
+      this << new JCheckBox("Show diff") with JCheckBoxExt { checkBox =>
+        onActionPerformed { _ => config.isDiffAnimationEnabled = checkBox.isSelected }
+      }
     }
   }
 

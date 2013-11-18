@@ -6,6 +6,7 @@ class Config {
   var slimPath = ""
   var baseDirectory = ""
   var isProxyVisible = false
+  var isDiffAnimationEnabled = false
   object forces {
     object repulsion {
       var coef1 = 80.0
