@@ -8,12 +8,17 @@ class Config {
   var isProxyVisible = false
   object forces {
     object repulsion {
-      var forceBetweenAtoms = 80000.0
-      var forceBetweenMems  = 800.0
+      var coef1 = 80.0
+      var coef2 = 1000.0
     }
     object spring {
-      var force = 0.6
+      var constant = 0.6
       var length = 30.0
+    }
+    object contraction {
+      var coef = 0.5
+      var threshold = 100.0
+      var areaPerNode = 10000.0
     }
   }
 }
