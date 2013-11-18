@@ -143,7 +143,11 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       fileFilter_ = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
     }
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-      visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
+      try {
+        visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
+      } catch {
+        case e: java.io.IOException => println(e.getMessage)
+      }
     }
   }
 }
