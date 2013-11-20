@@ -30,82 +30,72 @@ trait Graph {
 
 object Builder {
 
-  import collection.mutable.{ArrayBuffer,Map}
+  class MutableNode(val id: ID, var name: String, var attribute: Attr = null)
 
-  case class MutableNode(val id: ID, var name: String) {
-    var attribute: Attr = null
+  class MutableEdge(var sourceID: ID, var sourcePos: Int, var targetID: ID, var targetPos: Int)
+
+  case class NodeImpl(id: ID, name: String, edges: Seq[EdgeImpl], childNodes: Seq[NodeImpl], attribute: Attr) extends Node {
+    var parent: NodeImpl = null
+    override val allChildNodes: Seq[NodeImpl] = childNodes ++ childNodes.flatMap(_.allChildNodes)
   }
 
-  case class NodeImpl(id: ID, name: String, edges: Seq[Edge], childNodes: Seq[Node]) extends Node {
-    var parent: Node = null
-    var attribute: Attr = null
-    def addNode(node: Node) {}
-    override val allChildNodes: Seq[Node] = childNodes ++ childNodes.flatMap(_.allChildNodes)
-  }
-
-  case class Port(id: ID, pos: Int)
-
-  case class EdgeImpl(source: Port, target: Port) extends Edge {
-    def sourcePos = source.pos
-    def targetPos = target.pos
+  case class EdgeImpl(sourceID: ID, sourcePos: Int, targetID: ID, targetPos: Int) extends Edge {
     var sourceNode: Node = null
     var targetNode: Node = null
   }
 
-  case class GraphImpl(rootNode: Node) extends Graph {
-    def allNodes: Seq[Node] = rootNode.allChildNodes :+ rootNode
+  case class GraphImpl(rootNode: NodeImpl) extends Graph {
+    def allNodes: Seq[NodeImpl] = rootNode.allChildNodes :+ rootNode
     override def toString = {
-      def nodeToString(sb: StringBuilder, node: Node, depth: Int) {
-        sb ++= " " * depth
-        sb ++= s"Node(${node.id}, ${node.name})\n"
+      def nodeToString(sb: StringBuilder, node: NodeImpl, depth: Int) {
+        sb.append(" " * depth).append(s"Node(${node.id}, ${node.name})\n")
         for (n <- node.childNodes) nodeToString(sb, n, depth + 1)
       }
-      val sb = new StringBuilder
-      sb ++= "Graph(\n"
+      val sb = new StringBuilder("Graph(\n")
       nodeToString(sb, rootNode, 1)
-      sb ++= ")"
-      sb.toString
+      sb.append(")").toString
     }
   }
 }
 
 class Builder {
 
-  import collection.mutable.{ArrayBuffer,Map}
+  import collection.mutable.{ArrayBuffer => Buffer,Map}
   import unyo.utility.Tapper._
   import Builder._
 
   private val nodeFromID = Map.empty[ID, MutableNode]
-  private val nodesFromParentID = Map.empty[ID, ArrayBuffer[MutableNode]]
-  private val edgesFromID = Map.empty[ID, ArrayBuffer[EdgeImpl]]
+  private val nodesFromParentID = Map.empty[ID, Buffer[MutableNode]]
+  private val edgesFromID = Map.empty[ID, Buffer[MutableEdge]]
   private var root: MutableNode = null
 
-  private def createNode(id: ID, name: String) = MutableNode(id, name).tap { n => nodeFromID += n.id -> n }
+  private def createNode(id: ID, name: String) = new MutableNode(id, name).tap { n => nodeFromID += n.id -> n }
 
   def addRoot(id: ID, name: String): MutableNode = createNode(id, name).tap { root = _ }
 
   def addNode(id: ID, name: String, parent: MutableNode) =
-    createNode(id, name).tap { nodesFromParentID.getOrElseUpdate(parent.id, ArrayBuffer.empty[MutableNode]) += _ }
+    createNode(id, name).tap { nodesFromParentID.getOrElseUpdate(parent.id, Buffer.empty[MutableNode]) += _ }
 
-  def addEdge(s: ID, sp: Int, t: ID, tp: Int) =
-    edgesFromID.getOrElseUpdate(s, ArrayBuffer.empty[EdgeImpl]) += EdgeImpl(Port(s, sp), Port(t, tp))
+  def addEdge(sid: ID, sp: Int, tid: ID, tp: Int) =
+    edgesFromID.getOrElseUpdate(sid, Buffer.empty[MutableEdge]) += new MutableEdge(sid, sp, tid, tp)
 
   def build: Graph = {
     val graph = GraphImpl(buildNode(root))
     val concreteNodeFromID = graph.allNodes.map { n => (n.id, n) }.toMap
-    for (edge <- edgesFromID.values.flatten) {
-      edge.sourceNode = concreteNodeFromID(edge.source.id)
-      edge.targetNode = concreteNodeFromID(edge.target.id)
+    for (node <- graph.allNodes; edge <- node.edges) {
+      edge.sourceNode = concreteNodeFromID(edge.sourceID)
+      edge.targetNode = concreteNodeFromID(edge.targetID)
     }
     graph
   }
 
   private def buildNode(mnode: MutableNode): NodeImpl = {
-    val edges = edgesFromID.getOrElse(mnode.id, Seq.empty[EdgeImpl]).sortWith(_.source.pos < _.target.pos)
-    val childNodes = nodesFromParentID.getOrElse(mnode.id, ArrayBuffer.empty[MutableNode]).map(buildNode _)
+    val edges = edgesFromID.getOrElse(mnode.id, Seq.empty[MutableEdge]).map { e =>
+      EdgeImpl(e.sourceID, e.sourcePos, e.targetID, e.targetPos)
+    }.sortWith(_.sourcePos < _.targetPos)
+    val childNodes = nodesFromParentID.getOrElse(mnode.id, Buffer.empty[MutableNode]).map(buildNode _)
 
-    val node = NodeImpl(mnode.id, mnode.name, edges, childNodes)
-    node.attribute = mnode.attribute
+    val node = NodeImpl(mnode.id, mnode.name, edges, childNodes, mnode.attribute)
     for (n <- childNodes) n.parent = node
     node
   }
