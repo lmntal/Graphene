@@ -22,7 +22,11 @@ class ViewContext {
   def viewOf(id: ID): View = viewNodeFromID(id)
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
   def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
-  def actualNode(node: Node): Node = if (!isProxy(node) || config.isProxyVisible) node else actualNode(node.neighborNodes(1).neighborNodes(0))
+  def actualNode(node: Node): Node = if (!isProxy(node) || config.isProxyVisible) {
+    node
+  } else {
+    actualNode(node.neighborNodes(0).neighborNodes(1))
+  }
   def neighborNodesOf(node: Node) = node.neighborNodes.map(actualNode(_))
   def childNodesOf(node: Node) = node.childNodes.filter(!isProxy(_) || config.isProxyVisible)
   def allChildNodesOf(node: Node) = node.allChildNodes.filter(!isProxy(_) || config.isProxyVisible)

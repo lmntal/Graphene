@@ -28,11 +28,9 @@ trait Graph {
   def allNodes: Seq[Node]
 }
 
+
+
 object Builder {
-
-  class MutableNode(val id: ID, var name: String, var attribute: Attr = null)
-
-  class MutableEdge(var sourceID: ID, var sourcePos: Int, var targetID: ID, var targetPos: Int)
 
   case class NodeImpl(id: ID, name: String, edges: Seq[EdgeImpl], childNodes: Seq[NodeImpl], attribute: Attr) extends Node {
     var parent: NodeImpl = null
@@ -56,31 +54,64 @@ object Builder {
       sb.append(")").toString
     }
   }
+
+}
+
+
+class EdgeBuilder(var sourceID: ID, var sourcePos: Int, var targetID: ID, var targetPos: Int, b: Builder) {
+  def sourceNode = b.nodeOf(sourceID)
+  def targetNode = b.nodeOf(targetID)
+
+  def build = Builder.EdgeImpl(sourceID, sourcePos, targetID, targetPos)
+}
+
+class NodeBuilder(var id: ID, var name: String, val parent: NodeBuilder, b: Builder) {
+
+  var attribute: Attr = _
+
+  def childNodes = b.childNodesOf(id)
+  def edges = b.edgesOf(id)
+
+  def addChildNode(id: ID, name: String): NodeBuilder = b.addNode(id, name, this)
+  def addEdge(pos: Int, targetID: ID, targetPos: Int) = b.addEdge(id, pos, targetID, targetPos)
+
+  def build: Builder.NodeImpl = {
+    val node = Builder.NodeImpl(id, name, edges.map(_.build), childNodes.map(_.build), attribute)
+    for (n <- node.childNodes) n.parent = node
+    node
+  }
 }
 
 class Builder {
 
-  import collection.mutable.{ArrayBuffer => Buffer,Map}
+  import collection.mutable.{ArrayBuffer => Buffer, Map}
   import unyo.utility.Tapper._
-  import Builder._
 
-  private val nodeFromID = Map.empty[ID, MutableNode]
-  private val nodesFromParentID = Map.empty[ID, Buffer[MutableNode]]
-  private val edgesFromID = Map.empty[ID, Buffer[MutableEdge]]
-  private var root: MutableNode = null
+  private val nodeFromID = Map.empty[ID,NodeBuilder]
+  private val nodesFromParentID = Map.empty[ID,Buffer[NodeBuilder]]
+  private val edgesFromID = Map.empty[ID,Buffer[EdgeBuilder]]
 
-  private def createNode(id: ID, name: String) = new MutableNode(id, name).tap { n => nodeFromID += n.id -> n }
+  private var root: NodeBuilder = _
 
-  def addRoot(id: ID, name: String): MutableNode = createNode(id, name).tap { root = _ }
+  private def createNode(id: ID, name: String, parent: NodeBuilder) = new NodeBuilder(id, name, parent, this).tap { n => nodeFromID += n.id -> n }
 
-  def addNode(id: ID, name: String, parent: MutableNode) =
-    createNode(id, name).tap { nodesFromParentID.getOrElseUpdate(parent.id, Buffer.empty[MutableNode]) += _ }
+  def nodeOf(id: ID) = nodeFromID(id)
+  def childNodesOf(id: ID) = nodesFromParentID.getOrElseUpdate(id, Buffer.empty[NodeBuilder])
+  def edgesOf(id: ID) = edgesFromID.getOrElseUpdate(id, Buffer.empty[EdgeBuilder])
 
-  def addEdge(sid: ID, sp: Int, tid: ID, tp: Int) =
-    edgesFromID.getOrElseUpdate(sid, Buffer.empty[MutableEdge]) += new MutableEdge(sid, sp, tid, tp)
+  def addRoot(id: ID, name: String) = createNode(id, name, null).tap { root = _ }
+  def addNode(id: ID, name: String, parent: NodeBuilder) = createNode(id, name, parent).tap { childNodesOf(parent.id) += _ }
+  def addEdge(sid: ID, spos: Int, tid: ID, tpos: Int) = new EdgeBuilder(sid, spos, tid, tpos, this).tap { edgesOf(sid) += _ }
+
+  def removeNode(id: ID) {
+    val node = nodeOf(id)
+    nodeFromID.remove(id)
+    childNodesOf(node.parent.id) -= node
+    edgesFromID.remove(id)
+  }
 
   def build: Graph = {
-    val graph = GraphImpl(buildNode(root))
+    val graph = Builder.GraphImpl(root.build)
     val concreteNodeFromID = graph.allNodes.map { n => (n.id, n) }.toMap
     for (node <- graph.allNodes; edge <- node.edges) {
       edge.sourceNode = concreteNodeFromID(edge.sourceID)
@@ -88,18 +119,5 @@ class Builder {
     }
     graph
   }
-
-  private def buildNode(mnode: MutableNode): NodeImpl = {
-    val edges = edgesFromID.getOrElse(mnode.id, Seq.empty[MutableEdge]).map { e =>
-      EdgeImpl(e.sourceID, e.sourcePos, e.targetID, e.targetPos)
-    }.sortWith(_.sourcePos < _.targetPos)
-    val childNodes = nodesFromParentID.getOrElse(mnode.id, Buffer.empty[MutableNode]).map(buildNode _)
-
-    val node = NodeImpl(mnode.id, mnode.name, edges, childNodes, mnode.attribute)
-    for (n <- childNodes) n.parent = node
-    node
-  }
-
-  private def allChildNodesOf(node: Node): Seq[Node] = node.childNodes ++ node.childNodes.flatMap(allChildNodesOf(_))
-
 }
+
