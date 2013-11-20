@@ -4,7 +4,7 @@ import collection.mutable.Set
 
 case class Attribute(value: Int) {
   def isRef = (value & 0x80) == 0
-  def targetPos = value | 0x7F
+  def targetPos = value & 0x7F
   def isData = !isRef
   def isHL = value == 0x8a
 }
@@ -23,6 +23,7 @@ object LMN {
   def fromString(s: String): Graph = {
     val builder = new Builder
     buildMem(builder, parse(s), null)
+    removeProxies(builder)
     builder.build
   }
 
@@ -30,8 +31,7 @@ object LMN {
   case class DataAtomID(id: unyo.utility.model.ID, pos: Int) extends unyo.utility.model.ID
   case class HLAtomID(value: Int) extends unyo.utility.model.ID
 
-  def buildMem(builder: Builder, json: JValue, parent: NodeBuilder) {
-    val JInt(id) = json \ "id"
+  def buildMem(builder: Builder, json: JValue, parent: NodeBuilder) { val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
     val JArray(mems) = json \ "membranes"
@@ -74,6 +74,46 @@ object LMN {
       buddy.addEdge(pos, id, 0)
       node.addEdge(0, buddy.id, pos)
     }
+  }
+
+  def removeProxies(builder: Builder) {
+    val proxies = removeProxies(builder, builder.root)
+    for (n <- proxies) builder.removeNode(n.id)
+  }
+  private def isProxy(node: NodeBuilder) = node.name == "$in" || node.name == "$out"
+
+  private def searchActualBuddy(self: NodeBuilder): (NodeBuilder, Seq[NodeBuilder]) = {
+    if (isProxy(self)) {
+      val proxy = self.edges(0).targetNode
+      val buddy = proxy.edges(1).targetNode
+      val (actualBuddy, proxies) = searchActualBuddy(buddy)
+      (actualBuddy, self +: proxy +: proxies)
+    } else {
+      (self, Seq.empty[NodeBuilder])
+    }
+  }
+
+  def removeProxies(builder: Builder, node: NodeBuilder): Seq[NodeBuilder] = {
+    if (isProxy(node)) return collection.mutable.ArrayBuffer.empty[NodeBuilder]
+
+    var allProxies = Seq.empty[NodeBuilder]
+
+    for (n <- node.childNodes) allProxies ++= removeProxies(builder, n)
+
+    for (e1 <- node.edges if isProxy(e1.targetNode)) {
+      val (other, proxies) = searchActualBuddy(e1.targetNode)
+      val e2 = proxies.last.edges(1).reverseEdge
+
+      e1.targetID = other.id
+      e1.targetPos = e2.reverseEdge.targetPos
+
+      e2.targetID = node.id
+      e2.targetPos = e1.reverseEdge.targetPos
+
+      allProxies ++= proxies
+    }
+
+    allProxies
   }
 
 }
