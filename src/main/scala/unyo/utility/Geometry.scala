@@ -42,7 +42,7 @@ case class Point(x: Double, y: Double) {
 case class Rect(point: Point, dim: Dim) {
   import scala.math.{max,min}
 
-  def center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
+  val center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
 
   val left   = point.x
   val right  = point.x + dim.width

@@ -56,10 +56,12 @@ class DefaultMover extends LMNtalPlugin.Mover {
     val params = LMNtalPlugin.config.forces.repulsion
     val lrect = vctx.viewOf(lhs).rect
     val rrect = vctx.viewOf(rhs).rect
-    val d = vctx.viewOf(lhs).rect.center - vctx.viewOf(rhs).rect.center
+    val dx = lrect.center.x - rrect.center.x
+    val dy = lrect.center.y - rrect.center.y
     val distance = lrect.distanceWith(rrect)
     val f = params.coef1 / (distance * distance / params.coef2 + 1)
-    d.unit * f
+    val abs = math.sqrt(dx * dx + dy * dy)
+    Point(dx * f / abs, dy * f / abs)
   }
 
   private def forceOfSpring(self: Node): Point = {
@@ -89,8 +91,11 @@ class DefaultMover extends LMNtalPlugin.Mover {
     } else {
       val parentView = vctx.viewOf(parent)
       val childView = vctx.viewOf(child)
-      val d = parentView.rect.center - childView.rect.center
-      d.unit * params.coef *  math.sqrt(d.abs * math.sqrt(surplusArea))
+      val dx = parentView.rect.center.x - childView.rect.center.x
+      val dy = parentView.rect.center.y - childView.rect.center.y
+      val abs = math.sqrt(dx * dx + dy * dy)
+      val coef = params.coef *  math.sqrt(abs * math.sqrt(surplusArea)) / abs
+      Point(dx * coef, dy * coef)
     }
   }
 
