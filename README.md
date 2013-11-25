@@ -16,8 +16,16 @@ Version 4
 * target内にUNYO-UNYO-assembly-x.x.x.jarが1種類だけある状態で、以下のコマンドを実行するとtarget/unyo.x.x.x.zipが生成される
 
 ```
-./minify.sh
-./pack.sh
+$ vim build.sbt # バージョン番号を更新
+$ vim template/README.md # 更新情報を記述
+$ rm -rf target
+$ sbt assembly
+$ ./minify.sh
+$ ./pack.sh
+$ # target/unyo.x.x.x.zipをアップロード
+$ git checkout master
+$ git merge release/vx.x.x
+$ git tag -a vx.x.x -m "Version x.x.x"
 ```
 
 * リリース時にはbuild.sbtのバージョンを更新し、git tagでタグ付けをする
