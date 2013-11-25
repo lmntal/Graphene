@@ -1,6 +1,6 @@
 package unyo.gui
 
-import unyo.util._
+import unyo.utility._
 import unyo.Env
 
 class GraphicsContext {
@@ -10,6 +10,10 @@ class GraphicsContext {
   var magnificationRate: Double = 1.0 // screen / world
 
   def wSize = Dim(sSize.width / magnificationRate, sSize.height / magnificationRate)
+  def wRect = Rect(
+    Point(wCenter.x - wSize.width / 2, wCenter.y - wSize.height / 2),
+    wSize
+  )
 
   def worldPointFrom(sp: Point) = Point(
     wCenter.x + (sp.x - sSize.width / 2) / magnificationRate,
@@ -29,10 +33,13 @@ class GraphicsContext {
   }
 
   def resize(sd: Dim) { sSize = sd }
-  def zoom(m: Double) {
+  def zoom(m: Double, sBase: Point) {
+    val sCenter = Point(sSize.width / 2, sSize.height / 2)
+    wCenter += (sBase - sCenter) / magnificationRate
     magnificationRate *= m
     magnificationRate = math.min(magnificationRate, 20)
     magnificationRate = math.max(0.05, magnificationRate)
+    wCenter -= (sBase - sCenter) / magnificationRate
   }
 
 }

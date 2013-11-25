@@ -1,4 +1,4 @@
-package unyo.util
+package unyo.utility
 
 object Geometry {
   import scala.language.implicitConversions
@@ -11,11 +11,24 @@ object Geometry {
 }
 
 case class Dim(width: Double, height: Double) {
-  require(width >= 0, "width of Dim should be positive")
-  require(height >= 0, "height of Dim should be positive")
+  require(width >= 0, s"width of ${this} should be positive")
+  require(height >= 0, s"height of ${this} should be positive")
+
+  def area = width * height
+}
+
+object Point {
+  def randomPointIn(rect: Rect) = {
+    val x = rect.dim.width  * Random.double + rect.point.x
+    val y = rect.dim.height * Random.double + rect.point.y
+    Point(x, y)
+  }
 }
 
 case class Point(x: Double, y: Double) {
+  require(!x.isNaN, s"x of ${this} should not be NaN")
+  require(!y.isNaN, s"y of ${this} should not be NaN")
+
   def +(other: Point) = Point(x + other.x, y + other.y)
   def -(other: Point) = Point(x - other.x, y - other.y)
   def *(other: Double) = Point(x * other, y * other)
@@ -23,18 +36,20 @@ case class Point(x: Double, y: Double) {
   def dot(other: Point) = x*other.x + y*other.y
   def sqabs: Double = dot(this)
   def abs: Double = math.sqrt(sqabs)
-  def unit: Point = this / abs
+  def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point(0, 0) else this / abs
 }
 
 case class Rect(point: Point, dim: Dim) {
   import scala.math.{max,min}
 
-  def center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
+  val center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
 
   val left   = point.x
   val right  = point.x + dim.width
   val top    = point.y
   val bottom = point.y + dim.height
+
+  def area = dim.area
 
   def contains(p: Point) =
     left <= p.x && p.x <= right &&
@@ -64,6 +79,16 @@ case class Rect(point: Point, dim: Dim) {
   def isCrossingWith(other: Rect) =
     ((this.left < other.right) ^ (this.right < other.left)) &&
     ((this.top < other.bottom) ^ (this.bottom < other.top))
+
+  def distanceWith(other: Rect) = {
+    if (isCrossingWith(other)) {
+      0
+    } else {
+      val xdiff = math.min((this.left - other.right).abs, (this.right - other.left).abs)
+      val ydiff = math.min((this.top - other.bottom).abs, (this.bottom - other.top).abs)
+      math.sqrt(xdiff * xdiff + ydiff * ydiff)
+    }
+  }
 }
 
 case class Padding(top: Double, right: Double, bottom: Double, left: Double)

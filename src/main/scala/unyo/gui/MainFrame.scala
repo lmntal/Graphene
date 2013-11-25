@@ -2,15 +2,15 @@ package unyo.gui
 
 import java.awt.{Dimension}
 
-import unyo.util._
-import unyo.util.Geometry._
+import unyo.utility._
+import unyo.utility.Geometry._
 import unyo.Env
 import unyo.Properties
 
 import unyo.swing.scalalike._
 
 object MainFrame {
-  def instance = new MainFrame
+  val instance = new MainFrame
 }
 
 class MainFrame extends javax.swing.JFrame with JFrameExt {
@@ -90,7 +90,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
           graphicsContext.moveBy(prevPoint - p)
           prevPoint = p
         }
-        case MouseWheelMoved(_, _, _, rot) => graphicsContext.zoom(math.pow(1.01, rot))
+        case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot), p)
         case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
@@ -101,7 +101,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         loop {
           val msec = System.currentTimeMillis
 
-          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 100)
+          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 1000)
           repaint()
 
           prevMsec = msec
@@ -115,6 +115,17 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         val g = gg.asInstanceOf[java.awt.Graphics2D]
 
         super.paintComponent(g)
+
+        g.clearRect(
+          0,
+          0,
+          graphicsContext.sSize.width.toInt,
+          graphicsContext.sSize.height.toInt
+        )
+
+        g.translate(graphicsContext.sSize.width/2, graphicsContext.sSize.height/2)
+        g.scale(graphicsContext.magnificationRate, graphicsContext.magnificationRate)
+        g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
         g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
         renderer.renderAll(g, graphicsContext, visualGraph)
@@ -132,7 +143,11 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       fileFilter_ = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
     }
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-      visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
+      try {
+        visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
+      } catch {
+        case e: java.io.IOException => println(e.getMessage)
+      }
     }
   }
 }

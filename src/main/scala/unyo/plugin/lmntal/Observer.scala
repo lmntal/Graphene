@@ -2,8 +2,8 @@ package unyo.plugin.lmntal
 
 import unyo.swing.scalalike._
 
-import unyo.util._
-import unyo.util.Geometry._
+import unyo.utility._
+import unyo.utility.Geometry._
 
 class Observer extends LMNtalPlugin.Observer {
 
@@ -16,11 +16,12 @@ class Observer extends LMNtalPlugin.Observer {
       val viewContext = LMNtalPlugin.runtime.current
       val pos = context.worldPointFrom(p)
       viewContext.viewOptAt(pos) match {
-        case Some(v) => view = v
+        case Some(v) => { view = v; v.fixed = true }
         case None =>
       }
     }
     case MouseReleased(_, p, _, _, _) => if (isNodeHandlable) {
+      view.fixed = false
       view = null
     }
     case MouseDragged(_, p, _) => if (isNodeHandlable) {
