@@ -26,13 +26,13 @@ class DefaultMover extends LMNtalPlugin.Mover {
 
     view.affect(Point(0, 0), vec, elapsedSec)
 
-    for (n <- vctx.childNodesOf(node)) move(n, elapsedSec, vec / vctx.childNodesOf(node).size)
+    for (n <- node.childNodes) move(n, elapsedSec, vec / node.childNodes.size)
   }
 
   private def resize(node: Node) {
-    for (n <- vctx.childNodesOf(node)) resize(n)
+    for (n <- node.childNodes) resize(n)
 
-    if (!vctx.childNodesOf(node).isEmpty) {
+    if (!node.childNodes.isEmpty) {
       node.attribute match {
         case Mem() => vctx.viewOf(node).rect = vctx.coverableRect(node)
         case _     =>
@@ -44,7 +44,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
     if (self.parent == null) {
       Point(0, 0)
     } else {
-      vctx.childNodesOf(self.parent).filter { other =>
+      self.parent.childNodes.filter { other =>
         self.id != other.id && self.parent.id == other.parent.id
       }.foldLeft(Point(0,0)) { (res, other) =>
         res + forceOfRepulsionBetween(self, other)
@@ -56,14 +56,16 @@ class DefaultMover extends LMNtalPlugin.Mover {
     val params = LMNtalPlugin.config.forces.repulsion
     val lrect = vctx.viewOf(lhs).rect
     val rrect = vctx.viewOf(rhs).rect
-    val d = vctx.viewOf(lhs).rect.center - vctx.viewOf(rhs).rect.center
+    val dx = lrect.center.x - rrect.center.x
+    val dy = lrect.center.y - rrect.center.y
     val distance = lrect.distanceWith(rrect)
     val f = params.coef1 / (distance * distance / params.coef2 + 1)
-    d.unit * f
+    val abs = math.sqrt(dx * dx + dy * dy)
+    Point(dx * f / abs, dy * f / abs)
   }
 
   private def forceOfSpring(self: Node): Point = {
-    vctx.neighborNodesOf(self).foldLeft(Point(0,0)) { (res, other) => res + forceOfStringBetween(self, other) }
+    self.neighborNodes.foldLeft(Point(0,0)) { (res, other) => res + forceOfStringBetween(self, other) }
   }
 
   private def forceOfStringBetween(lhs: Node, rhs: Node): Point = {
@@ -77,20 +79,23 @@ class DefaultMover extends LMNtalPlugin.Mover {
     // TODO: a bit dirty
     val view = vctx.viewOf(self)
     val f1 = if (self.parent == null) Point(0, 0) else forceOfContraction(self.parent, self)
-    val f2 = vctx.childNodesOf(self).view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
+    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
     f1 - f2
   }
 
   private def forceOfContraction(parent: Node, child: Node): Point = {
     val params = LMNtalPlugin.config.forces.contraction
-    val surplusArea = vctx.viewOf(parent).rect.area - vctx.allChildNodesOf(parent).size * params.areaPerNode
+    val surplusArea = vctx.viewOf(parent).rect.area - parent.allChildNodes.size * params.areaPerNode
     if (parent.isRoot || surplusArea < params.threshold) {
       Point(0, 0)
     } else {
       val parentView = vctx.viewOf(parent)
       val childView = vctx.viewOf(child)
-      val d = parentView.rect.center - childView.rect.center
-      d.unit * params.coef *  math.sqrt(d.abs * math.sqrt(surplusArea))
+      val dx = parentView.rect.center.x - childView.rect.center.x
+      val dy = parentView.rect.center.y - childView.rect.center.y
+      val abs = math.sqrt(dx * dx + dy * dy)
+      val coef = params.coef *  math.sqrt(abs * math.sqrt(surplusArea)) / abs
+      Point(dx * coef, dy * coef)
     }
   }
 

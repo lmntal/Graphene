@@ -21,14 +21,9 @@ class ViewContext {
 
   def viewOf(id: ID): View = viewNodeFromID(id)
   def viewOf(node: Node): View = viewNodeFromID.getOrElseUpdate(node.id, new View(node, initView(node)))
-  def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
-  def actualNode(node: Node): Node = if (!isProxy(node) || config.isProxyVisible) node else actualNode(node.neighborNodes(1).neighborNodes(0))
-  def neighborNodesOf(node: Node) = node.neighborNodes.map(actualNode(_))
-  def childNodesOf(node: Node) = node.childNodes.filter(!isProxy(_) || config.isProxyVisible)
-  def allChildNodesOf(node: Node) = node.allChildNodes.filter(!isProxy(_) || config.isProxyVisible)
 
   def coverableRect(g: Node): Rect = {
-    val rects = childNodesOf(g).map(viewOf(_).rect)
+    val rects = g.childNodes.map(viewOf(_).rect)
     if (rects.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
     else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
@@ -71,12 +66,12 @@ class ViewContext {
   }
   private def updateGraph(graph: Graph) = updateNode(graph.rootNode)
   private def updateNode(node: Node) {
-    for (n <- childNodesOf(node)) viewOf(n)
-    for (n <- childNodesOf(node)) updateNode(n)
+    for (n <- node.childNodes) viewOf(n)
+    for (n <- node.childNodes) updateNode(n)
   }
 
   def viewOptAt(wp: Point): Option[View] = {
-    graph.rootNode.allChildNodes.filter(childNodesOf(_).isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
+    graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).map(viewOf(_)).find(_.rect.contains(wp))
   }
 
   def transaction(f: => Unit) {
@@ -103,7 +98,12 @@ class View(node: Node, var rect: Rect) {
     diff = (speed + s) * elapsedSec
   }
   def move() {
-    rect = Rect(rect.point + diff, rect.dim)
+    val abs = diff.abs
+    if (abs < LMNtalPlugin.config.forces.maxForce) {
+      rect = Rect(rect.point + diff, rect.dim)
+    } else {
+      rect = Rect(rect.point + diff.unit * 100, rect.dim)
+    }
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
