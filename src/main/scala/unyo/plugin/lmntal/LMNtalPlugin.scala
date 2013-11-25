@@ -8,6 +8,7 @@ class Config {
   var isProxyVisible = false
   var isDiffAnimationEnabled = false
   object forces {
+    val maxForce = 100.0
     object repulsion {
       var coef1 = 80.0
       var coef2 = 1000.0

@@ -98,7 +98,12 @@ class View(node: Node, var rect: Rect) {
     diff = (speed + s) * elapsedSec
   }
   def move() {
-    rect = Rect(rect.point + diff, rect.dim)
+    val abs = diff.abs
+    if (abs < LMNtalPlugin.config.forces.maxForce) {
+      rect = Rect(rect.point + diff, rect.dim)
+    } else {
+      rect = Rect(rect.point + diff.unit * 100, rect.dim)
+    }
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
