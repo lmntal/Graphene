@@ -39,6 +39,38 @@ case class Point(x: Double, y: Double) {
   def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point(0, 0) else this / abs
 }
 
+object Line {
+
+  class LineBuilder(from: Point) {
+    def to(p: Point) = Line(from, p)
+  }
+
+  def from(p: Point) = new LineBuilder(p)
+}
+
+case class Line(from: Point, to: Point) {
+  def isCrossing(other: Line) = {
+
+    def side(p: Point, l: Line) = {
+      val x1 = p.x
+      val y1 = p.y
+      val x2 = l.from.x
+      val y2 = l.from.y
+      val x3 = l.to.x
+      val y3 = l.to.y
+
+      (x1 - x2) * (y3 - y1) + (y1 - y2) * (x1 - x3)
+    }
+
+    val p1 = from
+    val p2 = to
+    val p3 = other.from
+    val p4 = other.to
+
+    side(p1, other) * side(p2, other) < 0 && side(p3, this) * side(p4, this) < 0
+  }
+}
+
 case class Rect(point: Point, dim: Dim) {
   import scala.math.{max,min}
 
