@@ -35,7 +35,7 @@ case class Point(x: Double, y: Double) {
   def /(other: Double) = Point(x / other, y / other)
   def dot(other: Point) = x*other.x + y*other.y
   def sqabs: Double = dot(this)
-  def abs: Double = math.sqrt(sqabs)
+  def abs: Double = math.hypot(x, y)
   def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point(0, 0) else this / abs
 }
 
