@@ -1,4 +1,4 @@
-package unyo.utility
+package unyo.util
 
 object Geometry {
   import scala.language.implicitConversions

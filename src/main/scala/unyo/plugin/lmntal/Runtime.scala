@@ -7,7 +7,7 @@ import collection.JavaConversions._
 
 import scala.actors.Actor._
 
-import unyo.utility.model._
+import unyo.model._
 
 class LMNtalRuntime extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null

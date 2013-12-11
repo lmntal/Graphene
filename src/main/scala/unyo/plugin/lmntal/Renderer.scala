@@ -2,9 +2,9 @@ package unyo.plugin.lmntal
 
 import java.awt.{Graphics,Graphics2D,Color}
 
-import unyo.utility._
-import unyo.utility.Geometry._
-import unyo.gui.GraphicsContext
+import unyo.util._
+import unyo.util.Geometry._
+import unyo.core.gui.GraphicsContext
 
 trait Renderer {
   implicit class GraphicsExt(val g: Graphics) {
@@ -45,7 +45,7 @@ trait Renderer {
 
 class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
-  import unyo.utility.model._
+  import unyo.model._
 
   var g: Graphics2D = null
   var gctx: GraphicsContext = null

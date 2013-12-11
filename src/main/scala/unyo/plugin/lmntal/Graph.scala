@@ -9,16 +9,16 @@ case class Attribute(value: Int) {
   def isHL = value == 0x8a
 }
 
-case class Atom() extends unyo.utility.model.Attr
-case class HLAtom() extends unyo.utility.model.Attr
-case class Mem() extends unyo.utility.model.Attr
+case class Atom() extends unyo.model.Attr
+case class HLAtom() extends unyo.model.Attr
+case class Mem() extends unyo.model.Attr
 
 object LMN {
 
   import org.json4s._
   import org.json4s.native.JsonMethods._
-  import unyo.utility.model.{Builder,Graph}
-  import unyo.utility.model.{Builder,NodeBuilder,EdgeBuilder}
+  import unyo.model.{Builder,Graph}
+  import unyo.model.{Builder,NodeBuilder,EdgeBuilder}
 
   def fromString(s: String): Graph = {
     val builder = new Builder
@@ -27,9 +27,9 @@ object LMN {
     builder.build
   }
 
-  case class IntID(value: Int) extends unyo.utility.model.ID
-  case class DataAtomID(id: unyo.utility.model.ID, pos: Int) extends unyo.utility.model.ID
-  case class HLAtomID(value: Int) extends unyo.utility.model.ID
+  case class IntID(value: Int) extends unyo.model.ID
+  case class DataAtomID(id: unyo.model.ID, pos: Int) extends unyo.model.ID
+  case class HLAtomID(value: Int) extends unyo.model.ID
 
   def buildMem(builder: Builder, json: JValue, parent: NodeBuilder) { val JInt(id) = json \ "id"
     val JString(name) = json \ "name"

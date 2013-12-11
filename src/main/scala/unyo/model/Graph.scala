@@ -1,4 +1,4 @@
-package unyo.utility.model
+package unyo.model
 
 trait ID
 trait Attr
@@ -88,7 +88,7 @@ class NodeBuilder(var id: ID, var name: String, val parent: NodeBuilder, b: Buil
 class Builder {
 
   import collection.mutable.{ArrayBuffer => Buffer, Map}
-  import unyo.utility.Tapper._
+  import unyo.util.Tapper._
 
   private val nodeFromID = Map.empty[ID,NodeBuilder]
   private val nodesFromParentID = Map.empty[ID,Buffer[NodeBuilder]]

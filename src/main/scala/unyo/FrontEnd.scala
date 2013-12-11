@@ -1,6 +1,6 @@
 package unyo
 
-import unyo.gui.MainFrame
+import unyo.core.gui.MainFrame
 
 object FrontEnd extends App {
 

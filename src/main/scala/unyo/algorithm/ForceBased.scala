@@ -1,6 +1,6 @@
 package unyo.algorithm
 
-import unyo.utility._
+import unyo.util._
 import math.{pow,sqrt}
 
 object ForceBased {

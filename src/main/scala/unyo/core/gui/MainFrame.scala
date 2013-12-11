@@ -1,11 +1,10 @@
-package unyo.gui
+package unyo.core.gui
 
 import java.awt.{Dimension}
 
-import unyo.utility._
-import unyo.utility.Geometry._
-import unyo.Env
-import unyo.Properties
+import unyo.util._
+import unyo.util.Geometry._
+import unyo.core.{Env,Properties}
 
 import unyo.swing.scalalike._
 

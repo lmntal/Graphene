@@ -1,7 +1,7 @@
 package unyo.plugin.lmntal
 
-import unyo.utility._
-import unyo.utility.model._
+import unyo.util._
+import unyo.model._
 import unyo.algorithm.{ForceBased}
 
 class DefaultMover extends LMNtalPlugin.Mover {

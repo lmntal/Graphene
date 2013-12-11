@@ -1,15 +1,15 @@
 package unyo.plugin.lmntal
 
 
-import unyo.utility._
-import unyo.utility.model._
+import unyo.util._
+import unyo.model._
 
 class ViewContext {
   private val viewNodeFromID = collection.mutable.Map.empty[ID, View]
 
   lazy val config = LMNtalPlugin.config
 
-  lazy val gctx = unyo.gui.MainFrame.instance.mainPanel.graphicsContext
+  lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
   private def initView(node: Node): Rect = {
     node.attribute match {
       case Atom()   => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))

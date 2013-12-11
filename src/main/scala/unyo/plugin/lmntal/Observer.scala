@@ -2,8 +2,8 @@ package unyo.plugin.lmntal
 
 import unyo.swing.scalalike._
 
-import unyo.utility._
-import unyo.utility.Geometry._
+import unyo.util._
+import unyo.util.Geometry._
 
 class Observer extends LMNtalPlugin.Observer {
 
@@ -11,7 +11,7 @@ class Observer extends LMNtalPlugin.Observer {
 
   var view: View = null
   var isNodeHandlable = false
-  def listenOn(context: unyo.gui.GraphicsContext): Reactions.Reaction = {
+  def listenOn(context: unyo.core.gui.GraphicsContext): Reactions.Reaction = {
     case MousePressed(_, p, _, _, _) => if (isNodeHandlable) {
       val viewContext = LMNtalPlugin.runtime.current
       val pos = context.worldPointFrom(p)

@@ -1,4 +1,4 @@
-package unyo
+package unyo.core
 
 import java.io.{File,FileReader,PrintWriter,FileWriter}
 
