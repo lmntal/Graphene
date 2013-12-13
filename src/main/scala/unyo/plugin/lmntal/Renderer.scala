@@ -49,19 +49,18 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
 
   var g: Graphics2D = null
   var gctx: GraphicsContext = null
-  var vctx: ViewContext = null
-  def renderAll(gg: Graphics, gctx: GraphicsContext, vctx: ViewContext) {
+  var graph: Graph = _
+  def renderAll(gg: Graphics, gctx: GraphicsContext, graph: Graph) {
     g = gg.asInstanceOf[Graphics2D];
     this.gctx = gctx
-    this.vctx = vctx
+    this.graph = graph
 
     renderGrid
 
-    if (vctx == null) return
-    if (vctx.graph == null) return
+    if (graph == null) return
 
-    for (node <- vctx.graph.rootNode.childNodes) renderEdges(node)
-    for (node <- vctx.graph.rootNode.childNodes) renderNode(node)
+    for (node <- graph.rootNode.childNodes) renderEdges(node)
+    for (node <- graph.rootNode.childNodes) renderNode(node)
   }
 
   def renderGrid {
@@ -86,7 +85,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
   def renderNode(node: Node) {
     // if (node.isProxy) return
 
-    val viewNode = vctx.viewOf(node)
+    val viewNode = node.view
     val rect = viewNode.rect
 
     if (viewNode.willDisappear) {
@@ -103,7 +102,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
       g.setPaint(oldPaint)
     }
 
-    node.attribute match {
+    node.attr match {
       case Atom() => {
         g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
         g.setColor(new Color(52, 152, 219))
@@ -134,11 +133,11 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
   def renderEdges(node: Node) {
     // if (node.isProxy) return
 
-    val view1 = vctx.viewOf(node)
+    val view1 = node.view
     g.setColor(new Color(41, 128, 185))
     for (i <- 0 until node.neighborNodes.size) {
       var buddy = node.neighborNodes(i)
-      val view2 = vctx.viewOf(buddy)
+      val view2 = buddy.view
 
       g.drawLine(
         view1.rect.center,

@@ -4,16 +4,30 @@ import unyo.util._
 import unyo.model._
 import unyo.algorithm.{ForceBased}
 
+object DefaultMover {
+  private def transaction(graph: Graph)(f: => Unit) {
+    for (node <- graph.allNodes) node.view.reset
+    f
+    for (node <- graph.allNodes) node.view.move
+  }
+}
+
 class DefaultMover extends LMNtalPlugin.Mover {
 
-  var vctx: ViewContext = null
-  def moveAll(vctx: ViewContext, elapsedSec: Double) {
-    if (vctx == null || vctx.graph == null) return
-    this.vctx = vctx
-    vctx.transaction {
-      move(vctx.graph.rootNode, elapsedSec, Point(0, 0))
+  private def coverableRect(node: Node): Rect = {
+    val rects = node.childNodes.map(_.view.rect)
+    if (rects.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
+    else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
+  }
+
+  var graph: Graph = null
+  def moveAll(graph: Graph, elapsedSec: Double) {
+    if (graph == null) return
+    this.graph = graph
+    DefaultMover.transaction(graph) {
+      move(graph.rootNode, elapsedSec, Point(0, 0))
     }
-    resize(vctx.graph.rootNode)
+    resize(graph.rootNode)
   }
 
   private def move(node: Node, elapsedSec: Double, parentForce: Point) {
@@ -21,7 +35,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
               forceOfSpring(node) +
               forceOfContraction(node) +
               parentForce
-    val view = vctx.viewOf(node)
+    val view = node.view
 
     if (view.fixed) return
 
@@ -34,8 +48,8 @@ class DefaultMover extends LMNtalPlugin.Mover {
     for (n <- node.childNodes) resize(n)
 
     if (!node.childNodes.isEmpty) {
-      node.attribute match {
-        case Mem() => vctx.viewOf(node).rect = vctx.coverableRect(node)
+      node.attr match {
+        case Mem() => node.view.rect = coverableRect(node)
         case _     =>
       }
     }
@@ -46,22 +60,22 @@ class DefaultMover extends LMNtalPlugin.Mover {
       Point(0, 0)
     } else {
       val params = LMNtalPlugin.config.forces.repulsion
-      val selfView = vctx.viewOf(self).rect
-      val otherViews = self.parent.childNodes.map(vctx.viewOf(_).rect)
+      val selfView = self.view.rect
+      val otherViews = self.parent.childNodes.map(_.view.rect)
       ForceBased.repulsion(selfView, otherViews, params.coef1, params.coef2)
     }
   }
 
   private def forceOfSpring(self: Node): Point = {
     val params = LMNtalPlugin.config.forces.spring
-    val selfPoint = vctx.viewOf(self).rect.center
-    val otherPoints = self.neighborNodes.map(vctx.viewOf(_).rect.center)
+    val selfPoint = self.view.rect.center
+    val otherPoints = self.neighborNodes.map(_.view.rect.center)
     ForceBased.spring(selfPoint, otherPoints, params.constant, params.length)
   }
 
   private def forceOfContraction(self: Node): Point = {
     // TODO: a bit dirty
-    val view = vctx.viewOf(self)
+    val view = self.view
     val f1 = if (self.parent == null) Point(0, 0) else forceOfContraction(self.parent, self)
     val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
     f1 - f2
@@ -69,12 +83,12 @@ class DefaultMover extends LMNtalPlugin.Mover {
 
   private def forceOfContraction(parent: Node, child: Node): Point = {
     val params = LMNtalPlugin.config.forces.contraction
-    val surplusArea = vctx.viewOf(parent).rect.area - parent.allChildNodes.size * params.areaPerNode
+    val surplusArea = parent.view.rect.area - parent.allChildNodes.size * params.areaPerNode
     if (parent.isRoot || surplusArea < params.threshold) {
       Point(0, 0)
     } else {
-      val parentView = vctx.viewOf(parent)
-      val childView = vctx.viewOf(child)
+      val parentView = parent.view
+      val childView = child.view
       ForceBased.attraction(childView.rect.center, parentView.rect.center, params.coef, math.sqrt(surplusArea))
     }
   }

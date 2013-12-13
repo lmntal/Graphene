@@ -11,17 +11,16 @@ import unyo.model._
 
 class LMNtalRuntime extends LMNtalPlugin.Runtime {
   var runner: SlimRunner = null
-  var viewContext: ViewContext = null
-  def exec(options: Seq[String]): ViewContext = {
+  var graph: Graph = null
+  def exec(options: Seq[String]): Graph = {
     runner = new SlimRunner(LMNtalPlugin.config.slimPath, options)
-    viewContext = new ViewContext
-    viewContext.rewrite(runner.next)
-    viewContext
+    graph = runner.next
+    graph
   }
-  def current = viewContext
+  def current = graph
   def next = {
-    viewContext.rewrite(runner.next)
-    viewContext
+    graph = runner.next.inheritViews(graph)
+    graph
   }
   def hasNext = runner.hasNext
 }

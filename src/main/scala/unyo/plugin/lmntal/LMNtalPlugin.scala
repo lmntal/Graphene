@@ -26,7 +26,7 @@ class Config {
 }
 
 object LMNtalPlugin extends Plugin {
-  type GraphType = ViewContext
+  type GraphType = unyo.model.Graph
 
   val name = "LMNtal"
 
