@@ -7,12 +7,12 @@ import unyo.util.Geometry._
 
 import unyo.model._
 
-class Observer extends LMNtalPlugin.Observer {
+class Observer extends LMNtal.Observer {
 
   import java.awt.event.{KeyEvent}
 
   private def viewOptAt(wp: Point): Option[View] = {
-    val graph = LMNtalPlugin.runtime.current
+    val graph = LMNtal.source.current
     graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).find(_.view.rect.contains(wp)).map(_.view)
   }
 

@@ -12,7 +12,7 @@ object DefaultMover {
   }
 }
 
-class DefaultMover extends LMNtalPlugin.Mover {
+class DefaultMover extends LMNtal.Mover {
 
   private def coverableRect(node: Node): Rect = {
     val rects = node.childNodes.map(_.view.rect)
@@ -59,7 +59,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
     if (self.parent == null) {
       Point(0, 0)
     } else {
-      val params = LMNtalPlugin.config.forces.repulsion
+      val params = LMNtal.config.forces.repulsion
       val selfView = self.view.rect
       val otherViews = self.parent.childNodes.map(_.view.rect)
       ForceBased.repulsion(selfView, otherViews, params.coef1, params.coef2)
@@ -67,7 +67,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   private def forceOfSpring(self: Node): Point = {
-    val params = LMNtalPlugin.config.forces.spring
+    val params = LMNtal.config.forces.spring
     val selfPoint = self.view.rect.center
     val otherPoints = self.neighborNodes.map(_.view.rect.center)
     ForceBased.spring(selfPoint, otherPoints, params.constant, params.length)
@@ -82,7 +82,7 @@ class DefaultMover extends LMNtalPlugin.Mover {
   }
 
   private def forceOfContraction(parent: Node, child: Node): Point = {
-    val params = LMNtalPlugin.config.forces.contraction
+    val params = LMNtal.config.forces.contraction
     val surplusArea = parent.view.rect.area - parent.allChildNodes.size * params.areaPerNode
     if (parent.isRoot || surplusArea < params.threshold) {
       Point(0, 0)

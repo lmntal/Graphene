@@ -43,7 +43,7 @@ trait Renderer {
   }
 }
 
-class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
+class DefaultRenderer extends LMNtal.Renderer with Renderer {
 
   import unyo.model._
 

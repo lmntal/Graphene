@@ -40,15 +40,15 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
 
 class MainPanel extends javax.swing.JPanel with JPanelExt {
 
-  import unyo.plugin.lmntal.LMNtalPlugin
+  import unyo.plugin.lmntal.LMNtal
 
   val properties = Properties.load("unyo.properties")
 
-  val plugin = LMNtalPlugin
+  val plugin = LMNtal
   plugin.importProperties(Properties.load(plugin.name + ".properties"))
   val mover = plugin.mover
   val renderer = plugin.renderer
-  val runtime = plugin.runtime
+  val source = plugin.source
   val observer = plugin.observer
   val controlPanel = plugin.controlPanel
 
@@ -90,7 +90,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
           prevPoint = p
         }
         case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot), p)
-        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
+        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && source.hasNext) visualGraph = source.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
       reactions += observer.listenOn(graphicsContext)
@@ -143,7 +143,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
     }
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       try {
-        visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
+        visualGraph = source.run(Seq(chooser.selectedFile.getAbsolutePath))
       } catch {
         case e: java.io.IOException => println(e.getMessage)
       }

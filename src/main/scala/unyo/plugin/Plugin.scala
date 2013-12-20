@@ -10,7 +10,7 @@ trait Plugin {
 
   def renderer: Renderer
   def observer: Observer
-  def runtime: Runtime
+  def source: Source
   def mover: Mover
   def controlPanel: javax.swing.JPanel
 
@@ -23,8 +23,8 @@ trait Plugin {
     def canMoveScreen: Boolean
   }
 
-  trait Runtime {
-    def exec(options: Seq[String]): GraphType
+  trait Source {
+    def run(options: Seq[String]): GraphType
     def current: GraphType
     def next: GraphType
     def hasNext: Boolean
