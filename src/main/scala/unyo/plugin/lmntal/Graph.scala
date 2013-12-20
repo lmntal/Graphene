@@ -103,7 +103,47 @@ object LMN {
     }
   }
 
-  def removeProxies(graph: Graph): Unit = {
+  private def removeProxies(graph: Graph): Unit = {
+    val proxies = removeProxies(graph.rootNode)
+    for (p <- proxies) p.removeFromParent
   }
 
+  private def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
+
+  private def searchActualBuddy(self: Node): (Node, Seq[Node]) = {
+    if (isProxy(self)) {
+      val proxy = self.neighborNodeAt(1)
+      println(proxy)
+      val buddy = proxy.neighborNodeAt(0)
+      val (actualBuddy, proxies) = searchActualBuddy(buddy)
+      (actualBuddy, self +: proxy +: proxies)
+    } else {
+      (self, Seq.empty[Node])
+    }
+  }
+
+  private def reverseEdge(node: Node, pos: Int): Edge = node.neighborNodeAt(pos).edges(node.edges(pos).target.pos)
+
+  private def removeProxies(self: Node): Seq[Node] = {
+    val proxies = collection.mutable.ArrayBuffer.empty[Node]
+
+    for (n <- self.childNodes) proxies ++= removeProxies(n)
+
+    if (isProxy(self)) {
+      val port1 = self.edges(0).target
+      val port2 = self.edges(1).target
+      val node1 = self.neighborNodeAt(0)
+      val node2 = self.neighborNodeAt(1)
+
+      node1.edges(port1.pos).target = port2
+      node2.edges(port2.pos).target = port1
+
+      proxies += self
+    }
+    proxies
+  }
+
+
+
 }
+

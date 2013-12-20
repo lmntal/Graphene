@@ -88,6 +88,7 @@ class Node(val id: ID, var name: String, var attr: Attr = null) {
   def addChildNode(n: Node): Node = { childNodes += n; n.graph = graph; n.parent = this; graph.register(n); this }
   def removeChildNode(n: Node): Node = { childNodes -= n; graph.unregister(n); this }
   def addEdgeTo(p: Port): Node = { edges += new Edge(new Port(id, edges.size), p); this }
+  def removeFromParent = parent.removeChildNode(this)
 
   def neighborNodeAt(pos: Int) = graph.nodeOf(edges(pos).target.id)
   def neighborNodes: Seq[Node] = edges.map { e => graph.nodeOf(e.target.id) }
@@ -95,4 +96,6 @@ class Node(val id: ID, var name: String, var attr: Attr = null) {
   def isRoot = parent == null
 
   def view = graph.viewOf(this)
+
+  override def toString = s"Node(${id}, ${name}, ${arity}, ${attr})"
 }
