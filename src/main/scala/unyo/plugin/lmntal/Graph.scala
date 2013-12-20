@@ -4,13 +4,6 @@ import collection.mutable.Set
 
 import unyo.util._
 
-case class Attribute(value: Int) {
-  def isRef = (value & 0x80) == 0
-  def targetPos = value & 0x7F
-  def isData = !isRef
-  def isHL = value == 0x8a
-}
-
 case class Atom() extends unyo.model.Attr
 case class HLAtom() extends unyo.model.Attr
 case class Mem() extends unyo.model.Attr
@@ -21,17 +14,13 @@ object LMN {
   import org.json4s.native.JsonMethods._
   import unyo.model._
 
-  def fromString(s: String): Graph = {
-    val graph = buildGraph(parse(s))
-    removeProxies(graph)
-    graph
-  }
+  def fromString(s: String): Graph = removeProxies(buildGraph(parse(s)))
 
   case class IntID(value: Int) extends unyo.model.ID
   case class DataAtomID(id: unyo.model.ID, pos: Int) extends unyo.model.ID
   case class HLAtomID(value: Int) extends unyo.model.ID
 
-  def buildGraph(json: JValue): Graph = {
+  private def buildGraph(json: JValue): Graph = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
@@ -56,7 +45,7 @@ object LMN {
     graph
   }
 
-  def buildMem(json: JValue, parent: Node): Unit = {
+  private def buildMem(json: JValue, parent: Node): Unit = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
@@ -68,7 +57,7 @@ object LMN {
     for (a <- atoms) buildAtom(a, node)
   }
 
-  def buildAtom(json: JValue, parent: Node): Unit = {
+  private def buildAtom(json: JValue, parent: Node): Unit = {
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     var JArray(links) = json \ "links"
@@ -79,9 +68,17 @@ object LMN {
     for ((l,i) <- links.zipWithIndex) buildLink(l, parent, node, i)
   }
 
-  def buildLink(json: JValue, parent: Node, buddy: Node, buddyPos: Int): Unit = {
+  private def buildLink(json: JValue, parent: Node, buddy: Node, buddyPos: Int): Unit = {
+    case class Attribute(value: Int) {
+      def isRef = (value & 0x80) == 0
+      def targetPos = value & 0x7F
+      def isData = !isRef
+      def isHL = value == 0x8a
+    }
+
     val JInt(attr) = json \ "attr"
     val attribute = Attribute(attr.toInt)
+
     if (attribute.isRef) {
       (json \ "data") match {
         case JInt(i) => buddy.addEdgeTo(Port(IntID(i.toInt), attribute.targetPos))
@@ -103,44 +100,23 @@ object LMN {
     }
   }
 
-  private def removeProxies(graph: Graph): Unit = {
-    val proxies = removeProxies(graph.rootNode)
-    for (p <- proxies) p.removeFromParent
-  }
-
   private def isProxy(node: Node) = node.name == "$in" || node.name == "$out"
 
-  private def searchActualBuddy(self: Node): (Node, Seq[Node]) = {
-    if (isProxy(self)) {
-      val proxy = self.neighborNodeAt(1)
-      println(proxy)
-      val buddy = proxy.neighborNodeAt(0)
-      val (actualBuddy, proxies) = searchActualBuddy(buddy)
-      (actualBuddy, self +: proxy +: proxies)
-    } else {
-      (self, Seq.empty[Node])
-    }
+  private def removeProxies(graph: Graph): Graph = {
+    val proxies = graph.allNodes.filter(isProxy(_))
+    for (p <- proxies) removeProxy(p)
+    for (p <- proxies) p.removeFromParent
+    graph
   }
 
-  private def reverseEdge(node: Node, pos: Int): Edge = node.neighborNodeAt(pos).edges(node.edges(pos).target.pos)
+  private def removeProxy(proxy: Node): Unit = {
+    val port1 = proxy.edges(0).target
+    val port2 = proxy.edges(1).target
+    val node1 = proxy.neighborNodeAt(0)
+    val node2 = proxy.neighborNodeAt(1)
 
-  private def removeProxies(self: Node): Seq[Node] = {
-    val proxies = collection.mutable.ArrayBuffer.empty[Node]
-
-    for (n <- self.childNodes) proxies ++= removeProxies(n)
-
-    if (isProxy(self)) {
-      val port1 = self.edges(0).target
-      val port2 = self.edges(1).target
-      val node1 = self.neighborNodeAt(0)
-      val node2 = self.neighborNodeAt(1)
-
-      node1.edges(port1.pos).target = port2
-      node2.edges(port2.pos).target = port1
-
-      proxies += self
-    }
-    proxies
+    node1.edges(port1.pos).target = port2
+    node2.edges(port2.pos).target = port1
   }
 
 
