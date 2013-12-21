@@ -1,4 +1,4 @@
-package unyo.utility
+package unyo.util
 
 object Random {
   val r = new util.Random

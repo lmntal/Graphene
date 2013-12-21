@@ -1,4 +1,4 @@
-package unyo.utility.view
+package unyo.util.view
 
 import javax.swing.{JPanel}
 import unyo.swing.scalalike._

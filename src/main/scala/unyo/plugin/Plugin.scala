@@ -10,21 +10,21 @@ trait Plugin {
 
   def renderer: Renderer
   def observer: Observer
-  def runtime: Runtime
+  def source: Source
   def mover: Mover
   def controlPanel: javax.swing.JPanel
 
   trait Renderer {
-    def renderAll(g: java.awt.Graphics, context: unyo.gui.GraphicsContext, graph: GraphType)
+    def renderAll(g: java.awt.Graphics, context: unyo.core.gui.GraphicsContext, graph: GraphType)
   }
 
   trait Observer {
-    def listenOn(context: unyo.gui.GraphicsContext): unyo.swing.scalalike.Reactions.Reaction
+    def listenOn(context: unyo.core.gui.GraphicsContext): unyo.swing.scalalike.Reactions.Reaction
     def canMoveScreen: Boolean
   }
 
-  trait Runtime {
-    def exec(options: Seq[String]): GraphType
+  trait Source {
+    def run(options: Seq[String]): GraphType
     def current: GraphType
     def next: GraphType
     def hasNext: Boolean

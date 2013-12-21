@@ -25,8 +25,8 @@ class Config {
   }
 }
 
-object LMNtalPlugin extends Plugin {
-  type GraphType = ViewContext
+object LMNtal extends Plugin {
+  type GraphType = unyo.model.Graph
 
   val name = "LMNtal"
 
@@ -44,7 +44,7 @@ object LMNtalPlugin extends Plugin {
     properties
   }
 
-  val runtime = new LMNtalRuntime
+  val source = new LMNtalSource
   val renderer = new DefaultRenderer
   val observer = new unyo.plugin.lmntal.Observer
   val mover = new DefaultMover

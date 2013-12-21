@@ -14,7 +14,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
   val panel = new JPanel with JPanelExt {
 
-    import unyo.utility.view.{ParamControls,LogParamControls}
+    import unyo.util.view.{ParamControls,LogParamControls}
 
     layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
     background_ = Color.WHITE

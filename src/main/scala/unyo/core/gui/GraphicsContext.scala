@@ -1,7 +1,7 @@
-package unyo.gui
+package unyo.core.gui
 
-import unyo.utility._
-import unyo.Env
+import unyo.util._
+import unyo.core.Env
 
 class GraphicsContext {
 

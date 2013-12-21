@@ -2,20 +2,26 @@ package unyo.plugin.lmntal
 
 import unyo.swing.scalalike._
 
-import unyo.utility._
-import unyo.utility.Geometry._
+import unyo.util._
+import unyo.util.Geometry._
 
-class Observer extends LMNtalPlugin.Observer {
+import unyo.model._
+
+class Observer extends LMNtal.Observer {
 
   import java.awt.event.{KeyEvent}
 
+  private def viewOptAt(wp: Point): Option[View] = {
+    val graph = LMNtal.source.current
+    graph.rootNode.allChildNodes.filter(_.childNodes.isEmpty).find(_.view.rect.contains(wp)).map(_.view)
+  }
+
   var view: View = null
   var isNodeHandlable = false
-  def listenOn(context: unyo.gui.GraphicsContext): Reactions.Reaction = {
+  def listenOn(context: unyo.core.gui.GraphicsContext): Reactions.Reaction = {
     case MousePressed(_, p, _, _, _) => if (isNodeHandlable) {
-      val viewContext = LMNtalPlugin.runtime.current
       val pos = context.worldPointFrom(p)
-      viewContext.viewOptAt(pos) match {
+      viewOptAt(pos) match {
         case Some(v) => { view = v; v.fixed = true }
         case None =>
       }

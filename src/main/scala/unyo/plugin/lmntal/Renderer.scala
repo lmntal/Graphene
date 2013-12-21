@@ -2,9 +2,9 @@ package unyo.plugin.lmntal
 
 import java.awt.{Graphics,Graphics2D,Color}
 
-import unyo.utility._
-import unyo.utility.Geometry._
-import unyo.gui.GraphicsContext
+import unyo.util._
+import unyo.util.Geometry._
+import unyo.core.gui.GraphicsContext
 
 trait Renderer {
   implicit class GraphicsExt(val g: Graphics) {
@@ -43,28 +43,28 @@ trait Renderer {
   }
 }
 
-class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
+class DefaultRenderer extends LMNtal.Renderer with Renderer {
 
-  import unyo.utility.model._
+  import unyo.model._
 
   var g: Graphics2D = null
   var gctx: GraphicsContext = null
-  var vctx: ViewContext = null
-  def renderAll(gg: Graphics, gctx: GraphicsContext, vctx: ViewContext) {
+  var graph: Graph = _
+
+  def renderAll(gg: Graphics, gctx: GraphicsContext, graph: Graph): Unit = {
     g = gg.asInstanceOf[Graphics2D];
     this.gctx = gctx
-    this.vctx = vctx
+    this.graph = graph
 
     renderGrid
 
-    if (vctx == null) return
-    if (vctx.graph == null) return
+    if (graph == null) return
 
-    for (node <- vctx.graph.rootNode.childNodes) renderEdges(node)
-    for (node <- vctx.graph.rootNode.childNodes) renderNode(node)
+    for (node <- graph.rootNode.childNodes) renderEdges(node)
+    for (node <- graph.rootNode.childNodes) renderNode(node)
   }
 
-  def renderGrid {
+  private def renderGrid: Unit = {
     val bx = gctx.wCenter.x - gctx.wSize.width / 2
     val ex = gctx.wCenter.x + gctx.wSize.width / 2
     val by = gctx.wCenter.y - gctx.wSize.height / 2
@@ -83,10 +83,10 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     }
   }
 
-  def renderNode(node: Node) {
+  private def renderNode(node: Node): Unit = {
     // if (node.isProxy) return
 
-    val viewNode = vctx.viewOf(node)
+    val viewNode = node.view
     val rect = viewNode.rect
 
     if (viewNode.willDisappear) {
@@ -103,7 +103,7 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
       g.setPaint(oldPaint)
     }
 
-    node.attribute match {
+    node.attr match {
       case Atom() => {
         g.setFont(new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16))
         g.setColor(new Color(52, 152, 219))
@@ -131,18 +131,12 @@ class DefaultRenderer extends LMNtalPlugin.Renderer with Renderer {
     for (n <- node.childNodes) renderNode(n)
   }
 
-  def renderEdges(node: Node) {
-    // if (node.isProxy) return
-
-    val view1 = vctx.viewOf(node)
+  private def renderEdges(node: Node): Unit = {
     g.setColor(new Color(41, 128, 185))
-    for (i <- 0 until node.neighborNodes.size) {
-      var buddy = node.neighborNodes(i)
-      val view2 = vctx.viewOf(buddy)
-
+    for (buddy <- node.neighborNodes) {
       g.drawLine(
-        view1.rect.center,
-        view2.rect.center
+        node.view.rect.center,
+        buddy.view.rect.center
       )
     }
   }
