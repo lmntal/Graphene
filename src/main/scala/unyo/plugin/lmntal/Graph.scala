@@ -30,13 +30,14 @@ object LMN {
     val graph = new Graph(node)
 
     val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
+    val frontColor = new java.awt.Color(52, 152, 219)
     graph.viewBuilder = (n: Node) => {
       val rect = n.attr match {
         case Atom()   => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
         case HLAtom() => Rect(Point.randomPointIn(gctx.wRect), Dim(12, 12))
         case _        => Rect(Point(0, 0), Dim(10, 10))
       }
-      new View(rect)
+      new View(rect, frontColor)
     }
 
     for (m <-  mems) buildMem (m, node)

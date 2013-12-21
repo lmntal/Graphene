@@ -7,7 +7,10 @@ import collection.mutable.{ArrayBuffer,Map}
 trait ID
 trait Attr
 
-class View(var rect: Rect) {
+import java.awt.{Color}
+
+class View(var rect: Rect, var color: Color) {
+
   var speed = Point(0, 0)
   var diff = Point(0, 0)
   var fixed = false
@@ -60,7 +63,7 @@ class Graph(var rootNode: Node) {
   rootNode.graph = this
   register(rootNode)
 
-  var viewBuilder = (n: Node) => new View(Rect(Point(0, 0), Dim(20, 20)))
+  var viewBuilder = (n: Node) => new View(Rect(Point(0, 0), Dim(20, 20)), Color.BLACK)
 
   def register(node: Node) = nodeFromID += node.id -> node
   def unregister(node: Node) = nodeFromID -= node.id
