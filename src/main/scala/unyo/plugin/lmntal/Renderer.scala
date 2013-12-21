@@ -50,7 +50,8 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
   var g: Graphics2D = null
   var gctx: GraphicsContext = null
   var graph: Graph = _
-  def renderAll(gg: Graphics, gctx: GraphicsContext, graph: Graph) {
+
+  def renderAll(gg: Graphics, gctx: GraphicsContext, graph: Graph): Unit = {
     g = gg.asInstanceOf[Graphics2D];
     this.gctx = gctx
     this.graph = graph
@@ -63,7 +64,7 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
     for (node <- graph.rootNode.childNodes) renderNode(node)
   }
 
-  def renderGrid {
+  private def renderGrid: Unit = {
     val bx = gctx.wCenter.x - gctx.wSize.width / 2
     val ex = gctx.wCenter.x + gctx.wSize.width / 2
     val by = gctx.wCenter.y - gctx.wSize.height / 2
@@ -82,7 +83,7 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
     }
   }
 
-  def renderNode(node: Node) {
+  private def renderNode(node: Node): Unit = {
     // if (node.isProxy) return
 
     val viewNode = node.view
@@ -130,18 +131,12 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
     for (n <- node.childNodes) renderNode(n)
   }
 
-  def renderEdges(node: Node) {
-    // if (node.isProxy) return
-
-    val view1 = node.view
+  private def renderEdges(node: Node): Unit = {
     g.setColor(new Color(41, 128, 185))
-    for (i <- 0 until node.neighborNodes.size) {
-      var buddy = node.neighborNodes(i)
-      val view2 = buddy.view
-
+    for (buddy <- node.neighborNodes) {
       g.drawLine(
-        view1.rect.center,
-        view2.rect.center
+        node.view.rect.center,
+        buddy.view.rect.center
       )
     }
   }
