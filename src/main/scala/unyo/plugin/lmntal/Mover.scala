@@ -25,7 +25,7 @@ class DefaultMover extends LMNtal.Mover {
     if (graph == null) return
     this.graph = graph
     DefaultMover.transaction(graph) {
-      move(graph.rootNode, elapsedSec, Point(0, 0))
+      move(graph.rootNode, elapsedSec, Point.zero)
     }
     resize(graph.rootNode)
   }
@@ -39,7 +39,7 @@ class DefaultMover extends LMNtal.Mover {
 
     if (view.fixed) return
 
-    view.affect(Point(0, 0), vec, elapsedSec)
+    view.affect(Point.zero, vec, elapsedSec)
 
     for (n <- node.childNodes) move(n, elapsedSec, vec / node.childNodes.size)
   }
@@ -57,7 +57,7 @@ class DefaultMover extends LMNtal.Mover {
 
   private def forceOfRepulsion(self: Node): Point = {
     if (self.parent == null) {
-      Point(0, 0)
+      Point.zero
     } else {
       val params = LMNtal.config.forces.repulsion
       val selfView = self.view.rect
@@ -76,8 +76,8 @@ class DefaultMover extends LMNtal.Mover {
   private def forceOfContraction(self: Node): Point = {
     // TODO: a bit dirty
     val view = self.view
-    val f1 = if (self.parent == null) Point(0, 0) else forceOfContraction(self.parent, self)
-    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
+    val f1 = if (self.parent == null) Point.zero else forceOfContraction(self.parent, self)
+    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point.zero)(_ + _)
     f1 - f2
   }
 
@@ -85,7 +85,7 @@ class DefaultMover extends LMNtal.Mover {
     val params = LMNtal.config.forces.contraction
     val surplusArea = parent.view.rect.area - parent.allChildNodes.size * params.areaPerNode
     if (parent.isRoot || surplusArea < params.threshold) {
-      Point(0, 0)
+      Point.zero
     } else {
       val parentView = parent.view
       val childView = child.view

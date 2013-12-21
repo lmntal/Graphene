@@ -5,7 +5,7 @@ import math.{pow,sqrt}
 
 object ForceBased {
   def repulsion(self: Rect, others: Seq[Rect], coef1: Double, coef2: Double): Point =
-    others.foldLeft(Point(0, 0)) { (res, other) => res + repulsion(self, other, coef1, coef2) }
+    others.foldLeft(Point.zero) { (res, other) => res + repulsion(self, other, coef1, coef2) }
 
   def repulsion(self: Rect, other: Rect, coef1: Double, coef2: Double): Point = {
     val dist = self.distanceWith(other)
@@ -15,7 +15,7 @@ object ForceBased {
   }
 
   def spring(self: Point, others: Seq[Point], constant: Double, length: Double): Point =
-    others.foldLeft(Point(0, 0)) { (res, other) => res + spring(self, other, constant, length) }
+    others.foldLeft(Point.zero) { (res, other) => res + spring(self, other, constant, length) }
 
   def spring(self: Point, other: Point, constant: Double, length: Double): Point = {
     val d = other - self

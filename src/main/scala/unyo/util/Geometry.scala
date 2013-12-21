@@ -18,6 +18,8 @@ case class Dim(width: Double, height: Double) {
 }
 
 object Point {
+  val zero = Point(0, 0)
+
   def randomPointIn(rect: Rect) = {
     val x = rect.dim.width  * Random.double + rect.point.x
     val y = rect.dim.height * Random.double + rect.point.y
@@ -36,7 +38,7 @@ case class Point(x: Double, y: Double) {
   def dot(other: Point) = x*other.x + y*other.y
   def sqabs: Double = dot(this)
   def abs: Double = math.hypot(x, y)
-  def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point(0, 0) else this / abs
+  def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point.zero else this / abs
 }
 
 object Line {

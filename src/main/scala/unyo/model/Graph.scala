@@ -11,8 +11,8 @@ import java.awt.{Color}
 
 class View(var rect: Rect, var color: Color) {
 
-  var speed = Point(0, 0)
-  var diff = Point(0, 0)
+  var speed = Point.zero
+  var diff = Point.zero
   var fixed = false
   var didAppear = false
   var willDisappear = false
@@ -21,7 +21,7 @@ class View(var rect: Rect, var color: Color) {
   val decayRate = 0.90
 
   def reset() {
-    diff = Point(0, 0)
+    diff = Point.zero
   }
   def affect(s: Point, f: Point, elapsedSec: Double) {
     speed = speed * decayRate + f / mass * elapsedSec
@@ -63,7 +63,7 @@ class Graph(var rootNode: Node) {
   rootNode.graph = this
   register(rootNode)
 
-  var viewBuilder = (n: Node) => new View(Rect(Point(0, 0), Dim(20, 20)), Color.BLACK)
+  var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
 
   def register(node: Node) = nodeFromID += node.id -> node
   def unregister(node: Node) = nodeFromID -= node.id
