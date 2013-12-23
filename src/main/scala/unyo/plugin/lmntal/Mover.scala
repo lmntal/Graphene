@@ -41,7 +41,8 @@ class DefaultMover extends LMNtal.Mover {
 
     view.affect(Point.zero, vec, elapsedSec)
 
-    for (n <- node.childNodes) move(n, elapsedSec, vec / node.childNodes.size)
+    val childNodes = if (unyo.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
+    for (n <- childNodes) move(n, elapsedSec, vec / node.childNodes.size)
   }
 
   private def resize(node: Node) {

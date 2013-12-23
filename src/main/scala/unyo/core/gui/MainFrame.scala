@@ -126,12 +126,18 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         g.scale(graphicsContext.magnificationRate, graphicsContext.magnificationRate)
         g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
-        g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
+        if (Env.isAntiAliasEnabled) g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
         renderer.renderAll(g, graphicsContext, visualGraph)
       }
 
     }
-    rightComponent_ = controlPanel
+    rightComponent_ = {
+      val tabbedPane = new javax.swing.JTabbedPane
+      tabbedPane.addTab("General", new SettingPanel)
+      tabbedPane.addTab(plugin.name, controlPanel)
+      tabbedPane.setBackground(java.awt.Color.WHITE)
+      tabbedPane
+    }
   }
 
   def openFileChooser {
