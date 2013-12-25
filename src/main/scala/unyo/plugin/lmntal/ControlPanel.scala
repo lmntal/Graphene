@@ -20,6 +20,17 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      border_ = new TitledBorder("LMNtal HOME")
+
+      import javax.swing.event.{DocumentListener,DocumentEvent}
+      this << new JTextField(config.lmntalHome) with JTextFieldExt {
+        textField =>
+        onTextUpdate { _ => config.lmntalHome = textField.getText }
+      }
+    }
+
+    this << new JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("SLIM Path")
 
       import javax.swing.event.{DocumentListener,DocumentEvent}

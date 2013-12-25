@@ -15,7 +15,8 @@ class LMNtalSource extends LMNtal.Source {
   private var graph: Graph = null
 
   def run(options: Seq[String]): Graph = {
-    val pb = new ProcessBuilder(Buffer(LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ options)
+    val pb = new ProcessBuilder(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ options)
+    println(pb.command.mkString(" "))
     pb.redirectErrorStream(true)
     val p = pb.start
     val br = new BufferedReader(new InputStreamReader(p.getInputStream))

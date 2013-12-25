@@ -3,6 +3,7 @@ package unyo.plugin.lmntal
 import unyo.plugin.Plugin
 
 class Config {
+  var lmntalHome = ""
   var slimPath = ""
   var baseDirectory = ""
   var isProxyVisible = false
@@ -33,6 +34,7 @@ object LMNtal extends Plugin {
   val config = new Config
 
   def importProperties(properties: java.util.Properties) {
+    config.lmntalHome    = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
     config.slimPath      = properties.getProperty("slim_path", "")
     config.baseDirectory = properties.getProperty("base_directory", "~/")
   }
