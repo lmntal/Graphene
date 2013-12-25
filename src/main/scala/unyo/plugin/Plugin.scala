@@ -20,7 +20,6 @@ trait Plugin {
 
   trait Observer {
     def listenOn(context: unyo.core.gui.GraphicsContext): unyo.swing.scalalike.Reactions.Reaction
-    def canMoveScreen: Boolean
   }
 
   trait Source {

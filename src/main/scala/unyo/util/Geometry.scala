@@ -15,6 +15,7 @@ case class Dim(width: Double, height: Double) {
   require(height >= 0, s"height of ${this} should be positive")
 
   def area = width * height
+  def toPoint = Point(width, height)
 }
 
 object Point {

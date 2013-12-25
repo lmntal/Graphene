@@ -1,11 +1,15 @@
 package unyo.core.gui
 
 import java.awt.{Dimension}
+import java.awt.event.{ActionListener,ActionEvent}
+import java.awt.event.{KeyEvent,InputEvent}
+
+import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser}
+import javax.swing.filechooser.{FileNameExtensionFilter}
 
 import unyo.util._
 import unyo.util.Geometry._
 import unyo.core.{Env,Properties}
-
 import unyo.swing.scalalike._
 
 object MainFrame {
@@ -21,9 +25,6 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   this << mainPanel
 
   menuBar_ = new JMenuBar with JMenuBarExt {
-    import java.awt.event.{ActionListener,ActionEvent}
-    import java.awt.event.{KeyEvent,InputEvent}
-    import javax.swing.{JMenu,JMenuItem,KeyStroke}
 
     this << new JMenu("File") with JMenuExt {
       mnemonic_ = KeyEvent.VK_F
@@ -52,7 +53,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
   val observer = plugin.observer
   val controlPanel = plugin.controlPanel
 
-  var visualGraph: plugin.GraphType = null
+  var graph: plugin.GraphType = null
   val graphicsContext = new GraphicsContext
 
   layout_ = new java.awt.BorderLayout
@@ -80,17 +81,8 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       listenToMouseWheel
       listenToKey
       reactions += {
-        case MousePressed(_, p, _, _, _) => {
-          requestFocusInWindow
-          if (observer.canMoveScreen) prevPoint = p
-        }
-        case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
-        case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
-          graphicsContext.moveBy(prevPoint - p)
-          prevPoint = p
-        }
-        case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot), p)
-        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && source.hasNext) visualGraph = source.next
+        case MousePressed(_, p, _, _, _) => requestFocusInWindow
+        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && source.hasNext) graph = source.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
       reactions += observer.listenOn(graphicsContext)
@@ -100,7 +92,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         loop {
           val msec = System.currentTimeMillis
 
-          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 1000)
+          if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
           repaint()
 
           prevMsec = msec
@@ -127,7 +119,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
         if (Env.isAntiAliasEnabled) g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-        renderer.renderAll(g, graphicsContext, visualGraph)
+        renderer.renderAll(g, graphicsContext, graph)
       }
 
     }
@@ -141,15 +133,12 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
   }
 
   def openFileChooser {
-    import javax.swing.{JFileChooser}
-    import javax.swing.filechooser.{FileNameExtensionFilter}
-
     val chooser = new JFileChooser(new java.io.File("~/")) with JFileChooserExt {
       fileFilter_ = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
     }
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       try {
-        visualGraph = source.run(Seq(chooser.selectedFile.getAbsolutePath))
+        graph = source.run(Seq(chooser.selectedFile.getAbsolutePath))
       } catch {
         case e: java.io.IOException => println(e.getMessage)
       }
