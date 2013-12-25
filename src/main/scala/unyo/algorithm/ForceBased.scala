@@ -28,10 +28,4 @@ object ForceBased {
     val f = coef *  sqrt(d.abs * dist)
     d.unit * f
   }
-
-}
-
-package fast {
-  object Forces {
-  }
 }

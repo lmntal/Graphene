@@ -5,7 +5,7 @@ import unyo.model._
 import unyo.algorithm.{ForceBased}
 
 object DefaultMover {
-  private def transaction(graph: Graph)(f: => Unit) {
+  private def transaction(graph: Graph)(f: => Unit): Unit = {
     for (node <- graph.allNodes) node.view.reset
     f
     for (node <- graph.allNodes) node.view.move
@@ -15,13 +15,12 @@ object DefaultMover {
 class DefaultMover extends LMNtal.Mover {
 
   private def coverableRect(node: Node): Rect = {
-    val rects = node.childNodes.map(_.view.rect)
-    if (rects.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
-    else               rects.reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
+    if (node.childNodes.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
+    else                         node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
   var graph: Graph = null
-  def moveAll(graph: Graph, elapsedSec: Double) {
+  def moveAll(graph: Graph, elapsedSec: Double): Unit = {
     if (graph == null) return
     this.graph = graph
     DefaultMover.transaction(graph) {
@@ -30,22 +29,21 @@ class DefaultMover extends LMNtal.Mover {
     resize(graph.rootNode)
   }
 
-  private def move(node: Node, elapsedSec: Double, parentForce: Point) {
+  private def move(node: Node, elapsedSec: Double, parentForce: Point): Unit = {
+    if (node.view.fixed) return
+
     val vec = forceOfRepulsion(node) +
               forceOfSpring(node) +
               forceOfContraction(node) +
               parentForce
-    val view = node.view
 
-    if (view.fixed) return
-
-    view.affect(Point.zero, vec, elapsedSec)
+    node.view.affect(Point.zero, vec, elapsedSec)
 
     val childNodes = if (unyo.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
     for (n <- childNodes) move(n, elapsedSec, vec / node.childNodes.size)
   }
 
-  private def resize(node: Node) {
+  private def resize(node: Node): Unit = {
     for (n <- node.childNodes) resize(n)
 
     if (!node.childNodes.isEmpty) {
@@ -57,13 +55,13 @@ class DefaultMover extends LMNtal.Mover {
   }
 
   private def forceOfRepulsion(self: Node): Point = {
-    if (self.parent == null) {
+    if (self.isRoot) {
       Point.zero
     } else {
       val params = LMNtal.config.forces.repulsion
-      val selfView = self.view.rect
-      val otherViews = self.parent.childNodes.map(_.view.rect)
-      ForceBased.repulsion(selfView, otherViews, params.coef1, params.coef2)
+      val selfRect = self.view.rect
+      val otherRects = self.parent.childNodes.map(_.view.rect)
+      ForceBased.repulsion(selfRect, otherRects, params.coef1, params.coef2)
     }
   }
 
@@ -75,10 +73,8 @@ class DefaultMover extends LMNtal.Mover {
   }
 
   private def forceOfContraction(self: Node): Point = {
-    // TODO: a bit dirty
-    val view = self.view
-    val f1 = if (self.parent == null) Point.zero else forceOfContraction(self.parent, self)
-    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point.zero)(_ + _)
+    val f1 = if (self.isRoot) Point.zero else forceOfContraction(self.parent, self)
+    val f2 = self.childNodes.foldLeft(Point.zero) { (res, other) => res + forceOfContraction(self, other) }
     f1 - f2
   }
 
@@ -88,9 +84,7 @@ class DefaultMover extends LMNtal.Mover {
     if (parent.isRoot || surplusArea < params.threshold) {
       Point.zero
     } else {
-      val parentView = parent.view
-      val childView = child.view
-      ForceBased.attraction(childView.rect.center, parentView.rect.center, params.coef, math.sqrt(surplusArea))
+      ForceBased.attraction(child.view.rect.center, parent.view.rect.center, params.coef, math.sqrt(surplusArea))
     }
   }
 
