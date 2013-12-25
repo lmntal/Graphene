@@ -10,7 +10,6 @@ class SettingPanel extends JPanel with JPanelExt {
 
   val panel = new JPanel with JPanelExt {
     layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
-    background_ = Color.WHITE
 
     this << new JCheckBox("Anti-alias", Env.isAntiAliasEnabled) with JCheckBoxExt { checkBox =>
       onActionPerformed { _ => unyo.core.Env.isAntiAliasEnabled = checkBox.isSelected }
@@ -22,7 +21,6 @@ class SettingPanel extends JPanel with JPanelExt {
   }
 
   layout_ = new BorderLayout
-  background_ = Color.WHITE
 
   add(panel, BorderLayout.NORTH)
 

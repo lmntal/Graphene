@@ -127,7 +127,6 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
       tabbedPane.addTab(plugin.name, controlPanel)
-      tabbedPane.setBackground(java.awt.Color.WHITE)
       tabbedPane
     }
   }

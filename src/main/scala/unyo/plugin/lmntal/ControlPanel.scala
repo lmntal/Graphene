@@ -17,12 +17,10 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
     import unyo.util.view.{ParamControls,LogParamControls}
 
     layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
-    background_ = Color.WHITE
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("SLIM Path")
-      background_ = Color.WHITE
 
       import javax.swing.event.{DocumentListener,DocumentEvent}
       this << new JTextField(config.slimPath) with JTextFieldExt {
@@ -34,7 +32,6 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
     class ParamPanel(title: String, axis: Int) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, axis)
       border_ = new TitledBorder(title)
-      background_ = Color.WHITE
     }
 
     this << new ParamPanel("Repulsion", BoxLayout.Y_AXIS) {
@@ -99,7 +96,6 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Options")
-      background_ = Color.WHITE
 
       this << new JCheckBox("Show proxy") with JCheckBoxExt { checkBox =>
         onActionPerformed { _ => config.isProxyVisible = checkBox.isSelected }
@@ -111,7 +107,6 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
   }
 
   layout_ = new BorderLayout
-  background_ = Color.WHITE
 
   add(panel, BorderLayout.NORTH)
 
