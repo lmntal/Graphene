@@ -54,12 +54,11 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
   import unyo.model._
 
   var g: Graphics2D = null
-  var gctx: GraphicsContext = null
+  lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
   var graph: Graph = _
 
-  def renderAll(gg: Graphics, gctx: GraphicsContext, graph: Graph): Unit = {
+  def renderAll(gg: Graphics, graph: Graph): Unit = {
     g = gg.asInstanceOf[Graphics2D];
-    this.gctx = gctx
     this.graph = graph
 
     renderGrid

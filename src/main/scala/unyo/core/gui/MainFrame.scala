@@ -85,7 +85,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && source.hasNext) graph = source.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
-      reactions += observer.listenOn(graphicsContext)
+      reactions += observer.listener
 
       actor {
         var prevMsec = System.currentTimeMillis
@@ -119,7 +119,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
         if (Env.isAntiAliasEnabled) g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-        renderer.renderAll(g, graphicsContext, graph)
+        renderer.renderAll(g, graph)
       }
 
     }

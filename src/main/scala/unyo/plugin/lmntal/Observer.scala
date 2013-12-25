@@ -20,14 +20,12 @@ class Observer extends LMNtal.Observer {
   var isNodeHandlable = false
   lazy val graphicsContext = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
   var prevPoint: java.awt.Point = null
-  def listenOn(context: unyo.core.gui.GraphicsContext): Reactions.Reaction = {
+
+  def listener: Reactions.Reaction = {
     case MousePressed(_, p, _, _, _) =>
       if (isNodeHandlable) {
-        val pos = context.worldPointFrom(p)
-        viewOptAt(pos) match {
-          case Some(v) => { view = v; v.fixed = true }
-          case None =>
-        }
+        val pos = graphicsContext.worldPointFrom(p)
+        for (v <- viewOptAt(pos)) { view = v; v.fixed = true }
       } else {
         prevPoint = p
       }
@@ -41,7 +39,7 @@ class Observer extends LMNtal.Observer {
     case MouseDragged(_, p, _) =>
       if (isNodeHandlable) {
         if (view != null) {
-          val wp = context.worldPointFrom(p)
+          val wp = graphicsContext.worldPointFrom(p)
           view.rect = Rect(wp, view.rect.dim)
         }
       } else if (prevPoint != null) {

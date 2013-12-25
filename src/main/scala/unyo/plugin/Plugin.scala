@@ -15,11 +15,11 @@ trait Plugin {
   def controlPanel: javax.swing.JPanel
 
   trait Renderer {
-    def renderAll(g: java.awt.Graphics, context: unyo.core.gui.GraphicsContext, graph: GraphType)
+    def renderAll(g: java.awt.Graphics, graph: GraphType)
   }
 
   trait Observer {
-    def listenOn(context: unyo.core.gui.GraphicsContext): unyo.swing.scalalike.Reactions.Reaction
+    def listener: unyo.swing.scalalike.Reactions.Reaction
   }
 
   trait Source {
