@@ -9,7 +9,7 @@
 -ignorewarnings
 
 
--keep public class unyo.FrontEnd {
+-keep public class unyo.UNYO {
     public static void main(java.lang.String[]);
 }
 
