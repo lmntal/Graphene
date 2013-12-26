@@ -12,7 +12,10 @@ scalacOptions += "-feature"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
-  "org.json4s" %% "json4s-native" % "3.2.6"
+  "org.json4s" %% "json4s-native" % "3.2.6",
+  "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
+  "org.slf4j" % "slf4j-api" % "1.7.5",
+  "ch.qos.logback" % "logback-classic" % "1.0.13"
 )
 
 libraryDependencies <+= scalaVersion {

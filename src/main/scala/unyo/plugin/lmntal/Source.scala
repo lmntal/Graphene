@@ -2,10 +2,12 @@ package unyo.plugin.lmntal
 
 import java.io.{BufferedReader,InputStreamReader,PrintWriter,OutputStreamWriter}
 import java.io.{File,IOException}
-import collection.mutable.Buffer
-import collection.JavaConversions._
 
 import scala.actors.Actor._
+import scala.collection.mutable.Buffer
+import scala.collection.JavaConversions._
+
+import com.typesafe.scalalogging.slf4j._
 
 import unyo.model._
 import unyo.util._
@@ -47,10 +49,10 @@ class LMNtalSource extends LMNtal.Source {
 
 }
 
-private class Runtime(commands: Seq[String]) extends collection.Iterator[String] {
+private class Runtime(commands: Seq[String]) extends collection.Iterator[String] with Logging {
   val reader = {
     val pb = new ProcessBuilder(commands)
-    println(pb.command.mkString(" "))
+    logger.info(pb.command.mkString(" "))
     pb.redirectErrorStream(true)
     val p = pb.start
     new BufferedReader(new InputStreamReader(p.getInputStream))
