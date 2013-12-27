@@ -92,7 +92,7 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
 
   private val linkColor = new Color(149, 165, 166)
 
-  private val atomStroke = new BasicStroke(3.0f)
+  private val atomStroke = new BasicStroke(4.0f)
   private val memStroke = new BasicStroke(2.0f)
   private val linkStroke = new BasicStroke(1.5f)
 
