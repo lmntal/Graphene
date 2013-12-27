@@ -129,6 +129,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
       tabbedPane.addTab(plugin.name, controlPanel)
+      tabbedPane.addTab("Log", LogPanel)
       tabbedPane
     }
   }

@@ -9,6 +9,12 @@
     </encoder>
   </appender>
 
+  <appender name="gui" class="unyo.core.gui.LogPanelAppender">
+    <layout>
+      <pattern>[%level] %msg%n</pattern>
+    </layout>
+  </appender>
+
   <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%-5level %logger{36} - %msg%n</pattern>
@@ -18,5 +24,6 @@
   <root level="trace">
     <appender-ref ref="console" />
     <appender-ref ref="file" />
+    <appender-ref ref="gui" />
   </root>
 </configuration>
