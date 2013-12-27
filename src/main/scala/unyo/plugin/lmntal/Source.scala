@@ -14,8 +14,8 @@ class LMNtalSource extends LMNtal.Source {
 
   case class Functor(name: String, arity: Int)
 
-  private var iter: Iterator[Graph] = _
-  private var graph: Graph = null
+  private var runtime: Runtime = _
+  private var graph: Graph = _
   private var colorGen: RandomColorGenerator = _
   private val colorFromFunctor = collection.mutable.Map.empty[Functor,java.awt.Color]
 
@@ -30,25 +30,36 @@ class LMNtalSource extends LMNtal.Source {
   }
 
   def run(options: Seq[String]): Graph = {
-    val pb = new ProcessBuilder(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ options)
-    println(pb.command.mkString(" "))
-    pb.redirectErrorStream(true)
-    val p = pb.start
-    val br = new BufferedReader(new InputStreamReader(p.getInputStream))
+    runtime = new Runtime(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ options)
 
     colorFromFunctor.clear
     colorGen = new RandomColorGenerator
-    iter = Iterator.continually(br.readLine).takeWhile(_ != null).map(LMN.fromString(_))
-    graph = iter.next
-    coloring(graph)
+
+    graph = coloring(LMN.fromString(runtime.next))
+    graph
   }
   def current = graph
   def next = {
-    graph = iter.next.inheritViews(graph)
-    coloring(graph)
+    graph = coloring(LMN.fromString(runtime.next).inheritViews(graph))
+    graph
   }
-  def hasNext = iter.hasNext
+  def hasNext = runtime.hasNext
 
+}
+
+private class Runtime(commands: Seq[String]) extends collection.Iterator[String] {
+  val reader = {
+    val pb = new ProcessBuilder(commands)
+    println(pb.command.mkString(" "))
+    pb.redirectErrorStream(true)
+    val p = pb.start
+    new BufferedReader(new InputStreamReader(p.getInputStream))
+  }
+
+  val iter = Iterator.continually(reader.readLine).takeWhile(_ != null)
+
+  def hasNext = iter.hasNext
+  def next = iter.next
 }
 
 
