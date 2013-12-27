@@ -50,9 +50,10 @@ class LMNtalSource extends LMNtal.Source {
 }
 
 private class Runtime(commands: Seq[String]) extends collection.Iterator[String] with Logging {
+
   val reader = {
     val pb = new ProcessBuilder(commands)
-    logger.info(pb.command.mkString(" "))
+    logger.info("run process: " + pb.command.mkString(" "))
     pb.redirectErrorStream(true)
     val p = pb.start
     new BufferedReader(new InputStreamReader(p.getInputStream))
