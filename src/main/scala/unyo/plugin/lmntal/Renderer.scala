@@ -90,10 +90,9 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
 
   private val font = new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16)
 
-  private val frontColor = new Color(52, 152, 219)
   private val linkColor = new Color(149, 165, 166)
 
-  private val atomStroke = new BasicStroke(3.0f)
+  private val atomStroke = new BasicStroke(4.0f)
   private val memStroke = new BasicStroke(2.0f)
   private val linkStroke = new BasicStroke(1.5f)
 
@@ -120,19 +119,19 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
     node.attr match {
       case Atom() => {
         g.setFont(font)
-        g.setColor(frontColor)
+        g.setColor(node.view.color)
         g.drawString(node.name, rect.point)
 
         g.setColor(Color.WHITE)
         g.fillOval(rect)
 
         g.setStroke(atomStroke)
-        g.setColor(frontColor)
+        g.setColor(node.view.color)
         g.drawOval(rect)
       }
       case HLAtom() => {
         g.setFont(font)
-        g.setColor(frontColor)
+        g.setColor(node.view.color)
         g.drawString(node.name, rect.point)
         g.fillOval(rect)
       }
@@ -141,7 +140,7 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
         g.fillRoundRect(rect, memArc)
 
         g.setStroke(memStroke)
-        g.setColor(frontColor)
+        g.setColor(node.view.color)
         g.drawRoundRect(rect, memArc)
       }
       case _ =>
