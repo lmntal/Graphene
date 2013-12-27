@@ -7,6 +7,8 @@ import java.awt.event.{KeyEvent,InputEvent}
 import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser}
 import javax.swing.filechooser.{FileNameExtensionFilter}
 
+import com.typesafe.scalalogging.slf4j._
+
 import unyo.util._
 import unyo.util.Geometry._
 import unyo.core.{Env,Properties}
@@ -39,7 +41,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   }
 }
 
-class MainPanel extends javax.swing.JPanel with JPanelExt {
+class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
   import unyo.plugin.lmntal.LMNtal
 
@@ -127,6 +129,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
       tabbedPane.addTab(plugin.name, controlPanel)
+      tabbedPane.addTab("Log", LogPanel)
       tabbedPane
     }
   }
@@ -139,7 +142,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       try {
         graph = source.run(Seq(chooser.selectedFile.getAbsolutePath))
       } catch {
-        case e: java.io.IOException => println(e.getMessage)
+        case e: java.io.IOException => logger.warn(e.getMessage)
       }
     }
   }

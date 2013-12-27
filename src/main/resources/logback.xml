@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+ <appender name="file" class="ch.qos.logback.core.FileAppender">
+    <file>unyo.log</file>
+
+    <encoder>
+      <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="gui" class="unyo.core.gui.LogPanelAppender">
+    <layout>
+      <pattern>[%level] %msg%n</pattern>
+    </layout>
+  </appender>
+
+  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="trace">
+    <appender-ref ref="console" />
+    <appender-ref ref="file" />
+    <appender-ref ref="gui" />
+  </root>
+</configuration>
