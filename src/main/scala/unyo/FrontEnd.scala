@@ -1,5 +1,6 @@
 package unyo
 
+import unyo.core.Env
 import unyo.core.gui.MainFrame
 import com.typesafe.scalalogging.slf4j._
 
@@ -7,7 +8,7 @@ object UNYO extends App with Logging {
 
   System.setProperty("apple.laf.useScreenMenuBar", "true");
 
-  logger.info("unyo unyo started")
+  logger.info("unyo unyo version {} started", Env.version.map(_.toString).getOrElse("unknown"))
 
   val runtime = Runtime.getRuntime
   logger.info(s"${runtime.availableProcessors} processors")
