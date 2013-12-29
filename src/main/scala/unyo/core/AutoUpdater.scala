@@ -4,14 +4,11 @@ object Checker {
 
   import scala.io.{Source}
   import scala.xml.{XML,Elem,NodeSeq}
+  import scala.util.control.Exception.{allCatch}
 
   val infoUrl = "http://www.ueda.info.waseda.ac.jp/~yaguchi/unyo/info.xml"
 
-  def fetchInfoXML: Option[Elem] = try {
-    Option(XML.loadString(Source.fromURL(infoUrl).mkString))
-  } catch {
-    case _: Exception => Option.empty[Elem]
-  }
+  def fetchInfoXML: Option[Elem] = allCatch.opt { XML.loadString(Source.fromURL(infoUrl).mkString) }
 
   var cachedXML = Option.empty[Elem]
   def infoXML: Option[Elem] = {
