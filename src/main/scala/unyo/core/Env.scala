@@ -1,12 +1,17 @@
 package unyo.core
 
+import java.net.{URL}
 import scala.util.control.Exception.{allCatch}
+import com.typesafe.scalalogging.slf4j._
+import unyo.util._
 
-object Env {
+object Env extends Logging {
 
   import java.io.{File}
   import java.net.{URL}
   import java.awt.{Toolkit,Dimension}
+
+  import scala.collection.JavaConversions._
 
   private val tk = Toolkit.getDefaultToolkit
   val frameWidth  = tk.getScreenSize.getWidth.toInt  * 2 / 3
@@ -15,72 +20,76 @@ object Env {
   var isMultiCoreEnabled = false
   var isAntiAliasEnabled = true
 
-  val jarRoot: String = {
+  val property: Map[String,String] = System.getProperties.toMap
+
+  val jarRootPath: String = {
     val cls = unyo.UNYO.getClass
     val classPath = cls.getResource(cls.getSimpleName + ".class").toExternalForm
     classPath.substring(0, classPath.lastIndexOf(cls.getPackage.getName.replace('.', '/')))
   }
 
-  val property: Map[String,String] = {
-    import scala.collection.JavaConversions._
-    System.getProperties.toMap
-  }
+  val jarFilePath: String = new File(property("java.class.path")).getAbsolutePath
 
-  val jarPath: String = new File(property("java.class.path")).getAbsolutePath
-
-  val root: String = {
+  val rootPath: String = {
     val sep = property("file.separator")
-    jarPath.split(sep).toList.init.mkString(sep) + sep
+    jarFilePath.split(sep).toList.init.mkString(sep) + sep
   }
 
-  val manifest: Map[String,String] = try {
+  val manifest: Map[String,String] = {
     import java.util.jar.Manifest
-    import scala.collection.JavaConversions._
 
-    val url = new java.net.URL(jarRoot + "META-INF/MANIFEST.MF")
-    val is = url.openStream
-    val manif = new Manifest(is)
-    is.close
-
-    val attrs = manif.getMainAttributes
-    val map = collection.immutable.Map.newBuilder[String,String]
-    for (key <- attrs.keySet) map += key.toString -> attrs.get(key).toString
-    map.result
-  } catch {
-    case _: Exception => collection.immutable.Map.empty[String,String]
+    val url = new URL(jarRootPath + "META-INF/MANIFEST.MF")
+    val res = using(url.openStream) { is => new Manifest(is) }
+    res match {
+      case Right(manif) => manif.getMainAttributes.toSeq.map { e => (e._1.toString, e._2.toString) }.toMap
+      case Left(e)      => Map.empty[String,String]
+    }
   }
 
-  val version: Option[Version] = manifest.get("Implementation-Version").flatMap(Version.fromString)
+  val version: Option[Version] = manifest.get("Implementation-Version").flatMap { Version.fromString }
+
+  logger.debug("jar root path: {}", jarRootPath)
+  logger.debug("jar file path: {}", jarFilePath)
+  logger.debug("root path: {}", rootPath)
 }
 
 
-object Meta {
+object Release {
+
+  import scala.xml.{NodeSeq}
+  def fromXML(node: NodeSeq): Option[Release] = for {
+    version <- (node \ "version").headOption.flatMap { n => Version.fromString(n.text) }
+    updated <- (node \ "updated").headOption.map { _.text }
+    url     <- (node \ "url").headOption.map { n => new URL(n.text) }
+    description <- (node \ "description").headOption.map { _.text.trim }
+  } yield Release(version, updated, url, description)
+
+}
+
+case class Release(
+  version: Version,
+  updated: String,
+  url: URL,
+  description: String
+)
+
+object Meta extends Logging {
+
   import scala.io.{Source}
   import scala.xml.{XML,Elem,NodeSeq}
 
   val infoUrl = "http://www.ueda.info.waseda.ac.jp/~yaguchi/unyo/info.xml"
 
-  private def fetchInfoXML: Option[Elem] = allCatch.opt { XML.loadString(Source.fromURL(infoUrl).mkString) }
+  private def infoXML: Option[Elem] = allCatch.opt { XML.loadString(Source.fromURL(infoUrl).mkString) }
+  private def latestReleaseNode: Option[NodeSeq] = infoXML.flatMap { xml => (xml \\ "app" \ "releases" \ "latest").headOption }
+  val latestRelease: Option[Release] = latestReleaseNode.flatMap { node => Release.fromXML(node) }
 
-  private var cachedXML = Option.empty[Elem]
-  private def infoXML: Option[Elem] = {
-    if (cachedXML.isEmpty) cachedXML = fetchInfoXML
-    cachedXML
-  }
-
-  private def searchLatestVersionText(elem: Elem): Option[String] =
-    (elem \\ "app" \ "versions" \ "latest" \ "version").headOption.map { e => e.text }
-
-  def latestVersion: Option[Version] = for {
-    xml <- infoXML
-    text <- searchLatestVersionText(xml)
-    version <- Version.fromString(text)
-  } yield version
+  logger.debug("latest release: {}", latestRelease)
 
   def needsUpdate = {
     val res = for {
       current <- Env.version
-      latest <- latestVersion
+      latest <- latestRelease.map { _.version }
     } yield current < latest
     res.getOrElse(false)
   }
