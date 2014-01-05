@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "UNYO-UNYO"
 
-version := "4.1.0"
+version := "4.2.0"
 
 scalaVersion := "2.10.2"
 
