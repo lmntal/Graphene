@@ -4,6 +4,7 @@
 -allowaccessmodification
 -mergeinterfacesaggressively
 -optimizations !method/propagation/*,!method/inlining/*,!code/allocation/*
+-optimizationpasses 9
 -dontobfuscate
 -dontnote
 -dontwarn
