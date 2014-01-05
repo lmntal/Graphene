@@ -1,7 +1,7 @@
-package unyo.gui
+package unyo.core.gui
 
-import unyo.utility._
-import unyo.Env
+import unyo.util._
+import unyo.core.Env
 
 class GraphicsContext {
 
@@ -10,19 +10,11 @@ class GraphicsContext {
   var magnificationRate: Double = 1.0 // screen / world
 
   def wSize = Dim(sSize.width / magnificationRate, sSize.height / magnificationRate)
-  def wRect = Rect(
-    Point(wCenter.x - wSize.width / 2, wCenter.y - wSize.height / 2),
-    wSize
-  )
+  def wRect = Rect(wCenter - wSize.toPoint / 2, wSize)
 
-  def worldPointFrom(sp: Point) = Point(
-    wCenter.x + (sp.x - sSize.width / 2) / magnificationRate,
-    wCenter.y + (sp.y - sSize.height/ 2) / magnificationRate
-  )
-  def screenPointFrom(wp: Point) = Point(
-    (wp.x - wCenter.x) * magnificationRate + sSize.width / 2,
-    (wp.y - wCenter.y) * magnificationRate + sSize.height/ 2
-  )
+  def worldPointFrom(sp: Point) = wCenter + (sp - sSize.toPoint / 2) / magnificationRate
+  def screenPointFrom(wp: Point) = (wp - wCenter) * magnificationRate + sSize.toPoint / 2
+
   def worldDimFrom(sd: Dim) = Dim(sd.width / magnificationRate, sd.height / magnificationRate)
   def screenDimFrom(wd: Dim) = Dim(wd.width * magnificationRate, wd.height * magnificationRate)
   def worldRectFrom(sr: Rect) = Rect(worldPointFrom(sr.point), worldDimFrom(sr.dim))

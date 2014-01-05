@@ -1,4 +1,4 @@
-package unyo.utility
+package unyo.util
 
 object Tapper {
   implicit class TapperImpl[T](v: T) {

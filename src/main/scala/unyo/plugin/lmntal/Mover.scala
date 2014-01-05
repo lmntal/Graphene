@@ -1,101 +1,90 @@
 package unyo.plugin.lmntal
 
-import unyo.utility._
-import unyo.utility.model._
+import unyo.util._
+import unyo.model._
+import unyo.algorithm.{ForceBased}
 
-class DefaultMover extends LMNtalPlugin.Mover {
+object DefaultMover {
+  private def transaction(graph: Graph)(f: => Unit): Unit = {
+    for (node <- graph.allNodes) node.view.reset
+    f
+    for (node <- graph.allNodes) node.view.move
+  }
+}
 
-  var vctx: ViewContext = null
-  def moveAll(vctx: ViewContext, elapsedSec: Double) {
-    if (vctx == null || vctx.graph == null) return
-    this.vctx = vctx
-    vctx.transaction {
-      move(vctx.graph.rootNode, elapsedSec, Point(0, 0))
-    }
-    resize(vctx.graph.rootNode)
+class DefaultMover extends LMNtal.Mover {
+
+  private def coverableRect(node: Node): Rect = {
+    if (node.childNodes.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
+    else                         node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
-  private def move(node: Node, elapsedSec: Double, parentForce: Point) {
+  var graph: Graph = null
+  def moveAll(graph: Graph, elapsedSec: Double): Unit = {
+    if (graph == null) return
+    this.graph = graph
+    DefaultMover.transaction(graph) {
+      move(graph.rootNode, elapsedSec, Point.zero)
+    }
+    resize(graph.rootNode)
+  }
+
+  private def move(node: Node, elapsedSec: Double, parentForce: Point): Unit = {
+    if (node.view.fixed) return
+
     val vec = forceOfRepulsion(node) +
               forceOfSpring(node) +
               forceOfContraction(node) +
               parentForce
-    val view = vctx.viewOf(node)
 
-    if (view.fixed) return
+    node.view.affect(Point.zero, vec, elapsedSec)
 
-    view.affect(Point(0, 0), vec, elapsedSec)
-
-    for (n <- node.childNodes) move(n, elapsedSec, vec / node.childNodes.size)
+    val childNodes = if (unyo.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
+    for (n <- childNodes) move(n, elapsedSec, vec / node.childNodes.size)
   }
 
-  private def resize(node: Node) {
+  private def resize(node: Node): Unit = {
     for (n <- node.childNodes) resize(n)
 
     if (!node.childNodes.isEmpty) {
-      node.attribute match {
-        case Mem() => vctx.viewOf(node).rect = vctx.coverableRect(node)
+      node.attr match {
+        case Mem() => node.view.rect = coverableRect(node)
         case _     =>
       }
     }
   }
 
   private def forceOfRepulsion(self: Node): Point = {
-    if (self.parent == null) {
-      Point(0, 0)
+    if (self.isRoot) {
+      Point.zero
     } else {
-      self.parent.childNodes.filter { other =>
-        self.id != other.id && self.parent.id == other.parent.id
-      }.foldLeft(Point(0,0)) { (res, other) =>
-        res + forceOfRepulsionBetween(self, other)
-      }
+      val params = LMNtal.config.forces.repulsion
+      val selfRect = self.view.rect
+      val otherRects = self.parent.childNodes.map(_.view.rect)
+      ForceBased.repulsion(selfRect, otherRects, params.coef1, params.coef2)
     }
   }
 
-  private def forceOfRepulsionBetween(lhs: Node, rhs: Node): Point = {
-    val params = LMNtalPlugin.config.forces.repulsion
-    val lrect = vctx.viewOf(lhs).rect
-    val rrect = vctx.viewOf(rhs).rect
-    val dx = lrect.center.x - rrect.center.x
-    val dy = lrect.center.y - rrect.center.y
-    val distance = lrect.distanceWith(rrect)
-    val f = params.coef1 / (distance * distance / params.coef2 + 1)
-    val abs = math.sqrt(dx * dx + dy * dy)
-    Point(dx * f / abs, dy * f / abs)
-  }
-
   private def forceOfSpring(self: Node): Point = {
-    self.neighborNodes.foldLeft(Point(0,0)) { (res, other) => res + forceOfStringBetween(self, other) }
-  }
-
-  private def forceOfStringBetween(lhs: Node, rhs: Node): Point = {
-    val params = LMNtalPlugin.config.forces.spring
-    val d = vctx.viewOf(rhs).rect.center - vctx.viewOf(lhs).rect.center
-    val f = params.constant * (d.abs - params.length)
-    d.unit * f
+    val params = LMNtal.config.forces.spring
+    val selfPoint = self.view.rect.center
+    val otherPoints = self.neighborNodes.map(_.view.rect.center)
+    ForceBased.spring(selfPoint, otherPoints, params.constant, params.length)
   }
 
   private def forceOfContraction(self: Node): Point = {
-    // TODO: a bit dirty
-    val view = vctx.viewOf(self)
-    val f1 = if (self.parent == null) Point(0, 0) else forceOfContraction(self.parent, self)
-    val f2 = self.childNodes.view.map(forceOfContraction(self, _)).foldLeft(Point(0, 0))(_ + _)
+    val f1 = if (self.isRoot) Point.zero else forceOfContraction(self.parent, self)
+    val f2 = self.childNodes.foldLeft(Point.zero) { (res, other) => res + forceOfContraction(self, other) }
     f1 - f2
   }
 
   private def forceOfContraction(parent: Node, child: Node): Point = {
-    val params = LMNtalPlugin.config.forces.contraction
-    val surplusArea = vctx.viewOf(parent).rect.area - parent.allChildNodes.size * params.areaPerNode
+    val params = LMNtal.config.forces.contraction
+    val surplusArea = parent.view.rect.area - parent.allChildNodes.size * params.areaPerNode
     if (parent.isRoot || surplusArea < params.threshold) {
-      Point(0, 0)
+      Point.zero
     } else {
-      val parentView = vctx.viewOf(parent)
-      val childView = vctx.viewOf(child)
-      val dx = parentView.rect.center.x - childView.rect.center.x
-      val dy = parentView.rect.center.y - childView.rect.center.y
-      val abs = math.sqrt(dx * dx + dy * dy)
-      val coef = params.coef *  math.sqrt(abs * math.sqrt(surplusArea)) / abs
-      Point(dx * coef, dy * coef)
+      ForceBased.attraction(child.view.rect.center, parent.view.rect.center, params.coef, math.sqrt(surplusArea))
     }
   }
 

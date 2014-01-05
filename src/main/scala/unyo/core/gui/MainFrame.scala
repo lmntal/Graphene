@@ -1,12 +1,17 @@
-package unyo.gui
+package unyo.core.gui
 
 import java.awt.{Dimension}
+import java.awt.event.{ActionListener,ActionEvent}
+import java.awt.event.{KeyEvent,InputEvent}
 
-import unyo.utility._
-import unyo.utility.Geometry._
-import unyo.Env
-import unyo.Properties
+import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser}
+import javax.swing.filechooser.{FileNameExtensionFilter}
 
+import com.typesafe.scalalogging.slf4j._
+
+import unyo.util._
+import unyo.util.Geometry._
+import unyo.core.{Env,Properties}
 import unyo.swing.scalalike._
 
 object MainFrame {
@@ -22,9 +27,6 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   this << mainPanel
 
   menuBar_ = new JMenuBar with JMenuBarExt {
-    import java.awt.event.{ActionListener,ActionEvent}
-    import java.awt.event.{KeyEvent,InputEvent}
-    import javax.swing.{JMenu,JMenuItem,KeyStroke}
 
     this << new JMenu("File") with JMenuExt {
       mnemonic_ = KeyEvent.VK_F
@@ -39,21 +41,21 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   }
 }
 
-class MainPanel extends javax.swing.JPanel with JPanelExt {
+class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
-  import unyo.plugin.lmntal.LMNtalPlugin
+  import unyo.plugin.lmntal.LMNtal
 
   val properties = Properties.load("unyo.properties")
 
-  val plugin = LMNtalPlugin
+  val plugin = LMNtal
   plugin.importProperties(Properties.load(plugin.name + ".properties"))
   val mover = plugin.mover
   val renderer = plugin.renderer
-  val runtime = plugin.runtime
+  val source = plugin.source
   val observer = plugin.observer
   val controlPanel = plugin.controlPanel
 
-  var visualGraph: plugin.GraphType = null
+  var graph: plugin.GraphType = null
   val graphicsContext = new GraphicsContext
 
   layout_ = new java.awt.BorderLayout
@@ -81,27 +83,18 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       listenToMouseWheel
       listenToKey
       reactions += {
-        case MousePressed(_, p, _, _, _) => {
-          requestFocusInWindow
-          if (observer.canMoveScreen) prevPoint = p
-        }
-        case MouseReleased(_, p, _, _, _) => if (observer.canMoveScreen) prevPoint = null
-        case MouseDragged(_, p, _) => if (observer.canMoveScreen && prevPoint != null) {
-          graphicsContext.moveBy(prevPoint - p)
-          prevPoint = p
-        }
-        case MouseWheelMoved(_, p, _, rot) => graphicsContext.zoom(math.pow(1.01, rot), p)
-        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && runtime.hasNext) visualGraph = runtime.next
+        case MousePressed(_, p, _, _, _) => requestFocusInWindow
+        case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && source.hasNext) graph = source.next
         case ComponentResized(_) => graphicsContext.resize(getSize)
       }
-      reactions += observer.listenOn(graphicsContext)
+      reactions += observer.listener
 
       actor {
         var prevMsec = System.currentTimeMillis
         loop {
           val msec = System.currentTimeMillis
 
-          if (visualGraph != null) mover.moveAll(visualGraph, 1.0 * (msec - prevMsec) / 1000)
+          if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
           repaint()
 
           prevMsec = msec
@@ -127,26 +120,29 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
         g.scale(graphicsContext.magnificationRate, graphicsContext.magnificationRate)
         g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
-        g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-        renderer.renderAll(g, graphicsContext, visualGraph)
+        if (Env.isAntiAliasEnabled) g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
+        renderer.renderAll(g, graph)
       }
 
     }
-    rightComponent_ = controlPanel
+    rightComponent_ = {
+      val tabbedPane = new javax.swing.JTabbedPane
+      tabbedPane.addTab("General", new SettingPanel)
+      tabbedPane.addTab(plugin.name, controlPanel)
+      tabbedPane.addTab("Log", LogPanel)
+      tabbedPane
+    }
   }
 
   def openFileChooser {
-    import javax.swing.{JFileChooser}
-    import javax.swing.filechooser.{FileNameExtensionFilter}
-
     val chooser = new JFileChooser(new java.io.File("~/")) with JFileChooserExt {
       fileFilter_ = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
     }
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       try {
-        visualGraph = runtime.exec(Seq(chooser.selectedFile.getAbsolutePath))
+        graph = source.run(Seq(chooser.selectedFile.getAbsolutePath))
       } catch {
-        case e: java.io.IOException => println(e.getMessage)
+        case e: java.io.IOException => logger.warn(e.getMessage)
       }
     }
   }

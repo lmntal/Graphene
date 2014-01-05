@@ -2,16 +2,15 @@
 
 -verbose
 -allowaccessmodification
-# -mergeinterfacesaggressively
+-mergeinterfacesaggressively
+-optimizations !method/propagation/*,!method/inlining/*,!code/allocation/*
+-optimizationpasses 9
 -dontobfuscate
 -dontnote
 -dontwarn
 -ignorewarnings
 
-
--keep public class unyo.FrontEnd {
-    public static void main(java.lang.String[]);
-}
+-keep public class unyo.** { *; }
 
 -keep class scala.concurrent.forkjoin.ForkJoinPool {
     *** stealCount;
@@ -21,6 +20,10 @@
     *** parkBlocker;
     *** qlock;
 }
+
+-keep class scala.collection.parallel.AdaptiveWorkStealingForkJoinTasks$WrappedTask
+-keep class ch.qos.** { *; }
+-keep class org.slf4j.** { *; }
 
 # Remove - System method calls. Remove all invocations of System
 # methods without side effects whose return values are not used.

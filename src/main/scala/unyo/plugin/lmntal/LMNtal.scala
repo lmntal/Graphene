@@ -3,6 +3,7 @@ package unyo.plugin.lmntal
 import unyo.plugin.Plugin
 
 class Config {
+  var lmntalHome = ""
   var slimPath = ""
   var baseDirectory = ""
   var isProxyVisible = false
@@ -25,14 +26,15 @@ class Config {
   }
 }
 
-object LMNtalPlugin extends Plugin {
-  type GraphType = ViewContext
+object LMNtal extends Plugin {
+  type GraphType = unyo.model.Graph
 
   val name = "LMNtal"
 
   val config = new Config
 
   def importProperties(properties: java.util.Properties) {
+    config.lmntalHome    = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
     config.slimPath      = properties.getProperty("slim_path", "")
     config.baseDirectory = properties.getProperty("base_directory", "~/")
   }
@@ -44,7 +46,7 @@ object LMNtalPlugin extends Plugin {
     properties
   }
 
-  val runtime = new LMNtalRuntime
+  val source = new LMNtalSource
   val renderer = new DefaultRenderer
   val observer = new unyo.plugin.lmntal.Observer
   val mover = new DefaultMover
