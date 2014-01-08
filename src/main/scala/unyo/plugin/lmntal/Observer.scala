@@ -27,7 +27,8 @@ object Observer {
     }
 
     val res = searchDepth(nodes.toSet)
-    val count = res.values.max
+    // val count = res.values.max
+    val count = 6
     for ((n, depth) <- res) {
       n.view.color = Color.fromHSB(0.666f / count * depth, 0.90f, 0.90f)
     }
@@ -56,12 +57,24 @@ class Observer extends LMNtal.Observer {
   private var canMoveNode = false
   private var isMultiSelectionEnabled = false
 
+  val popupMenu = new javax.swing.JPopupMenu {
+    import java.awt.event.{ActionListener,ActionEvent}
+    import javax.swing.{JMenuItem}
+
+    val item = new JMenuItem("Propagation coloring")
+    item.addActionListener(new ActionListener {
+      def actionPerformed(e: ActionEvent) = Observer.doSmoothColoring(selectedNodes.toSet)
+    })
+    add(item)
+  }
+
   private def resetSelection = {
     for (n <- selectedNodes) n.view.selected = false
     selectedNodes.clear
   }
 
   def listener: Reactions.Reaction = {
+    case MousePressed(source, p, _, _, true) => popupMenu.show(source, p.x, p.y)
     case MousePressed(_, p, _, _, _)  => {
       Observer.nodeOptAt(gctx.worldPointFrom(p)) match {
         case Some(n) => {
