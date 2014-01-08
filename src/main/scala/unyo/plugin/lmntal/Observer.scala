@@ -7,58 +7,10 @@ import unyo.util.Geometry._
 
 import unyo.model._
 
-class Observer extends LMNtal.Observer {
+object Observer {
 
-  import java.awt.event.{KeyEvent}
-  import java.awt.{Point => JPoint}
-
-  import scala.annotation.tailrec
-  import scala.collection.mutable
-
-  private def nodeOptAt(wp: Point): Option[Node] = {
-    val graph = LMNtal.source.current
-    if (graph == null) None
-    else graph.rootNode.allChildNodes.find { n => n.childNodes.isEmpty && n.view.rect.contains(wp) }
-  }
-
-  var canMoveNode = false
-  lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
-
-  def selectNode(n: Node) = {
-    n.view.selected = true
-  }
-
-  def unselectNode(n: Node) = {
-    n.view.selected = false
-  }
-
-  val selectedNodes = mutable.Set.empty[Node]
-  var prevPoint: JPoint = null
-  def nodePressed(p: JPoint): Unit = nodeOptAt(gctx.worldPointFrom(p)) match {
-    case Some(n) => {
-      if (!isMultiSelectionEnabled) {
-        for (n <- selectedNodes) unselectNode(n)
-        selectedNodes.clear
-      }
-      selectNode(n)
-      selectedNodes += n
-    }
-    case None => {
-      for (n <- selectedNodes) unselectNode(n)
-      selectedNodes.clear
-    }
-  }
-  def nodeDragged(p: JPoint): Unit = for (n <- selectedNodes) {
-    n.view.rect = n.view.rect.movedBy(gctx.worldPointFrom(p) - gctx.worldPointFrom(prevPoint))
-  }
-  def nodeReleased(p: JPoint): Unit = {}
-
-  def screenPressed(p: JPoint): Unit = {}
-  def screenDragged(p: JPoint): Unit = if (prevPoint != null) gctx.moveBy(prevPoint - p)
-  def screenReleased(p: JPoint): Unit = {}
-
-  def doLinearColoring(node: Node): Unit = doLinearColoring(Set(node))
-  def doLinearColoring(nodes: Set[Node]): Unit = {
+  private def doSmoothColoring(node: Node): Unit = doSmoothColoring(Set(node))
+  private def doSmoothColoring(nodes: Set[Node]): Unit = {
     if (nodes.isEmpty) return
 
     def searchDepth(bases: Set[Node]): Map[Node, Int] = {
@@ -81,23 +33,44 @@ class Observer extends LMNtal.Observer {
     }
   }
 
-  var isMultiSelectionEnabled = false
+  private def nodeOptAt(wp: Point): Option[Node] = {
+    val graph = LMNtal.source.current
+    if (graph == null) None
+    else graph.rootNode.allChildNodes.find { n => n.childNodes.isEmpty && n.view.rect.contains(wp) }
+  }
+
+}
+
+class Observer extends LMNtal.Observer {
+
+  import java.awt.event.{KeyEvent}
+  import java.awt.{Point => JPoint}
+
+  import scala.annotation.tailrec
+  import scala.collection.mutable
+
+  private lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
+
+  private val selectedNodes = mutable.Set.empty[Node]
+  private var prevPoint: JPoint = null
+  private var canMoveNode = false
+  private var isMultiSelectionEnabled = false
+
+  private def resetSelection = {
+    for (n <- selectedNodes) n.view.selected = false
+    selectedNodes.clear
+  }
+
   def listener: Reactions.Reaction = {
     case MousePressed(_, p, _, _, _)  => {
-      nodeOptAt(gctx.worldPointFrom(p)) match {
+      Observer.nodeOptAt(gctx.worldPointFrom(p)) match {
         case Some(n) => {
-          if (!isMultiSelectionEnabled) {
-            for (n <- selectedNodes) unselectNode(n)
-            selectedNodes.clear
-          }
-          selectNode(n)
+          if (!isMultiSelectionEnabled) resetSelection
+          n.view.selected = true
           selectedNodes += n
           canMoveNode = true
         }
-        case None => {
-          for (n <- selectedNodes) unselectNode(n)
-          selectedNodes.clear
-        }
+        case None => resetSelection
       }
       prevPoint = p
     }
@@ -112,7 +85,7 @@ class Observer extends LMNtal.Observer {
       }
       prevPoint = p
     }
-    case MouseClicked(_, p, _, 2, _)  => for (n <- nodeOptAt(gctx.worldPointFrom(p))) selectedNodes += n
+    case MouseClicked(_, p, _, 2, _)  => for (n <- Observer.nodeOptAt(gctx.worldPointFrom(p))) selectedNodes += n
     case MouseWheelMoved(_, p, _, rot) => gctx.zoom(math.pow(1.01, rot), p)
     case KeyPressed(_, key, _, _) => key match {
       case KeyEvent.VK_SHIFT => isMultiSelectionEnabled = true
