@@ -25,12 +25,10 @@ class Observer extends LMNtal.Observer {
   lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
 
   def selectNode(n: Node) = {
-    n.view.fixed = true
     n.view.selected = true
   }
 
   def unselectNode(n: Node) = {
-    n.view.fixed = false
     n.view.selected = false
   }
 

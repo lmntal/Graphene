@@ -30,7 +30,7 @@ class DefaultMover extends LMNtal.Mover {
   }
 
   private def move(node: Node, elapsedSec: Double, parentForce: Point): Unit = {
-    if (node.view.fixed) return
+    if (node.view.fixed || node.view.selected) return
 
     val vec = forceOfRepulsion(node) +
               forceOfSpring(node) +
