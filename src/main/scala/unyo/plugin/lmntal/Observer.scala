@@ -13,27 +13,54 @@ class Observer extends LMNtal.Observer {
   import java.awt.{Point => JPoint}
 
   import scala.annotation.tailrec
+  import scala.collection.mutable
 
   private def nodeOptAt(wp: Point): Option[Node] = {
     val graph = LMNtal.source.current
-    graph.rootNode.allChildNodes.find { n => n.childNodes.isEmpty && n.view.rect.contains(wp) }
+    if (graph == null) None
+    else graph.rootNode.allChildNodes.find { n => n.childNodes.isEmpty && n.view.rect.contains(wp) }
   }
 
-  var isNodeHandlable = false
+  var canMoveNode = false
   lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
 
-  var view: View = null
-  def viewPressed(p: JPoint): Unit = for (n <- nodeOptAt(gctx.worldPointFrom(p))) { view = n.view; n.view.fixed = true }
-  def viewDragged(p: JPoint): Unit = if (view != null) view.rect = Rect(gctx.worldPointFrom(p), view.rect.dim)
-  def viewReleased(p: JPoint): Unit = if (view != null) { view.fixed = false; view = null }
+  def selectNode(n: Node) = {
+    n.view.fixed = true
+    n.view.selected = true
+  }
 
+  def unselectNode(n: Node) = {
+    n.view.fixed = false
+    n.view.selected = false
+  }
+
+  val selectedNodes = mutable.Set.empty[Node]
   var prevPoint: JPoint = null
-  def screenPressed(p: JPoint): Unit = prevPoint = p
-  def screenDragged(p: JPoint): Unit = if (prevPoint != null) { gctx.moveBy(prevPoint - p); prevPoint = p }
-  def screenReleased(p: JPoint): Unit = prevPoint = null
+  def nodePressed(p: JPoint): Unit = nodeOptAt(gctx.worldPointFrom(p)) match {
+    case Some(n) => {
+      if (!isMultiSelectionEnabled) {
+        for (n <- selectedNodes) unselectNode(n)
+        selectedNodes.clear
+      }
+      selectNode(n)
+      selectedNodes += n
+    }
+    case None => {
+      for (n <- selectedNodes) unselectNode(n)
+      selectedNodes.clear
+    }
+  }
+  def nodeDragged(p: JPoint): Unit = for (n <- selectedNodes) {
+    n.view.rect = n.view.rect.movedBy(gctx.worldPointFrom(p) - gctx.worldPointFrom(prevPoint))
+  }
+  def nodeReleased(p: JPoint): Unit = {}
 
-  def doLinearColoring(node: Node): Unit = doLinearColoring(Seq(node))
-  def doLinearColoring(nodes: Seq[Node]): Unit = {
+  def screenPressed(p: JPoint): Unit = {}
+  def screenDragged(p: JPoint): Unit = if (prevPoint != null) gctx.moveBy(prevPoint - p)
+  def screenReleased(p: JPoint): Unit = {}
+
+  def doLinearColoring(node: Node): Unit = doLinearColoring(Set(node))
+  def doLinearColoring(nodes: Set[Node]): Unit = {
     if (nodes.isEmpty) return
 
     def searchDepth(bases: Set[Node]): Map[Node, Int] = {
@@ -56,21 +83,45 @@ class Observer extends LMNtal.Observer {
     }
   }
 
-  var selectingMode = false
-  val selectedNodes = collection.mutable.ArrayBuffer.empty[Node]
+  var isMultiSelectionEnabled = false
   def listener: Reactions.Reaction = {
-    case MousePressed(_, p, _, _, _)  => if (isNodeHandlable) viewPressed(p)  else screenPressed(p)
-    case MouseReleased(_, p, _, _, _) => if (isNodeHandlable) viewReleased(p) else screenReleased(p)
-    case MouseDragged(_, p, _)        => if (isNodeHandlable) viewDragged(p)  else screenDragged(p)
+    case MousePressed(_, p, _, _, _)  => {
+      nodeOptAt(gctx.worldPointFrom(p)) match {
+        case Some(n) => {
+          if (!isMultiSelectionEnabled) {
+            for (n <- selectedNodes) unselectNode(n)
+            selectedNodes.clear
+          }
+          selectNode(n)
+          selectedNodes += n
+          canMoveNode = true
+        }
+        case None => {
+          for (n <- selectedNodes) unselectNode(n)
+          selectedNodes.clear
+        }
+      }
+      prevPoint = p
+    }
+    case MouseReleased(_, p, _, _, _) => {
+      prevPoint = null
+      canMoveNode = false
+    }
+    case MouseDragged(_, p, _)        => {
+      if (prevPoint != null) {
+        if (canMoveNode) for (n <- selectedNodes) n.view.rect = n.view.rect.movedBy(gctx.worldPointFrom(p) - gctx.worldPointFrom(prevPoint))
+        else gctx.moveBy(prevPoint - p)
+      }
+      prevPoint = p
+    }
     case MouseClicked(_, p, _, 2, _)  => for (n <- nodeOptAt(gctx.worldPointFrom(p))) selectedNodes += n
     case MouseWheelMoved(_, p, _, rot) => gctx.zoom(math.pow(1.01, rot), p)
     case KeyPressed(_, key, _, _) => key match {
-      case KeyEvent.VK_Z => isNodeHandlable = !isNodeHandlable
-      case KeyEvent.VK_SHIFT => { selectingMode = true; }
+      case KeyEvent.VK_SHIFT => isMultiSelectionEnabled = true
       case _ =>
     }
     case KeyReleased(_, key, _, _) => key match {
-      case KeyEvent.VK_SHIFT => { selectingMode = false; doLinearColoring(selectedNodes); selectedNodes.clear }
+      case KeyEvent.VK_SHIFT => isMultiSelectionEnabled = false
       case _ =>
     }
     case _ =>

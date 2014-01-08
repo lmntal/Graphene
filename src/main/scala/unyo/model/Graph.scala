@@ -14,6 +14,7 @@ class View(var rect: Rect, var color: Color) {
   var speed = Point.zero
   var diff = Point.zero
   var fixed = false
+  var selected = false
   var didAppear = false
   var willDisappear = false
 
