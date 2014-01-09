@@ -84,7 +84,8 @@ private object LMN {
 
   def fromString(s: String): Graph = removeProxies(buildGraph(parse(s)))
 
-  case class IntID(value: Int) extends unyo.model.ID
+  case class AtomID(value: Int) extends unyo.model.ID
+  case class MemID(value: Int) extends unyo.model.ID
   case class DataAtomID(id: unyo.model.ID, pos: Int) extends unyo.model.ID
   case class HLAtomID(value: Int) extends unyo.model.ID
 
@@ -94,7 +95,7 @@ private object LMN {
     val JArray(atoms) = json \ "atoms"
     val JArray(mems) = json \ "membranes"
 
-    val node = new Node(IntID(id.toInt), name, Mem())
+    val node = new Node(MemID(id.toInt), name, Mem())
     val graph = new Graph(node)
 
     val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
@@ -119,7 +120,7 @@ private object LMN {
     val JArray(atoms) = json \ "atoms"
     val JArray(mems) = json \ "membranes"
 
-    val node = new Node(IntID(id.toInt), name, Mem())
+    val node = new Node(MemID(id.toInt), name, Mem())
     parent.addChildNode(node)
     for (m <-  mems) buildMem (m, node)
     for (a <- atoms) buildAtom(a, node)
@@ -131,7 +132,7 @@ private object LMN {
     var JArray(links) = json \ "links"
     if (name == "$in" || name == "$out") links = links.take(2)
 
-    val node = Node(IntID(id.toInt), name, Atom())
+    val node = Node(AtomID(id.toInt), name, Atom())
     parent.addChildNode(node)
     for ((l,i) <- links.zipWithIndex) buildLink(l, parent, node, i)
   }
@@ -149,7 +150,7 @@ private object LMN {
 
     if (attribute.isRef) {
       (json \ "data") match {
-        case JInt(i) => buddy.addEdgeTo(Port(IntID(i.toInt), attribute.targetPos))
+        case JInt(i) => buddy.addEdgeTo(Port(AtomID(i.toInt), attribute.targetPos))
         case j       => throw new Exception("Unexpected data : " + j.toString)
       }
     } else {
