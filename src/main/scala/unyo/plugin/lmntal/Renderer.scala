@@ -121,8 +121,8 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
       val x = rect.center.x.toInt
       val y = rect.center.y.toInt
       val r = rect.dim.width.toInt / 2
-      val margin = 10
-      g.setPaint(new java.awt.RadialGradientPaint(x, y, r + margin, Array(0.3f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
+      val margin = 12
+      g.setPaint(new java.awt.RadialGradientPaint(x, y, r + margin, Array(0.4f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
       g.fillOval(rect.pad(Padding(-margin, -margin, -margin, -margin)))
       g.setPaint(oldPaint)
     }
