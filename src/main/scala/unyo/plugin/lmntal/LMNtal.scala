@@ -29,6 +29,7 @@ class Config {
 }
 
 object LMNtal extends Plugin {
+
   type GraphType = unyo.model.Graph
 
   val name = "LMNtal"
@@ -53,6 +54,6 @@ object LMNtal extends Plugin {
   val source = new LMNtalSource
   val renderer = new DefaultRenderer
   val observer = new unyo.plugin.lmntal.Observer
-  val mover = new DefaultMover
+  val mover = DefaultMover
   def controlPanel = new ControlPanel(config)
 }
