@@ -2,6 +2,23 @@ package unyo.plugin.lmntal
 
 import unyo.plugin.Plugin
 
+class ForceParams {
+  val maxForce = 100.0
+  object repulsion {
+    var coef1 = 80.0
+    var coef2 = 1000.0
+  }
+  object spring {
+    var constant = 0.6
+    var length = 30.0
+  }
+  object contraction {
+    var coef = 0.5
+    var threshold = 100.0
+    var areaPerNode = 10000.0
+  }
+}
+
 class Config {
   var lmntalHome = ""
   var slimPath = ""
@@ -10,22 +27,7 @@ class Config {
   var isProxyVisible = false
   var isDiffAnimationEnabled = false
   var isAutoFocusEnabled = false
-  object forces {
-    val maxForce = 100.0
-    object repulsion {
-      var coef1 = 80.0
-      var coef2 = 1000.0
-    }
-    object spring {
-      var constant = 0.6
-      var length = 30.0
-    }
-    object contraction {
-      var coef = 0.5
-      var threshold = 100.0
-      var areaPerNode = 10000.0
-    }
-  }
+  val forces = new ForceParams
 }
 
 object LMNtal extends Plugin {
