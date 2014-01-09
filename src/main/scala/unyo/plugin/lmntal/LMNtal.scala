@@ -9,6 +9,7 @@ class Config {
   var baseDirectory = ""
   var isProxyVisible = false
   var isDiffAnimationEnabled = false
+  var isAutoFocusEnabled = false
   object forces {
     val maxForce = 100.0
     object repulsion {

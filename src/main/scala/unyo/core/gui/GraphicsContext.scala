@@ -11,6 +11,10 @@ class GraphicsContext {
 
   def wSize = Dim(sSize.width / magnificationRate, sSize.height / magnificationRate)
   def wRect = Rect(wCenter - wSize.toPoint / 2, wSize)
+  def wRect_=(r: Rect) = {
+    wCenter = r.center
+    magnificationRate = math.min(sSize.width / r.dim.width, sSize.height / r.dim.height)
+  }
 
   def worldPointFrom(sp: Point) = wCenter + (sp - sSize.toPoint / 2) / magnificationRate
   def screenPointFrom(wp: Point) = (wp - wCenter) * magnificationRate + sSize.toPoint / 2

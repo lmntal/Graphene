@@ -65,6 +65,7 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
 
     if (graph == null) return
 
+    if (LMNtal.config.isAutoFocusEnabled) gctx.wRect = graph.rootNode.view.rect
     for (node <- graph.rootNode.childNodes) renderEdges(node)
     for (node <- graph.rootNode.childNodes) renderNode(node)
   }

@@ -125,6 +125,9 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       this << new JCheckBox("Show diff") with JCheckBoxExt { checkBox =>
         onActionPerformed { _ => config.isDiffAnimationEnabled = checkBox.isSelected }
       }
+      this << new JCheckBox("Auto focus") with JCheckBoxExt { checkBox =>
+        onActionPerformed { _ => config.isAutoFocusEnabled = checkBox.isSelected }
+      }
     }
   }
 
