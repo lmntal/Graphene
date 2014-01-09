@@ -23,4 +23,5 @@ class RandomColorGenerator(colorCount: Int, step: Int) {
 
 object Palette {
   val lightGray = Color.fromHSB(0.8f, 0.05f, 0.75f)
+  val asbestos = new JColor(127, 140, 141)
 }

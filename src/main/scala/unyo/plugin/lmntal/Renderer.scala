@@ -116,24 +116,13 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
       g.setPaint(oldPaint)
     }
 
-    if (view.selected) {
-      val oldPaint = g.getPaint
-      val x = rect.center.x.toInt
-      val y = rect.center.y.toInt
-      val r = rect.dim.width.toInt / 2
-      val margin = 12
-      g.setPaint(new java.awt.RadialGradientPaint(x, y, r + margin, Array(0.4f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
-      g.fillOval(rect.pad(Padding(-margin, -margin, -margin, -margin)))
-      g.setPaint(oldPaint)
-    }
-
     node.attr match {
       case Atom() => {
         g.setFont(font)
         g.setColor(node.view.color)
         g.drawString(node.name, rect.point)
 
-        g.setColor(Color.WHITE)
+        g.setColor(if (view.selected) Palette.asbestos else Color.WHITE)
         g.fillOval(rect)
 
         g.setStroke(atomStroke)
