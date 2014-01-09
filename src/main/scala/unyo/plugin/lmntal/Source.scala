@@ -21,7 +21,7 @@ class LMNtalSource extends LMNtal.Source {
   private var colorGen: RandomColorGenerator = _
   private val colorFromFunctor = collection.mutable.Map.empty[Functor,java.awt.Color]
 
-  def coloring(graph: Graph): Graph = {
+  private def coloring(graph: Graph): Graph = {
     for (n <- graph.allNodes) {
       n.view.color = n.attr match {
         case Atom() => colorFromFunctor.getOrElseUpdate(Functor(n.name, n.arity), colorGen.next)
@@ -32,7 +32,8 @@ class LMNtalSource extends LMNtal.Source {
   }
 
   def run(options: Seq[String]): Graph = {
-    runtime = new Runtime(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ options)
+    val additionalOptions = LMNtal.config.additionalOptions.split(' ').filter { o => !o.isEmpty }
+    runtime = new Runtime(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ additionalOptions ++ options)
 
     colorFromFunctor.clear
     colorGen = new RandomColorGenerator
@@ -51,7 +52,7 @@ class LMNtalSource extends LMNtal.Source {
 
 private class Runtime(commands: Seq[String]) extends collection.Iterator[String] with Logging {
 
-  val reader = {
+  private val reader = {
     val pb = new ProcessBuilder(commands)
     logger.info("run process: " + pb.command.mkString(" "))
     pb.redirectErrorStream(true)
@@ -59,7 +60,7 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
     new BufferedReader(new InputStreamReader(p.getInputStream))
   }
 
-  val iter = Iterator.continually(reader.readLine).takeWhile(_ != null)
+  private val iter = Iterator.continually(reader.readLine).takeWhile(_ != null)
 
   def hasNext = iter.hasNext
   def next = iter.next

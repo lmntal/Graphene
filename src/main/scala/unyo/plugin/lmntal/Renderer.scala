@@ -111,8 +111,19 @@ class DefaultRenderer extends LMNtal.Renderer with Renderer {
 
     if (view.didAppear) {
       val oldPaint = g.getPaint
-      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toInt, rect.center.y.toInt, 30, Array(0.0f, 1.0f), Array(Color.GREEN, new Color(255, 255, 255, 0))))
+      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toInt, rect.center.y.toInt, 30, Array(0.7f, 1.0f), Array(Color.GREEN, new Color(255, 255, 255, 0))))
       g.fillOval(rect.pad(Padding(-30, -30, -30, -30)))
+      g.setPaint(oldPaint)
+    }
+
+    if (view.selected) {
+      val oldPaint = g.getPaint
+      val x = rect.center.x.toInt
+      val y = rect.center.y.toInt
+      val r = rect.dim.width.toInt / 2
+      val margin = 10
+      g.setPaint(new java.awt.RadialGradientPaint(x, y, r + margin, Array(0.3f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
+      g.fillOval(rect.pad(Padding(-margin, -margin, -margin, -margin)))
       g.setPaint(oldPaint)
     }
 

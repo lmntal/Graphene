@@ -90,6 +90,8 @@ case class Rect(point: Point, dim: Dim) {
     left <= p.x && p.x <= right &&
     top  <= p.y && p.y <= bottom
 
+  def movedBy(p: Point) = Rect(point + p, dim)
+
   def <<(p: Point) = {
     val l = min(p.x, left)
     val r = max(p.x, right)
