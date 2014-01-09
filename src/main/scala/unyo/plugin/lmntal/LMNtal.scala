@@ -5,6 +5,7 @@ import unyo.plugin.Plugin
 class Config {
   var lmntalHome = ""
   var slimPath = ""
+  var additionalOptions = ""
   var baseDirectory = ""
   var isProxyVisible = false
   var isDiffAnimationEnabled = false
@@ -34,15 +35,17 @@ object LMNtal extends Plugin {
   val config = new Config
 
   def importProperties(properties: java.util.Properties) {
-    config.lmntalHome    = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
-    config.slimPath      = properties.getProperty("slim_path", "")
-    config.baseDirectory = properties.getProperty("base_directory", "~/")
+    config.lmntalHome        = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
+    config.slimPath          = properties.getProperty("slim_path", "")
+    config.baseDirectory     = properties.getProperty("base_directory", "~/")
+    config.additionalOptions = properties.getProperty("additional_options", "")
   }
 
   def exportProperties: java.util.Properties = {
     val properties = new java.util.Properties
     properties.setProperty("slim_path", config.slimPath)
     properties.setProperty("base_directory", config.baseDirectory)
+    properties.setProperty("additional_options", config.additionalOptions)
     properties
   }
 

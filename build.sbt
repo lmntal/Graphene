@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "UNYO-UNYO"
 
-version := "4.2.0"
+version := "4.2.1"
 
 scalaVersion := "2.10.2"
 
@@ -20,10 +20,6 @@ libraryDependencies ++= Seq(
 
 libraryDependencies <+= scalaVersion {
    "org.scala-lang" % "scala-actors" % _
-}
-
-libraryDependencies <+= scalaVersion {
-  "org.scala-lang" % "scala-swing" % _
 }
 
 assemblySettings
