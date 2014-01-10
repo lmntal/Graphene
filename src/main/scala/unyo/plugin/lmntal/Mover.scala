@@ -173,8 +173,23 @@ object FastMover extends LMNtal.Mover {
   private def forceOfSpring(self: Node, params: ForceParams): Point = {
     val ps = params.spring
     val selfPoint = self.view.rect.center
-    val otherPoints = self.neighborNodes.map { _.view.rect.center }
-    ForceBased.spring(selfPoint, otherPoints, ps.constant, ps.length)
+    val others = self.neighborNodes
+
+    var rx = 0.0
+    var ry = 0.0
+    for (other <- self.neighborNodes) {
+      val otherPoint = other.view.rect.center
+      val dx = otherPoint.x - selfPoint.x
+      val dy = otherPoint.y - selfPoint.y
+      val abs = math.hypot(dx, dy)
+      val f = ps.constant * (abs - ps.length)
+
+      if (!(dx.abs < 1e-9 && dy.abs < 1e-9)) {
+        rx += dx / abs * f
+        ry += dy / abs * f
+      }
+    }
+    Point(rx, ry)
   }
 
   private def forceOfContraction(self: Node, params: ForceParams): Point = {
