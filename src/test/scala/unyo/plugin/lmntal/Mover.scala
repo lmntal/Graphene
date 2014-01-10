@@ -8,17 +8,38 @@ import unyo.util._
 
 class FastMoverSpec extends Specification {
 
-  def beCloseTo(p: Point, margin: Double): Matcher[Point] = beLike { case Point(x, y) =>
-    (x must beCloseTo(p.x, margin)) and (y must beCloseTo(p.y, margin))
+  def beAlmostSame(d1: Double): Matcher[Double] = beLike { case d2 =>
+    if (d1 != 0.0 && d2 != 0.0) {
+      (d1 / d2) must beBetween(0.999999999, 1.000000001)
+    } else {
+      d1 === d2
+    }
   }
 
-  "FastMover" should {
-    "behave in the same way as DefaultMover" in new Graphs {
+  def beAlmostSame(p: Point): Matcher[Point] = beLike { case Point(x, y) =>
+    (p.x must beAlmostSame(x)) and (p.y must beAlmostSame(y))
+  }
+
+  "FastMover.forceFor" should {
+    "behave in the same way as DefaultMover.forceFor" in new Graphs {
       val params = new ForceParams
+      params.contraction.coef = 100
       for (n <- graph1.allNodes) {
         val f1 = DefaultMover.forceFor(n, params)
         val f2 = FastMover.forceFor(n, params)
-        f1 must beCloseTo(f2, 1e-3)
+        f1 must beAlmostSame(f2)
+      }
+    }
+  }
+
+  "FastMover.forceOfContraction" should {
+    "behave in the same way as DefaultMover.forceOfContraction" in new Graphs {
+      val params = new ForceParams
+      params.contraction.coef = 100
+      for (n <- graph1.allNodes) {
+        val f1 = DefaultMover.forceOfContraction(n, params)
+        val f2 = FastMover.forceOfContraction(n, params)
+        f1 must beAlmostSame(f2)
       }
     }
   }
@@ -37,7 +58,7 @@ trait Graphs extends Scope {
   val graph1 = {
     val root = Node(IntID(0), "")
     val g = new Graph(root)
-    val r = Rect(Point(0, 0), Dim(400, 300))
+    val r = Rect(Point(0, 0), Dim(40000, 30000))
     g.viewBuilder = (n: Node) => {
       new View(Rect(Point.randomPointIn(r), Dim(12, 12)), java.awt.Color.WHITE)
     }
@@ -69,6 +90,20 @@ trait Graphs extends Scope {
     d.addEdgeTo(Port(IntID(5), 0))
     e.addEdgeTo(Port(IntID(4), 2))
 
+    def coverableRect(node: Node): Rect = {
+      if (node.childNodes.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
+        else                         node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
+    }
+
+    def resize(node: Node): Unit = {
+      for (n <- node.childNodes) resize(n)
+
+      if (!node.childNodes.isEmpty) node.view.rect = coverableRect(node)
+    }
+
+    resize(g.rootNode)
+
     g
   }
+
 }
