@@ -145,8 +145,28 @@ object FastMover extends LMNtal.Mover {
     } else {
       val ps = params.repulsion
       val selfRect = self.view.rect
-      val otherRects = self.parent.childNodes.map { _.view.rect }
-      ForceBased.repulsion(selfRect, otherRects, ps.coef1, ps.coef2)
+      val others = self.parent.childNodes
+
+      var rx = 0.0
+      var ry = 0.0
+      val sx = selfRect.center.x
+      val sy = selfRect.center.y
+      for (other <- others) {
+        val otherRect = other.view.rect
+        val dist = selfRect.distanceWith(otherRect)
+        val ox = otherRect.center.x
+        val oy = otherRect.center.y
+        val dx = sx - ox
+        val dy = sy - oy
+
+        if (!(dx.abs < 1e-9 && dy.abs < 1e-9)) {
+          val abs = math.hypot(dx, dy)
+          val f = ps.coef1 / (dist * dist / ps.coef2 + 1)
+          rx += dx * f / abs
+          ry += dy * f / abs
+        }
+      }
+      Point(rx, ry)
     }
   }
 
