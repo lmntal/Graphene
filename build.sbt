@@ -15,7 +15,8 @@ libraryDependencies ++= Seq(
   "org.json4s" %% "json4s-native" % "3.2.6",
   "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
   "org.slf4j" % "slf4j-api" % "1.7.5",
-  "ch.qos.logback" % "logback-classic" % "1.0.13"
+  "ch.qos.logback" % "logback-classic" % "1.0.13",
+  "org.specs2" %% "specs2" % "2.3.7" % "test"
 )
 
 libraryDependencies <+= scalaVersion {
