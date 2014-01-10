@@ -1,15 +1,24 @@
 package unyo.plugin.lmntal
 
 import org.specs2.mutable._
+import org.specs2.matcher.Matcher
 import org.specs2.specification.Scope
 
+import unyo.util._
+
 class FastMoverSpec extends Specification {
+
+  def beCloseTo(p: Point, margin: Double): Matcher[Point] = beLike { case Point(x, y) =>
+    (x must beCloseTo(p.x, margin)) and (y must beCloseTo(p.y, margin))
+  }
 
   "FastMover" should {
     "behave in the same way as DefaultMover" in new Graphs {
       val params = new ForceParams
       for (n <- graph1.allNodes) {
-        DefaultMover.forceFor(n, params) === FastMover.forceFor(n, params)
+        val f1 = DefaultMover.forceFor(n, params)
+        val f2 = FastMover.forceFor(n, params)
+        f1 must beCloseTo(f2, 1e-3)
       }
     }
   }
@@ -28,6 +37,10 @@ trait Graphs extends Scope {
   val graph1 = {
     val root = Node(IntID(0), "")
     val g = new Graph(root)
+    val r = Rect(Point(0, 0), Dim(400, 300))
+    g.viewBuilder = (n: Node) => {
+      new View(Rect(Point.randomPointIn(r), Dim(12, 12)), java.awt.Color.WHITE)
+    }
 
     val a = Node(IntID(1), "a")
     val b = Node(IntID(2), "b")
