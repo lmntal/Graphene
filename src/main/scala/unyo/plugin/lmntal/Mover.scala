@@ -54,7 +54,7 @@ object DefaultMover extends LMNtal.Mover {
     forceOfContraction(node, params)
 
 
-  private def forceOfRepulsion(self: Node, params: ForceParams): Point = {
+  def forceOfRepulsion(self: Node, params: ForceParams): Point = {
     if (self.isRoot) {
       Point.zero
     } else {
@@ -65,20 +65,20 @@ object DefaultMover extends LMNtal.Mover {
     }
   }
 
-  private def forceOfSpring(self: Node, params: ForceParams): Point = {
+  def forceOfSpring(self: Node, params: ForceParams): Point = {
     val ps = params.spring
     val selfPoint = self.view.rect.center
     val otherPoints = self.neighborNodes.map { _.view.rect.center }
     ForceBased.spring(selfPoint, otherPoints, ps.constant, ps.length)
   }
 
-  private def forceOfContraction(self: Node, params: ForceParams): Point = {
+  def forceOfContraction(self: Node, params: ForceParams): Point = {
     val f1 = if (self.isRoot) Point.zero else forceOfContraction(self.parent, self, params)
     val f2 = self.childNodes.foldLeft(Point.zero) { (res, other) => res + forceOfContraction(self, other, params) }
     f1 - f2
   }
 
-  private def forceOfContraction(parent: Node, child: Node, params: ForceParams): Point = {
+  def forceOfContraction(parent: Node, child: Node, params: ForceParams): Point = {
     val ps = params.contraction
     val surplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode
     if (parent.isRoot || surplusArea < ps.threshold) {
@@ -139,7 +139,7 @@ object FastMover extends LMNtal.Mover {
     forceOfSpring(node, params) +
     forceOfContraction(node, params)
 
-  private def forceOfRepulsion(self: Node, params: ForceParams): Point = {
+  def forceOfRepulsion(self: Node, params: ForceParams): Point = {
     if (self.isRoot) {
       Point.zero
     } else {
@@ -170,7 +170,7 @@ object FastMover extends LMNtal.Mover {
     }
   }
 
-  private def forceOfSpring(self: Node, params: ForceParams): Point = {
+  def forceOfSpring(self: Node, params: ForceParams): Point = {
     val ps = params.spring
     val selfPoint = self.view.rect.center
     val others = self.neighborNodes
@@ -192,13 +192,13 @@ object FastMover extends LMNtal.Mover {
     Point(rx, ry)
   }
 
-  private def forceOfContraction(self: Node, params: ForceParams): Point = {
+  def forceOfContraction(self: Node, params: ForceParams): Point = {
     val f1 = if (self.isRoot) Point.zero else forceOfContraction(self.parent, self, params)
     val f2 = self.childNodes.foldLeft(Point.zero) { (res, other) => res + forceOfContraction(self, other, params) }
     f1 - f2
   }
 
-  private def forceOfContraction(parent: Node, child: Node, params: ForceParams): Point = {
+  def forceOfContraction(parent: Node, child: Node, params: ForceParams): Point = {
     val ps = params.contraction
     val surplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode
     if (parent.isRoot || surplusArea < ps.threshold) {
