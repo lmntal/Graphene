@@ -92,6 +92,8 @@ object DefaultMover extends LMNtal.Mover {
 
 object FastMover extends LMNtal.Mover {
 
+  import scala.math.{hypot,sqrt}
+
   private def transaction(graph: Graph)(f: => Unit): Unit = {
     for (node <- graph.allNodes) node.view.reset
     f
@@ -193,19 +195,50 @@ object FastMover extends LMNtal.Mover {
   }
 
   def forceOfContraction(self: Node, params: ForceParams): Point = {
-    val f1 = if (self.isRoot) Point.zero else forceOfContraction(self.parent, self, params)
-    val f2 = self.childNodes.foldLeft(Point.zero) { (res, other) => res + forceOfContraction(self, other, params) }
-    f1 - f2
-  }
 
-  def forceOfContraction(parent: Node, child: Node, params: ForceParams): Point = {
+    if (self.isRoot) return Point.zero
+
     val ps = params.contraction
-    val surplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode
-    if (parent.isRoot || surplusArea < ps.threshold) {
-      Point.zero
-    } else {
-      ForceBased.attraction(child.view.rect.center, parent.view.rect.center, ps.coef, math.sqrt(surplusArea))
+    val sr = self.view.rect
+    val sx = sr.center.x
+    val sy = sr.center.y
+
+    var rx = 0.0
+    var ry = 0.0
+
+    if (!self.parent.isRoot) {
+      val parent = self.parent
+      val parentSurplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode
+      if (parentSurplusArea >= ps.threshold) {
+        val oc = parent.view.rect.center
+        val dx = oc.x - sx
+        val dy = oc.y - sy
+        if (!(dx.abs < 1e-9 && dy.abs < 1e-9)) {
+          val abs = hypot(dx, dy)
+          val f = ps.coef * sqrt(abs * sqrt(parentSurplusArea))
+          rx += dx / abs * f
+          ry += dy / abs * f
+        }
+      }
     }
+
+    val selfSurplusArea = sr.area - self.allChildNodes.size * ps.areaPerNode
+    if (selfSurplusArea >= ps.threshold) {
+      val ss = sqrt(selfSurplusArea)
+      for (other <- self.childNodes) {
+        val oc = other.view.rect.center
+        val dx = sx - oc.x
+        val dy = sy - oc.y
+        if (!(dx.abs < 1e-9 && dy.abs < 1e-9)) {
+          val abs = hypot(dx, dy)
+          val f = ps.coef * sqrt(abs * ss)
+          rx -= dx / abs * f
+          ry -= dy / abs * f
+        }
+      }
+    }
+
+    Point(rx, ry)
   }
 
 }
