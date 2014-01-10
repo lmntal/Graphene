@@ -11,8 +11,11 @@ import java.awt.{Color}
 
 class View(var rect: Rect, var color: Color) {
 
-  var speed = Point.zero
-  var diff = Point.zero
+  def speed = Point(sx, sy)
+  var sx = 0.0 // speed x
+  var sy = 0.0 // speed y
+  var dx = 0.0
+  var dy = 0.0
   var fixed = false
   var selected = false
   var didAppear = false
@@ -22,23 +25,26 @@ class View(var rect: Rect, var color: Color) {
   val decayRate = 0.90
 
   def reset() {
-    diff = Point.zero
+    dx = 0.0
+    dy = 0.0
   }
-  def affect(s: Point, f: Point, elapsedSec: Double) {
-    speed = speed * decayRate + f / mass * elapsedSec
-    diff = (speed + s) * elapsedSec
+  def affect(f: Point, elapsedSec: Double) {
+    sx = sx * decayRate + f.x / mass * elapsedSec
+    sy = sy * decayRate + f.y / mass * elapsedSec
+    dx = sx * elapsedSec
+    dy = sy * elapsedSec
   }
   def move() {
-    val abs = diff.abs
+    val abs = math.hypot(dx, dy)
     // TODO: Magic number
     if (abs < 100) {
-      rect = Rect(rect.point + diff, rect.dim)
+      rect = Rect(Point(rect.point.x + dx, rect.point.y + dy), rect.dim)
     } else {
-      rect = Rect(rect.point + diff.unit * 100, rect.dim)
+      rect = Rect(Point(rect.point.x + dx / abs * 100, rect.point.y + dy / abs * 100), rect.dim)
     }
   }
 
-  override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
+  override def toString = "View(rect: " + rect + ", speed: " + s"($sx, $sy)" + ")"
 }
 
 object Port {

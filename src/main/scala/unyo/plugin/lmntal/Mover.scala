@@ -33,7 +33,7 @@ object DefaultMover extends LMNtal.Mover {
 
     val force = forceFor(node, params) + parentForce
 
-    node.view.affect(Point.zero, force, elapsedSec)
+    node.view.affect(force, elapsedSec)
 
     val childNodes = if (unyo.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
     for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params)
@@ -121,7 +121,7 @@ object FastMover extends LMNtal.Mover {
 
     val force = forceFor(node, params) + parentForce
 
-    node.view.affect(Point.zero, force, elapsedSec)
+    node.view.affect(force, elapsedSec)
 
     val childNodes = if (unyo.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
     for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params)
