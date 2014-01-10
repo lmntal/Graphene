@@ -79,10 +79,10 @@ case class Rect(point: Point, dim: Dim) {
 
   val center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
 
-  val left   = point.x
-  val right  = point.x + dim.width
-  val top    = point.y
-  val bottom = point.y + dim.height
+  def left   = point.x
+  def right  = point.x + dim.width
+  def top    = point.y
+  def bottom = point.y + dim.height
 
   def area = dim.area
 
