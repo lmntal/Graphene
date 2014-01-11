@@ -6,9 +6,7 @@ version := "4.2.2"
 
 scalaVersion := "2.10.2"
 
-scalacOptions += "-deprecation"
-
-scalacOptions += "-feature"
+scalacOptions ++= Seq("-deprecation", "-feature", "-Xlint")
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
