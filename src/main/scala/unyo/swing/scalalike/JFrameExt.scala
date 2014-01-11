@@ -42,7 +42,7 @@ trait ComponentExt {
 
   import java.awt.event.{ComponentListener,ComponentEvent}
 
-  def listenToComponent = addComponentListener(new ComponentListener {
+  def listenToComponent() = addComponentListener(new ComponentListener {
     override def componentHidden(e: ComponentEvent) =
       dispatch(ComponentHidden(e.getComponent))
     override def componentMoved(e: ComponentEvent) =
@@ -55,7 +55,7 @@ trait ComponentExt {
 
   import java.awt.event.{MouseListener,MouseEvent}
 
-  def listenToMouse = addMouseListener(new MouseListener {
+  def listenToMouse() = addMouseListener(new MouseListener {
     override def mouseClicked(e: MouseEvent) =
       dispatch(MouseClicked(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
     override def mouseEntered(e: MouseEvent) =
@@ -70,7 +70,7 @@ trait ComponentExt {
 
   import java.awt.event.{MouseMotionListener}
 
-  def listenToMouseMotion = addMouseMotionListener(new MouseMotionListener {
+  def listenToMouseMotion() = addMouseMotionListener(new MouseMotionListener {
     override def mouseMoved(e: MouseEvent) =
       dispatch(MouseMoved(e.getComponent, e.getPoint, e.getModifiers))
     override def mouseDragged(e: MouseEvent) =
@@ -79,14 +79,14 @@ trait ComponentExt {
 
   import java.awt.event.{MouseWheelListener,MouseWheelEvent}
 
-  def listenToMouseWheel = addMouseWheelListener(new MouseWheelListener {
+  def listenToMouseWheel() = addMouseWheelListener(new MouseWheelListener {
     override def mouseWheelMoved(e: MouseWheelEvent) =
       dispatch(MouseWheelMoved(e.getComponent, e.getPoint, e.getModifiers, e.getWheelRotation))
   })
 
   import java.awt.event.{KeyListener,KeyEvent}
 
-  def listenToKey = addKeyListener(new KeyListener {
+  def listenToKey() = addKeyListener(new KeyListener {
     override def keyPressed(e: KeyEvent) =
       dispatch(KeyPressed(e.getComponent, e.getKeyCode, e.getModifiers, e.getKeyLocation))
     override def keyReleased(e: KeyEvent) =

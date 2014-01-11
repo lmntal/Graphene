@@ -134,7 +134,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
     }
   }
 
-  def openFileChooser {
+  def openFileChooser() = {
     val chooser = new JFileChooser(new java.io.File("~/")) with JFileChooserExt {
       fileFilter_ = new FileNameExtensionFilter("LMNtal file (*.lmn)", "lmn");
     }

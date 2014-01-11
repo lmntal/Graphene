@@ -68,7 +68,7 @@ class Observer extends LMNtal.Observer {
     add(item)
   }
 
-  private def resetSelection = {
+  private def resetSelection() = {
     for (n <- selectedNodes) n.view.selected = false
     selectedNodes.clear
   }
