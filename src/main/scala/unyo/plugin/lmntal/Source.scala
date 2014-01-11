@@ -82,20 +82,63 @@ private object LMN {
   import unyo.model._
 
 
-  def fromString(s: String): Graph = removeProxies(buildGraph(parse(s)))
+  def fromString(s: String): Graph = removeProxies(buildGraph(toJMem(parse(s))))
+
+  case class JMem(id: Int, name: String, atoms: Seq[JAtom], mems: Seq[JMem])
+  case class JAtom(id: Int, name: String, links: Seq[JLink]) {
+    def isProxy = name == "$in" || name == "$out"
+  }
+  trait JLink
+  case class JRef(id: Int, pos: Int) extends JLink
+  case class JDataAtom(attr: Int, value: String) extends JLink
+  case class JHLAtom(value: String) extends JLink
+
+  private def toJMem(json: JValue): JMem = {
+    val JInt(id) = json \ "id"
+    val JString(name) = json \ "name"
+    val JArray(atoms) = json \ "atoms"
+    val JArray(mems) = json \ "membranes"
+    JMem(id.toInt, name, atoms.map(toJAtom), mems.map(toJMem))
+  }
+
+  private def toJAtom(json: JValue): JAtom = {
+    val JInt(id) = json \ "id"
+    val JString(name) = json \ "name"
+    var JArray(links) = json \ "links"
+    JAtom(id.toInt, name, links.map(toJLink))
+  }
+
+  private def toJLink(json: JValue): JLink = {
+    def isRef(attr: Int) = (attr & 0x80) == 0
+    def getPos(attr: Int) = attr & 0x7F
+    def isHL(attr: Int) = attr == 0x8a
+
+    val JInt(battr) = json \ "attr"
+    val attr = battr.toInt
+    if (isRef(attr)) {
+      val JInt(i) = json \ "data"
+      JRef(i.toInt, getPos(attr))
+    } else {
+      val value = (json \ "data") match {
+        case JString(s) => s
+        case JDouble(d) => d.toString
+        case JInt(i)    => i.toString
+        case j          => throw new Exception("Unexpected data : " + j.toString)
+      }
+      if (isHL(attr)) JHLAtom(value) else JDataAtom(attr, value)
+    }
+  }
+
 
   case class AtomID(value: Int) extends unyo.model.ID
   case class MemID(value: Int) extends unyo.model.ID
   case class DataAtomID(id: unyo.model.ID, pos: Int) extends unyo.model.ID
   case class HLAtomID(value: Int) extends unyo.model.ID
 
-  private def buildGraph(json: JValue): Graph = {
-    val JInt(id) = json \ "id"
-    val JString(name) = json \ "name"
-    val JArray(atoms) = json \ "atoms"
-    val JArray(mems) = json \ "membranes"
+  private def buildGraph(jmem: JMem): Graph = {
+    val JMem(id, name, atoms, mems) = jmem
 
-    val node = new Node(MemID(id.toInt), name, Mem())
+    val node = new Node(MemID(id), name, Mem())
     val graph = new Graph(node)
 
     val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
@@ -114,11 +157,8 @@ private object LMN {
     graph
   }
 
-  private def buildMem(json: JValue, parent: Node): Unit = {
-    val JInt(id) = json \ "id"
-    val JString(name) = json \ "name"
-    val JArray(atoms) = json \ "atoms"
-    val JArray(mems) = json \ "membranes"
+  private def buildMem(jmem: JMem, parent: Node): Unit = {
+    val JMem(id, name, atoms, mems) = jmem
 
     val node = new Node(MemID(id.toInt), name, Mem())
     parent.addChildNode(node)
@@ -126,46 +166,33 @@ private object LMN {
     for (a <- atoms) buildAtom(a, node)
   }
 
-  private def buildAtom(json: JValue, parent: Node): Unit = {
-    val JInt(id) = json \ "id"
-    val JString(name) = json \ "name"
-    var JArray(links) = json \ "links"
-    if (name == "$in" || name == "$out") links = links.take(2)
+  private def buildAtom(jatom: JAtom, parent: Node): Unit = {
+    val JAtom(id, name, links) = jatom
 
     val node = Node(AtomID(id.toInt), name, Atom())
     parent.addChildNode(node)
-    for ((l,i) <- links.zipWithIndex) buildLink(l, parent, node, i)
+    for ((l,i) <- (if (jatom.isProxy) links.take(2) else links).zipWithIndex) buildLink(l, parent, node, i)
   }
 
-  private def buildLink(json: JValue, parent: Node, buddy: Node, buddyPos: Int): Unit = {
-    case class Attribute(value: Int) {
-      def isRef = (value & 0x80) == 0
-      def targetPos = value & 0x7F
-      def isData = !isRef
-      def isHL = value == 0x8a
-    }
-
-    val JInt(attr) = json \ "attr"
-    val attribute = Attribute(attr.toInt)
-
-    if (attribute.isRef) {
-      (json \ "data") match {
-        case JInt(i) => buddy.addEdgeTo(Port(AtomID(i.toInt), attribute.targetPos))
-        case j       => throw new Exception("Unexpected data : " + j.toString)
+  private def buildLink(jlink: JLink, parent: Node, buddy: Node, buddyPos: Int): Unit = {
+    jlink match {
+      case JRef(id, pos) => {
+        buddy.addEdgeTo(Port(AtomID(id), pos))
       }
-    } else {
-      val data = (json \ "data") match {
-        case JString(s) => s
-        case JDouble(d) => d.toString
-        case JInt(i)    => i.toString
-        case j          => throw new Exception("Unexpected data : " + j.toString)
+      case JDataAtom(_, value) => {
+        val id = DataAtomID(buddy.id, buddyPos)
+        val node = new Node(id, value, Atom())
+        parent.addChildNode(node)
+        buddy.addEdgeTo(Port(id, 0))
+        node.addEdgeTo(Port(buddy.id, buddyPos))
       }
-      val id = if (attribute.isHL) HLAtomID(data.toInt) else DataAtomID(buddy.id, buddyPos)
-      val attr = if (attribute.isHL) HLAtom() else Atom()
-      val node = new Node(id, data, attr)
-      parent.addChildNode(node)
-      buddy.addEdgeTo(Port(id, 0))
-      node.addEdgeTo(Port(buddy.id, buddyPos))
+      case JHLAtom(value) => {
+        val id = HLAtomID(value.toInt)
+        val node = new Node(id, value, HLAtom())
+        parent.addChildNode(node)
+        buddy.addEdgeTo(Port(id, 0))
+        node.addEdgeTo(Port(buddy.id, buddyPos))
+      }
     }
   }
 
