@@ -24,7 +24,7 @@ class Downloader(url: java.net.URL) {
   def onComplete(f: Array[Byte] => Unit): Downloader = { complete = f; this }
   def onFailure(f: Exception => Unit): Downloader = { failure = f; this }
 
-  def start: Unit = {
+  def start(): Unit = {
     val conn = url.openConnection
     val length = conn.getContentLength
     val in = conn.getInputStream
@@ -71,7 +71,7 @@ private class UpdaterFrame extends javax.swing.JFrame {
   def progress = progressBar.getValue.toDouble / 100
   def progress_=(per: Double) = progressBar.setValue((per * 100).toInt)
 
-  def complete: Unit = {
+  def complete(): Unit = {
     progressBar.setValue(100)
     button.setEnabled(true)
     button.requestFocusInWindow
@@ -107,11 +107,11 @@ object Updater extends Logging {
   val newJarName = "unyo-latest.jar"
 
   val defaultJar = new File(Env.rootPath + jarName)
-  def noDefaultJarLog = logger.info("{} does not exist", defaultJar.getAbsolutePath)
+  def noDefaultJarLog() = logger.info("{} does not exist", defaultJar.getAbsolutePath)
 
-  def runAsync = actor { run }
+  def runAsync() = actor { run }
 
-  def run: Unit = for (latest <- Meta.latestRelease) if (
+  def run(): Unit = for (latest <- Meta.latestRelease) if (
     Meta.needsUpdate &&
     defaultJar.exists.tap { b => if (!b) noDefaultJarLog } &&
     confirmDialog(latest)
