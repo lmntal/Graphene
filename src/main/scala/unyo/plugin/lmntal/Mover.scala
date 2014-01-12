@@ -43,7 +43,7 @@ object DefaultMover extends LMNtal.Mover {
     for (n <- node.childNodes) resize(n)
 
     node.attr match {
-      case Mem() if !node.childNodes.isEmpty => node.view.rect = coverableRect(node)
+      case Mem if !node.childNodes.isEmpty => node.view.rect = coverableRect(node)
       case _ =>
     }
   }
@@ -131,7 +131,7 @@ object FastMover extends LMNtal.Mover {
     for (n <- node.childNodes) resize(n)
 
     node.attr match {
-      case Mem() if !node.childNodes.isEmpty => node.view.rect = coverableRect(node)
+      case Mem if !node.childNodes.isEmpty => node.view.rect = coverableRect(node)
       case _ =>
     }
   }

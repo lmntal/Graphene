@@ -63,7 +63,7 @@ class DefaultRenderer extends LMNtal.Renderer {
     }
 
     node.attr match {
-      case Atom() => {
+      case Atom => {
         g.setFont(font)
         g.setColor(node.view.color)
         g.drawString(node.name, rect.point)
@@ -75,13 +75,13 @@ class DefaultRenderer extends LMNtal.Renderer {
         g.setColor(node.view.color)
         g.drawOval(rect)
       }
-      case HLAtom() => {
+      case HLAtom => {
         g.setFont(font)
         g.setColor(node.view.color)
         g.drawString(node.name, rect.point)
         g.fillOval(rect)
       }
-      case Mem() => {
+      case Mem => {
         g.setColor(Color.WHITE)
         g.fillRoundRect(rect, memArc)
 

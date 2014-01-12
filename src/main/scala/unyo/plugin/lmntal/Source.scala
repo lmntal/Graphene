@@ -24,7 +24,7 @@ class LMNtalSource extends LMNtal.Source {
   private def coloring(graph: Graph): Graph = {
     for (n <- graph.allNodes) {
       n.view.color = n.attr match {
-        case Atom() => colorFromFunctor.getOrElseUpdate(Functor(n.name, n.arity), colorGen.next)
+        case Atom => colorFromFunctor.getOrElseUpdate(Functor(n.name, n.arity), colorGen.next)
         case _ => Palette.lightGray
       }
     }
@@ -67,9 +67,9 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
 }
 
 
-case class Atom() extends unyo.model.Attr
-case class HLAtom() extends unyo.model.Attr
-case class Mem() extends unyo.model.Attr
+object Atom extends Attr
+object HLAtom extends Attr
+object Mem extends Attr
 
 
 private object LMN {
@@ -143,15 +143,15 @@ private object LMN {
     val graph = new Graph {
       viewBuilder = (n: Node) => {
         val rect = n.attr match {
-          case Atom()   => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
-          case HLAtom() => Rect(Point.randomPointIn(gctx.wRect), Dim(12, 12))
-          case _        => Rect(Point(0, 0), Dim(10, 10))
+          case Atom   => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
+          case HLAtom => Rect(Point.randomPointIn(gctx.wRect), Dim(12, 12))
+          case _      => Rect(Point(0, 0), Dim(10, 10))
         }
         new View(rect, java.awt.Color.BLACK)
       }
     }
 
-    val node = graph.createRootNode(MemID(id), name, Mem())
+    val node = graph.createRootNode(MemID(id), name, Mem)
     links.clear()
 
     for (m <-  mems) buildMem (m, node)
@@ -168,7 +168,7 @@ private object LMN {
   private def buildMem(jmem: JMem, parent: Node): Unit = {
     val JMem(id, name, atoms, mems) = jmem
 
-    val node = parent.createNode(MemID(id.toInt), name, Mem())
+    val node = parent.createNode(MemID(id.toInt), name, Mem)
 
     for (m <-  mems) buildMem (m, node)
     for (a <- atoms) buildAtom(a, node)
@@ -177,7 +177,7 @@ private object LMN {
   private def buildAtom(jatom: JAtom, parent: Node): Unit = {
     val JAtom(id, name, links) = jatom
 
-    val node = parent.createNode(AtomID(id.toInt), name, Atom())
+    val node = parent.createNode(AtomID(id.toInt), name, Atom)
     for ((l,i) <- links.zipWithIndex) buildLink(l, parent, node, i)
   }
 
@@ -186,12 +186,12 @@ private object LMN {
       case JRef(id, pos) => links += Set((buddy.id, buddyPos), (AtomID(id), pos))
       case JDataAtom(value) => {
         val id = DataAtomID(buddy.id, buddyPos)
-        val node = parent.createNode(id, value, Atom())
+        val node = parent.createNode(id, value, Atom)
         links += Set((id, 0), (buddy.id, buddyPos))
       }
       case JHLAtom(value) => {
         val id = HLAtomID(value.toInt)
-        val node = parent.createNode(id, value, HLAtom())
+        val node = parent.createNode(id, value, HLAtom)
         links += Set((id, 0), (buddy.id, buddyPos))
       }
     }
