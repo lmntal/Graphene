@@ -56,6 +56,6 @@ object LMNtal extends Plugin {
   val source = new LMNtalSource
   val renderer = new DefaultRenderer
   val observer = new unyo.plugin.lmntal.Observer
-  val mover = DefaultMover
+  val mover = FastMover
   def controlPanel = new ControlPanel(config)
 }
