@@ -1,11 +1,14 @@
 package unyo.model
 
 import unyo.util._
+import unyo.util.Tapper._
+
 
 import collection.mutable.{ArrayBuffer,Map}
 
 trait ID
 trait Attr
+case class NoAttr()
 
 import java.awt.{Color}
 
@@ -39,35 +42,58 @@ class View(var rect: Rect, var color: Color) {
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
-}
 
-object Port {
-  def apply(id: ID, pos: Int) = new Port(id, pos)
+  def deepcopy = {
+    var v = new View(rect, color)
+
+    v.speed = speed
+    v.diff = diff
+    v.fixed = fixed
+    v.selected = selected
+    v.didAppear = didAppear
+    v.willDisappear = willDisappear
+
+    v
+  }
 }
 
 object Edge {
-  def apply(source: Port, target: Port) = new Edge(source, target)
+  def apply(source: Node, target: Node) = new Edge(source, target)
 }
 
 object Node {
-  def apply(id: ID, name: String, attr: Attr = null) = new Node(id, name, attr)
+  def apply(graph: Graph, parent: Node, id: ID, name: String, attr: Attr) = new Node(graph, parent, id, name, attr)
 }
 
-class Port(var id: ID, var pos: Int)
+class Edge(val source: Node, val target: Node) {
+  def adjacentNodeOf(n: Node) =
+    if      (n.id == source.id) target
+    else if (n.id == target.id) source
+    else throw new Exception(s"$n is not member of $this")
+}
 
-class Edge(var source: Port, var target: Port)
+class Graph {
 
-class Graph(var rootNode: Node) {
   private val viewFromID = Map.empty[ID,View]
   private val nodeFromID = Map.empty[ID,Node]
 
-  rootNode.graph = this
-  register(rootNode)
-
+  var rootNode: Node = _
   var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
 
-  def register(node: Node) = nodeFromID += node.id -> node
-  def unregister(node: Node) = nodeFromID -= node.id
+  val allEdges = ArrayBuffer.empty[Edge]
+
+  def createRootNode(id: ID, name: String, attr: Attr) =
+    Node(this, null, id, name, attr).tap { n => rootNode = n; register(n) }
+
+  def createEdge(source: ID, target: ID): Edge = createEdge(nodeFromID(source), nodeFromID(target))
+
+  def createEdge(source: Node, target: Node) =
+    Edge(source, target).tap { e => allEdges += e; source.addEdge(e); target.addEdge(e) }
+
+  def removeEdge(e: Edge) = { allEdges -= e; e.source.removeEdge(e); e.target.removeEdge(e) }
+
+  private[model] def register(node: Node) = nodeFromID += node.id -> node
+  private[model] def unregister(node: Node) = nodeFromID -= node.id
 
   def viewOf(node: Node): View = viewFromID.getOrElseUpdate(node.id, viewBuilder(node))
   def nodeOf(id: ID): Node = nodeFromID(id)
@@ -78,28 +104,52 @@ class Graph(var rootNode: Node) {
     viewFromID ++= oldGraph.viewFromID
     this
   }
+
+  def deepcopy = {
+    def copyNode(parent: Node, src: Node): Node = {
+      val dst = parent.createNode(src.id, src.name, src.attr)
+      for (n <- src.childNodes) copyNode(dst, n)
+      dst
+    }
+    def copyRootNode(dstGraph: Graph, srcGraph: Graph): Node = {
+      val dst = dstGraph.createRootNode(srcGraph.rootNode.id, srcGraph.rootNode.name, srcGraph.rootNode.attr)
+      for (n <- srcGraph.rootNode.childNodes) copyNode(dst, n)
+      dst
+    }
+    val g = new Graph
+    g.viewBuilder = viewBuilder
+    for ((id, view) <- viewFromID) g.viewFromID += id -> view.deepcopy
+
+    val root = copyRootNode(g, this)
+
+    for (e <- allEdges) g.createEdge(e.source, e.target)
+
+    g
+  }
 }
 
-class Node(val id: ID, var name: String, var attr: Attr = null) {
-  var parent: Node = _
-  var graph: Graph = _
+class Node private(val graph: Graph, val parent: Node, val id: ID, var name: String, var attr: Attr) {
 
   val childNodes = ArrayBuffer.empty[Node]
+  val neighborNodes = ArrayBuffer.empty[Node]
   val edges = ArrayBuffer.empty[Edge]
 
-  def arity = edges.size
+  def arity = neighborNodes.size
 
-  def addChildNode(n: Node): Node = { childNodes += n; n.graph = graph; n.parent = this; graph.register(n); this }
-  def removeChildNode(n: Node): Node = { childNodes -= n; graph.unregister(n); this }
-  def addEdgeTo(p: Port): Node = { edges += new Edge(new Port(id, edges.size), p); this }
+  def createNode(id: ID, name: String, attr: Attr) =
+    Node(graph, this, id, name, attr).tap { n => childNodes += n; graph.register(n) }
+
+  def removeChildNode(n: Node) = { childNodes -= n; graph.unregister(n) }
   def removeFromParent = parent.removeChildNode(this)
 
-  def neighborNodeAt(pos: Int) = graph.nodeOf(edges(pos).target.id)
-  def neighborNodes: Seq[Node] = edges.map { e => graph.nodeOf(e.target.id) }
+  def neighborNodeAt(pos: Int) = neighborNodes(pos)
   def allChildNodes: Seq[Node] = childNodes ++ childNodes.flatMap { _.allChildNodes }
   def isRoot = parent == null
 
   def view = graph.viewOf(this)
+
+  private[model] def addEdge(e: Edge) = { edges += e; neighborNodes += e.adjacentNodeOf(this) }
+  private[model] def removeEdge(e: Edge) = { edges -= e; neighborNodes -= e.adjacentNodeOf(this) }
 
   override def toString = s"Node(${id}, ${name}, ${arity}, ${attr})"
 }
