@@ -1,6 +1,8 @@
 package unyo.model
 
 import unyo.util._
+import unyo.util.Tapper._
+
 
 import collection.mutable.{ArrayBuffer,Map}
 
@@ -51,24 +53,27 @@ object Edge {
 }
 
 object Node {
-  def apply(id: ID, name: String, attr: Attr = null) = new Node(id, name, attr)
+  def apply(graph: Graph, parent: Node, id: ID, name: String, attr: Attr) = new Node(graph, parent, id, name, attr)
 }
 
 class Port(var id: ID, var pos: Int)
 
 class Edge(var source: Port, var target: Port)
 
-class Graph(var rootNode: Node) {
+class Graph {
+
   private val viewFromID = Map.empty[ID,View]
   private val nodeFromID = Map.empty[ID,Node]
 
-  rootNode.graph = this
-  register(rootNode)
+  var rootNode: Node = _
+
+  def createRootNode(id: ID, name: String, attr: Attr) =
+    Node(this, null, id, name, attr).tap { n => rootNode = n; register(n) }
 
   var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
 
-  def register(node: Node) = nodeFromID += node.id -> node
-  def unregister(node: Node) = nodeFromID -= node.id
+  private[model] def register(node: Node) = nodeFromID += node.id -> node
+  private[model] def unregister(node: Node) = nodeFromID -= node.id
 
   def viewOf(node: Node): View = viewFromID.getOrElseUpdate(node.id, viewBuilder(node))
   def nodeOf(id: ID): Node = nodeFromID(id)
@@ -81,16 +86,16 @@ class Graph(var rootNode: Node) {
   }
 }
 
-class Node(val id: ID, var name: String, var attr: Attr) {
-  var parent: Node = _
-  var graph: Graph = _
+class Node private(val graph: Graph, val parent: Node, val id: ID, var name: String, var attr: Attr) {
 
   val childNodes = ArrayBuffer.empty[Node]
   val edges = ArrayBuffer.empty[Edge]
 
   def arity = edges.size
 
-  def addChildNode(n: Node): Node = { childNodes += n; n.graph = graph; n.parent = this; graph.register(n); this }
+  def createNode(id: ID, name: String, attr: Attr) =
+    Node(graph, this, id, name, attr).tap { n => childNodes += n; graph.register(n) }
+
   def removeChildNode(n: Node): Node = { childNodes -= n; graph.unregister(n); this }
   def addEdgeTo(p: Port): Node = { edges += new Edge(new Port(id, edges.size), p); this }
   def removeFromParent = parent.removeChildNode(this)

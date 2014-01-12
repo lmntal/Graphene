@@ -90,7 +90,7 @@ private object LMN {
   }
   trait JLink
   case class JRef(id: Int, pos: Int) extends JLink
-  case class JDataAtom(attr: Int, value: String) extends JLink
+  case class JDataAtom(value: String) extends JLink
   case class JHLAtom(value: String) extends JLink
 
   private def toJMem(json: JValue): JMem = {
@@ -125,7 +125,7 @@ private object LMN {
         case JInt(i)    => i.toString
         case j          => throw new Exception("Unexpected data : " + j.toString)
       }
-      if (isHL(attr)) JHLAtom(value) else JDataAtom(attr, value)
+      if (isHL(attr)) JHLAtom(value) else JDataAtom(value)
     }
   }
 
@@ -138,8 +138,8 @@ private object LMN {
   private def buildGraph(jmem: JMem): Graph = {
     val JMem(id, name, atoms, mems) = jmem
 
-    val node = new Node(MemID(id), name, Mem())
-    val graph = new Graph(node)
+    val graph = new Graph
+    val node = graph.createRootNode(MemID(id), name, Mem())
 
     val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
     graph.viewBuilder = (n: Node) => {
@@ -160,8 +160,8 @@ private object LMN {
   private def buildMem(jmem: JMem, parent: Node): Unit = {
     val JMem(id, name, atoms, mems) = jmem
 
-    val node = new Node(MemID(id.toInt), name, Mem())
-    parent.addChildNode(node)
+    val node = parent.createNode(MemID(id.toInt), name, Mem())
+
     for (m <-  mems) buildMem (m, node)
     for (a <- atoms) buildAtom(a, node)
   }
@@ -169,8 +169,7 @@ private object LMN {
   private def buildAtom(jatom: JAtom, parent: Node): Unit = {
     val JAtom(id, name, links) = jatom
 
-    val node = Node(AtomID(id.toInt), name, Atom())
-    parent.addChildNode(node)
+    val node = parent.createNode(AtomID(id.toInt), name, Atom())
     for ((l,i) <- (if (jatom.isProxy) links.take(2) else links).zipWithIndex) buildLink(l, parent, node, i)
   }
 
@@ -179,17 +178,15 @@ private object LMN {
       case JRef(id, pos) => {
         buddy.addEdgeTo(Port(AtomID(id), pos))
       }
-      case JDataAtom(_, value) => {
+      case JDataAtom(value) => {
         val id = DataAtomID(buddy.id, buddyPos)
-        val node = new Node(id, value, Atom())
-        parent.addChildNode(node)
+        val node = parent.createNode(id, value, Atom())
         buddy.addEdgeTo(Port(id, 0))
         node.addEdgeTo(Port(buddy.id, buddyPos))
       }
       case JHLAtom(value) => {
         val id = HLAtomID(value.toInt)
-        val node = new Node(id, value, HLAtom())
-        parent.addChildNode(node)
+        val node = parent.createNode(id, value, HLAtom())
         buddy.addEdgeTo(Port(id, 0))
         node.addEdgeTo(Port(buddy.id, buddyPos))
       }
