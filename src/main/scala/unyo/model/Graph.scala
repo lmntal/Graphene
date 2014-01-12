@@ -6,6 +6,7 @@ import collection.mutable.{ArrayBuffer,Map}
 
 trait ID
 trait Attr
+case class NoAttr()
 
 import java.awt.{Color}
 
@@ -80,7 +81,7 @@ class Graph(var rootNode: Node) {
   }
 }
 
-class Node(val id: ID, var name: String, var attr: Attr = null) {
+class Node(val id: ID, var name: String, var attr: Attr) {
   var parent: Node = _
   var graph: Graph = _
 
