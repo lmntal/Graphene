@@ -42,6 +42,19 @@ class View(var rect: Rect, var color: Color) {
   }
 
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
+
+  def deepcopy = {
+    var v = new View(rect, color)
+
+    v.speed = speed
+    v.diff = diff
+    v.fixed = fixed
+    v.selected = selected
+    v.didAppear = didAppear
+    v.willDisappear = willDisappear
+
+    v
+  }
 }
 
 object Edge {
@@ -65,6 +78,8 @@ class Graph {
   private val nodeFromID = Map.empty[ID,Node]
 
   var rootNode: Node = _
+  var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
+
   val allEdges = ArrayBuffer.empty[Edge]
 
   def createRootNode(id: ID, name: String, attr: Attr) =
@@ -77,8 +92,6 @@ class Graph {
 
   def removeEdge(e: Edge) = { allEdges -= e; e.source.removeEdge(e); e.target.removeEdge(e) }
 
-  var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
-
   private[model] def register(node: Node) = nodeFromID += node.id -> node
   private[model] def unregister(node: Node) = nodeFromID -= node.id
 
@@ -90,6 +103,28 @@ class Graph {
   def inheritViews(oldGraph: Graph): Graph = {
     viewFromID ++= oldGraph.viewFromID
     this
+  }
+
+  def deepcopy = {
+    def copyNode(parent: Node, src: Node): Node = {
+      val dst = parent.createNode(src.id, src.name, src.attr)
+      for (n <- src.childNodes) copyNode(dst, n)
+      dst
+    }
+    def copyRootNode(dstGraph: Graph, srcGraph: Graph): Node = {
+      val dst = dstGraph.createRootNode(srcGraph.rootNode.id, srcGraph.rootNode.name, srcGraph.rootNode.attr)
+      for (n <- srcGraph.rootNode.childNodes) copyNode(dst, n)
+      dst
+    }
+    val g = new Graph
+    g.viewBuilder = viewBuilder
+    for ((id, view) <- viewFromID) g.viewFromID += id -> view.deepcopy
+
+    val root = copyRootNode(g, this)
+
+    for (e <- allEdges) g.createEdge(e.source, e.target)
+
+    g
   }
 }
 
