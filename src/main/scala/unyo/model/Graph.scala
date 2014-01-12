@@ -44,21 +44,20 @@ class View(var rect: Rect, var color: Color) {
   override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
 }
 
-object Port {
-  def apply(id: ID, pos: Int) = new Port(id, pos)
-}
-
 object Edge {
-  def apply(source: Port, target: Port) = new Edge(source, target)
+  def apply(source: Node, target: Node) = new Edge(source, target)
 }
 
 object Node {
   def apply(graph: Graph, parent: Node, id: ID, name: String, attr: Attr) = new Node(graph, parent, id, name, attr)
 }
 
-class Port(var id: ID, var pos: Int)
-
-class Edge(var source: Port, var target: Port)
+class Edge(val source: Node, val target: Node) {
+  def adjacentNodeOf(n: Node) =
+    if      (n.id == source.id) target
+    else if (n.id == target.id) source
+    else throw new Exception(s"$n is not member of $this")
+}
 
 class Graph {
 
@@ -66,9 +65,17 @@ class Graph {
   private val nodeFromID = Map.empty[ID,Node]
 
   var rootNode: Node = _
+  val allEdges = ArrayBuffer.empty[Edge]
 
   def createRootNode(id: ID, name: String, attr: Attr) =
     Node(this, null, id, name, attr).tap { n => rootNode = n; register(n) }
+
+  def createEdge(source: ID, target: ID): Edge = createEdge(nodeFromID(source), nodeFromID(target))
+
+  def createEdge(source: Node, target: Node) =
+    Edge(source, target).tap { e => allEdges += e; source.addEdge(e); target.addEdge(e) }
+
+  def removeEdge(e: Edge) = { allEdges -= e; e.source.removeEdge(e); e.target.removeEdge(e) }
 
   var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
 
@@ -89,23 +96,25 @@ class Graph {
 class Node private(val graph: Graph, val parent: Node, val id: ID, var name: String, var attr: Attr) {
 
   val childNodes = ArrayBuffer.empty[Node]
+  val neighborNodes = ArrayBuffer.empty[Node]
   val edges = ArrayBuffer.empty[Edge]
 
-  def arity = edges.size
+  def arity = neighborNodes.size
 
   def createNode(id: ID, name: String, attr: Attr) =
     Node(graph, this, id, name, attr).tap { n => childNodes += n; graph.register(n) }
 
-  def removeChildNode(n: Node): Node = { childNodes -= n; graph.unregister(n); this }
-  def addEdgeTo(p: Port): Node = { edges += new Edge(new Port(id, edges.size), p); this }
+  def removeChildNode(n: Node) = { childNodes -= n; graph.unregister(n) }
   def removeFromParent = parent.removeChildNode(this)
 
-  def neighborNodeAt(pos: Int) = graph.nodeOf(edges(pos).target.id)
-  def neighborNodes: Seq[Node] = edges.map { e => graph.nodeOf(e.target.id) }
+  def neighborNodeAt(pos: Int) = neighborNodes(pos)
   def allChildNodes: Seq[Node] = childNodes ++ childNodes.flatMap { _.allChildNodes }
   def isRoot = parent == null
 
   def view = graph.viewOf(this)
+
+  private[model] def addEdge(e: Edge) = { edges += e; neighborNodes += e.adjacentNodeOf(this) }
+  private[model] def removeEdge(e: Edge) = { edges -= e; neighborNodes -= e.adjacentNodeOf(this) }
 
   override def toString = s"Node(${id}, ${name}, ${arity}, ${attr})"
 }
