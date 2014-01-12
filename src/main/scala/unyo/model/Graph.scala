@@ -8,14 +8,17 @@ import collection.mutable.{ArrayBuffer,Map}
 
 trait ID
 trait Attr
-case class NoAttr()
+object NoAttr extends Attr
 
 import java.awt.{Color}
 
 class View(var rect: Rect, var color: Color) {
 
-  var speed = Point.zero
-  var diff = Point.zero
+  def speed = Point(sx, sy)
+  var sx = 0.0 // speed x
+  var sy = 0.0 // speed y
+  var dx = 0.0
+  var dy = 0.0
   var fixed = false
   var selected = false
   var didAppear = false
@@ -25,29 +28,34 @@ class View(var rect: Rect, var color: Color) {
   val decayRate = 0.90
 
   def reset() {
-    diff = Point.zero
+    dx = 0.0
+    dy = 0.0
   }
-  def affect(s: Point, f: Point, elapsedSec: Double) {
-    speed = speed * decayRate + f / mass * elapsedSec
-    diff = (speed + s) * elapsedSec
+  def affect(f: Point, elapsedSec: Double) {
+    sx = sx * decayRate + f.x / mass * elapsedSec
+    sy = sy * decayRate + f.y / mass * elapsedSec
+    dx = sx * elapsedSec
+    dy = sy * elapsedSec
   }
   def move() {
-    val abs = diff.abs
+    val abs = math.hypot(dx, dy)
     // TODO: Magic number
     if (abs < 100) {
-      rect = Rect(rect.point + diff, rect.dim)
+      rect = Rect(Point(rect.point.x + dx, rect.point.y + dy), rect.dim)
     } else {
-      rect = Rect(rect.point + diff.unit * 100, rect.dim)
+      rect = Rect(Point(rect.point.x + dx / abs * 100, rect.point.y + dy / abs * 100), rect.dim)
     }
   }
 
-  override def toString = "View(rect: " + rect + ", speed: " + speed + ")"
+  override def toString = "View(rect: " + rect + ", speed: " + s"($sx, $sy)" + ")"
 
   def deepcopy = {
     var v = new View(rect, color)
 
-    v.speed = speed
-    v.diff = diff
+    v.sx = sx
+    v.sy = sy
+    v.dx = dx
+    v.dy = dy
     v.fixed = fixed
     v.selected = selected
     v.didAppear = didAppear
@@ -82,7 +90,7 @@ class Graph {
 
   val allEdges = ArrayBuffer.empty[Edge]
 
-  def createRootNode(id: ID, name: String, attr: Attr) =
+  def createRootNode(id: ID, name: String, attr: Attr = NoAttr) =
     Node(this, null, id, name, attr).tap { n => rootNode = n; register(n) }
 
   def createEdge(source: ID, target: ID): Edge = createEdge(nodeFromID(source), nodeFromID(target))
@@ -136,7 +144,7 @@ class Node private(val graph: Graph, val parent: Node, val id: ID, var name: Str
 
   def arity = neighborNodes.size
 
-  def createNode(id: ID, name: String, attr: Attr) =
+  def createNode(id: ID, name: String, attr: Attr = NoAttr) =
     Node(graph, this, id, name, attr).tap { n => childNodes += n; graph.register(n) }
 
   def removeChildNode(n: Node) = { childNodes -= n; graph.unregister(n) }
