@@ -17,6 +17,21 @@ class ForceParams {
     var threshold = 100.0
     var areaPerNode = 10000.0
   }
+
+  def deepcopy = {
+    val params = new ForceParams
+
+    params.repulsion.coef1 = repulsion.coef1
+    params.repulsion.coef2 = repulsion.coef2
+    params.spring.constant = spring.constant
+    params.spring.length = spring.length
+    params.contraction.coef = contraction.coef
+    params.contraction.threshold = contraction.threshold
+    params.contraction.areaPerNode = contraction.areaPerNode
+
+    params
+  }
+
 }
 
 class Config {
