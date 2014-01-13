@@ -72,10 +72,12 @@ case class Line(from: Point, to: Point) {
 
     side(p1, other) * side(p2, other) < 0 && side(p3, this) * side(p4, this) < 0
   }
+
+  def length = (to - from).abs
 }
 
 case class Rect(point: Point, dim: Dim) {
-  import scala.math.{max,min}
+  import scala.math.{max,min,abs}
 
   val center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
 
@@ -112,6 +114,18 @@ case class Rect(point: Point, dim: Dim) {
     Point(point.x + p.left, point.y + p.top),
     Dim(dim.width - p.left - p.right, dim.height - p.top - p.bottom)
   )
+
+  def crossingAreaWith(other: Rect) = {
+    val w = if ((this.left < other.right) ^ (this.right < other.left))
+              min(this.right, other.right) - max(this.left, other.left)
+            else
+              0
+    val h = if ((this.top < other.bottom) ^ (this.bottom < other.top))
+              min(this.bottom, other.bottom) - max(this.top, other.top)
+            else
+              0
+    w * h
+  }
 
   def isCrossingWith(other: Rect) =
     ((this.left < other.right) ^ (this.right < other.left)) &&

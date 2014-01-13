@@ -6,6 +6,49 @@ import unyo.algorithm.{SimulatedAnnealing}
 
 object AutoAdjuster {
 
+  private def combine[T](l: List[T]): List[(T,T)] = l match {
+    case x :: xs => xs.map { (x, _) } ++ combine(xs)
+    case Nil     => Nil
+  }
+
+  def rateGraph(graph: Graph): Double = {
+    var rate = 0.0
+    rate += graph.allNodes.size * 100
+    rate -= overlappingArea(graph.rootNode) * 200
+    rate -= crossingLinkCount(graph) * 1000
+    rate += rateEdgeLength(graph)
+    rate
+  }
+
+  def overlappingArea(node: Node): Double = {
+    combine(node.childNodes.toList).foldLeft(0.0) { case (res, (n1,n2)) =>
+      res + (n1.view.rect crossingAreaWith n2.view.rect)
+    } + node.childNodes.foldLeft(0.0) { _ + overlappingArea(_) }
+  }
+
+  def crossingLinkCount(graph: Graph) = {
+    combine(graph.allEdges.toList.map { e =>
+      Line.from(e.source.view.rect.center).to(e.target.view.rect.center)
+    }).count { case (line1, line2) =>
+      line1 isCrossing line2
+    }
+  }
+
+  def allEdgesLength(graph: Graph) = {
+    graph.allEdges.map { e =>
+      Line.from(e.source.view.rect.center).to(e.target.view.rect.center).length
+    }.foldLeft(0.0) { _ + _ }
+  }
+
+  def rateEdgeLength(graph: Graph) = {
+    graph.allEdges.map { e =>
+      val len = Line.from(e.source.view.rect.center).to(e.target.view.rect.center).length
+      if      (len > 120) 80 - len
+      else if (len <  50) (len - 50) * 10
+      else                0
+    }.foldLeft(0.0) { _ + _ }
+  }
+
   import scala.math.{log,exp}
 
   def run(graph: Graph) = {
