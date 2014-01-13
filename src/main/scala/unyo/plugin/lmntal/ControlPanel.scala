@@ -1,6 +1,6 @@
 package unyo.plugin.lmntal
 
-import javax.swing.{JPanel,JSlider,JTextField,JCheckBox,JLabel}
+import javax.swing.{JPanel,JSlider,JTextField,JCheckBox,JLabel,JButton}
 
 import unyo.swing.scalalike._
 
@@ -129,6 +129,16 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
         onActionPerformed { _ => config.isAutoFocusEnabled = checkBox.isSelected }
       }
     }
+
+    this << new JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      border_ = new TitledBorder("Others")
+
+      this << new JButton("Auto adjust parameters") with JButtonExt { button =>
+        onActionPerformed { _ => AutoAdjuster.run(LMNtal.source.current) }
+      }
+    }
+
   }
 
   layout_ = new BorderLayout

@@ -7,15 +7,18 @@ class ForceParams {
   object repulsion {
     var coef1 = 80.0
     var coef2 = 1000.0
+    override def toString = s"Repulsion(coef1 = $coef1, coef2 = $coef2)"
   }
   object spring {
     var constant = 0.6
     var length = 30.0
+    override def toString = s"Spring(constant = $constant, length = $length)"
   }
   object contraction {
     var coef = 0.5
     var threshold = 100.0
     var areaPerNode = 10000.0
+    override def toString = s"Contraction(coef = $coef, threshold = $threshold, areaPerNode = $areaPerNode)"
   }
 
   def deepcopy = {
@@ -31,6 +34,8 @@ class ForceParams {
 
     params
   }
+
+  override def toString = s"ForceParams(\n  maxForce = $maxForce\n  $repulsion\n  $spring\n  $contraction"
 
 }
 

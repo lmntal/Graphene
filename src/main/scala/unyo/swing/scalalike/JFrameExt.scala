@@ -285,6 +285,10 @@ trait AbstractButtonExt extends JComponentExt {
   def verticalTextPosition__= = setVerticalTextPosition _
 }
 
+trait JButtonExt extends AbstractButtonExt {
+  self: javax.swing.JButton =>
+}
+
 trait JPanelExt extends JComponentExt{
   self: javax.swing.JPanel =>
 }
