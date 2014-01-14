@@ -135,7 +135,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       border_ = new TitledBorder("Others")
 
       this << new JButton("Auto adjust parameters") with JButtonExt { button =>
-        onActionPerformed { _ => AutoAdjuster.run(LMNtal.source.current) }
+        onActionPerformed { _ => AutoAdjuster.runAsync(LMNtal.source.current) }
       }
     }
 

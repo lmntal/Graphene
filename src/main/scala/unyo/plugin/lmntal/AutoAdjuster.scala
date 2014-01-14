@@ -50,11 +50,16 @@ object AutoAdjuster {
   }
 
   import scala.math.{log,exp}
+  import scala.actors.Actor.actor
+
+  def runAsync(graph: Graph) = actor { run(graph) }
 
   def run(graph: Graph) = {
     val sa = new SimulatedAnnealing[ForceParams] {
       val mi = -log(1.1)
       val ma = log(1.1)
+
+      override def cool(t: Double): Double = t - 10
 
       def update(v: ForceParams) = {
         val params = new ForceParams
@@ -70,7 +75,11 @@ object AutoAdjuster {
         params
       }
 
-      def rate(v: ForceParams) = Random.double * 100
+      def rate(params: ForceParams) = {
+        val g = graph.deepcopy
+        for (i <- 0 to 90) FastMover.moveAll(g, 1.0 / 30, params)
+        rateGraph(g)
+      }
     }
 
     val params = sa.run(new ForceParams)
