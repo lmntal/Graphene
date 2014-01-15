@@ -115,12 +115,36 @@ class DefaultRenderer extends LMNtal.Renderer {
     }
   }
 
-  private def renderEdges(g: Graphics2D, graph: Graph): Unit =
-    for (e <- graph.allEdges) renderEdge(g, e)
+  private def renderEdges(g: Graphics2D, graph: Graph): Unit = {
+    graph.allEdges.groupBy { e => Set(e.source.id, e.target.id) }.foreach { case (idSet, edges) =>
+      if (edges.size == 1) renderEdge(g, edges.head)
+      else                 renderMultipleEdges(g, edges)
+    }
+  }
 
   private def renderEdge(g: Graphics2D, edge: Edge): Unit = {
     g.setColor(Palette.concrete)
     g.setStroke(linkStroke)
     g.drawLine(edge.source.view.rect.center, edge.target.view.rect.center)
+  }
+
+  private def renderMultipleEdges(g: Graphics2D, edges: Seq[Edge]): Unit = {
+    g.setColor(Palette.concrete)
+    g.setStroke(linkStroke)
+    val edge = edges.head
+    val size = edges.size
+    val p1 = edge.source.view.rect.center
+    val p2 = edge.target.view.rect.center
+    val h = (p2 - p1).rotate(math.Pi / 2).unit
+    val center = (p1 + p2) / 2
+    val len = (p2 - p1).abs
+    val offset = -0.5 * (size - 1)
+    for (i <- 0 until size) {
+      val path = new java.awt.geom.Path2D.Double
+      val ctrl = center + h * ((offset + i) * len / 5)
+      path.moveTo(p1.x, p1.y)
+      path.quadTo(ctrl.x, ctrl.y, p2.x, p2.y)
+      g.draw(path)
+    }
   }
 }

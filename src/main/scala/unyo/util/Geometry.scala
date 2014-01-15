@@ -40,6 +40,7 @@ case class Point(x: Double, y: Double) {
   def sqabs: Double = dot(this)
   def abs: Double = math.hypot(x, y)
   def unit: Point = if (x.abs < 1e-9 && y.abs < 1e-9) Point.zero else this / abs
+  def rotate(rad: Double) = Point(x * math.cos(rad) - y * math.sin(rad), x * math.sin(rad) + y * math.cos(rad))
 }
 
 object Line {
