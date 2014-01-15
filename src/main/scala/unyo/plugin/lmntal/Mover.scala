@@ -80,8 +80,8 @@ object DefaultMover extends LMNtal.Mover {
 
   def forceOfContraction(parent: Node, child: Node, params: ForceParams): Point = {
     val ps = params.contraction
-    val surplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode
-    if (parent.isRoot || surplusArea < ps.threshold) {
+    val surplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode - ps.threshold
+    if (parent.isRoot || surplusArea <= 0) {
       Point.zero
     } else {
       ForceBased.attraction(child.view.rect.center, parent.view.rect.center, ps.coef, math.sqrt(surplusArea))
@@ -208,8 +208,8 @@ object FastMover extends LMNtal.Mover {
 
     if (!self.parent.isRoot) {
       val parent = self.parent
-      val parentSurplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode
-      if (parentSurplusArea >= ps.threshold) {
+      val parentSurplusArea = parent.view.rect.area - parent.allChildNodes.size * ps.areaPerNode - ps.threshold
+      if (parentSurplusArea > 0) {
         val oc = parent.view.rect.center
         val dx = oc.x - sx
         val dy = oc.y - sy
@@ -222,8 +222,8 @@ object FastMover extends LMNtal.Mover {
       }
     }
 
-    val selfSurplusArea = sr.area - self.allChildNodes.size * ps.areaPerNode
-    if (selfSurplusArea >= ps.threshold) {
+    val selfSurplusArea = sr.area - self.allChildNodes.size * ps.areaPerNode - ps.threshold
+    if (selfSurplusArea > 0) {
       val ss = sqrt(selfSurplusArea)
       for (other <- self.childNodes) {
         val oc = other.view.rect.center

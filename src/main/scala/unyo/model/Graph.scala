@@ -130,7 +130,7 @@ class Graph {
 
     val root = copyRootNode(g, this)
 
-    for (e <- allEdges) g.createEdge(e.source, e.target)
+    for (e <- allEdges) g.createEdge(e.source.id, e.target.id)
 
     g
   }
