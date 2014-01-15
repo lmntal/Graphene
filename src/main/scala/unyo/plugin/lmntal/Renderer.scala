@@ -14,6 +14,11 @@ class DefaultRenderer extends LMNtal.Renderer {
 
   lazy val gctx = unyo.core.gui.MainFrame.instance.mainPanel.graphicsContext
 
+  // 1. エッジが出ていないノードを描画する
+  // 2. エッジを描画する
+  // 3. 残りのノードを描画する
+  // の順で綺麗に描画できる(上下関係がおかしくなることが無い)
+  // エッジが出ていて、かつ子ノードを持つノードはこの方法だとおかしくなる可能性がある
   def renderAll(gg: Graphics, graph: Graph): Unit = {
     val g = gg.asInstanceOf[Graphics2D];
 
@@ -22,8 +27,25 @@ class DefaultRenderer extends LMNtal.Renderer {
     if (graph == null) return
 
     if (LMNtal.config.isAutoFocusEnabled) gctx.wRect = graph.rootNode.view.rect
-    for (node <- graph.rootNode.childNodes) renderEdges(g, node)
-    for (node <- graph.rootNode.childNodes) renderNode(g, node)
+
+    for (node <- graph.rootNode.childNodes) renderAloneNode(g, node)
+    renderEdges(g, graph)
+    for (node <- graph.rootNode.childNodes) renderNonAloneNode(g, node)
+  }
+
+  private def renderAloneNode(g: Graphics2D, node: Node): Unit = {
+    if (node.neighborNodes.isEmpty) {
+      renderNode(g, node)
+      for (n <- node.childNodes) renderAloneNode(g, n)
+    }
+  }
+
+  private def renderNonAloneNode(g: Graphics2D, node: Node): Unit = {
+    def _renderNonAloneNode(g: Graphics2D, node: Node, isParentRendered: Boolean): Unit = {
+      for (n <- node.childNodes) _renderNonAloneNode(g, n, isParentRendered && node.neighborNodes.isEmpty)
+      if (!node.neighborNodes.isEmpty || !isParentRendered) renderNode(g, node)
+    }
+    _renderNonAloneNode(g, node, true)
   }
 
   private def renderGrid(g: Graphics2D): Unit = {
@@ -91,15 +113,14 @@ class DefaultRenderer extends LMNtal.Renderer {
       }
       case _ =>
     }
-
-    for (n <- node.childNodes) renderEdges(g, n)
-    for (n <- node.childNodes) renderNode(g, n)
   }
 
-  private def renderEdges(g: Graphics2D, node: Node): Unit = {
+  private def renderEdges(g: Graphics2D, graph: Graph): Unit =
+    for (e <- graph.allEdges) renderEdge(g, e)
+
+  private def renderEdge(g: Graphics2D, edge: Edge): Unit = {
     g.setColor(Palette.concrete)
     g.setStroke(linkStroke)
-    val center = node.view.rect.center
-    for (buddy <- node.neighborNodes) g.drawLine(center, buddy.view.rect.center)
+    g.drawLine(edge.source.view.rect.center, edge.target.view.rect.center)
   }
 }
