@@ -4,7 +4,7 @@ name := "UNYO-UNYO"
 
 version := "4.2.2"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-Xlint")
 
