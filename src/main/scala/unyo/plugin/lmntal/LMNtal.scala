@@ -67,6 +67,7 @@ object LMNtal extends Plugin {
 
   def exportProperties: java.util.Properties = {
     val properties = new java.util.Properties
+    properties.setProperty("lmntal_home", config.lmntalHome)
     properties.setProperty("slim_path", config.slimPath)
     properties.setProperty("base_directory", config.baseDirectory)
     properties.setProperty("additional_options", config.additionalOptions)
