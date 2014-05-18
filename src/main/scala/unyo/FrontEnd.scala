@@ -25,6 +25,12 @@ object UNYO extends App with Logging {
   frame.setVisible(true)
   frame.pack
 
+  // FIXME
+  if (args.size > 0 && args(0) == "--file") {
+    val file = args(1)
+    frame.runWithFile(file)
+  }
+
   unyo.core.Updater.runAsync
 
 }

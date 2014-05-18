@@ -39,6 +39,11 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
       }
     }
   }
+
+  def runWithFile(file: String): Unit = {
+    // FIXME
+    mainPanel.graph = mainPanel.source.run(Seq(file))
+  }
 }
 
 class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
