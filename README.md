@@ -1,4 +1,4 @@
-# UNYO UNYO
+# Graphene
 
 Version 4
 
@@ -9,11 +9,11 @@ Version 4
 
 ## Build
 * sbt assembly
-* then UNYO-UNYO-assembly-x.x.x.jar will be generated
+* then Graphene-assembly-x.x.x.jar will be generated
 
 ## Release
 * assemblyで出力したjarはとても大きいので、ProGuardを使って軽量化する
-* target内にUNYO-UNYO-assembly-x.x.x.jarが1種類だけある状態で、以下のコマンドを実行するとtarget/unyo.x.x.x.zipが生成される
+* target内にGraphene-assembly-x.x.x.jarが1種類だけある状態で、以下のコマンドを実行するとtarget/graphene.x.x.x.zipが生成される
 
 ```
 $ vim build.sbt # バージョン番号を更新
@@ -22,7 +22,7 @@ $ rm -rf target
 $ sbt assembly
 $ ./minify.sh
 $ ./pack.sh
-$ # target/unyo.x.x.x.zipをアップロード
+$ # target/graphene.x.x.x.zipをアップロード
 $ git checkout master
 $ git merge release/vx.x.x
 $ git tag -a vx.x.x -m "Version x.x.x"

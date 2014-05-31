@@ -2,14 +2,14 @@
 <configuration>
 
  <appender name="file" class="ch.qos.logback.core.FileAppender">
-    <file>unyo.log</file>
+    <file>graphene.log</file>
 
     <encoder>
       <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
     </encoder>
   </appender>
 
-  <appender name="gui" class="unyo.core.gui.LogPanelAppender">
+  <appender name="gui" class="graphene.core.gui.LogPanelAppender">
     <layout>
       <pattern>[%level] %msg%n</pattern>
     </layout>

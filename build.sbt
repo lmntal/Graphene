@@ -1,6 +1,6 @@
 import AssemblyKeys._
 
-name := "UNYO-UNYO"
+name := "Graphene"
 
 version := "4.2.2"
 

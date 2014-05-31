@@ -1,4 +1,4 @@
--libraryjars /Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/jre/lib/rt.jar
+-libraryjars /Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home/jre/lib/rt.jar
 
 -verbose
 -allowaccessmodification
@@ -10,7 +10,7 @@
 -dontwarn
 -ignorewarnings
 
--keepclasseswithmembers public class unyo.* {
+-keepclasseswithmembers public class graphene.* {
   public static void main(java.lang.String[]);
 }
 -keep class * extends ch.qos.logback.core.AppenderBase { *; }

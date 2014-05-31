@@ -1,10 +1,10 @@
-package unyo.plugin.lmntal
+package graphene.plugin.lmntal
 
 import org.specs2.mutable._
 import org.specs2.matcher.Matcher
 import org.specs2.specification.Scope
 
-import unyo.util._
+import graphene.util._
 
 class FastMoverSpec extends Specification {
 
@@ -47,7 +47,7 @@ class FastMoverSpec extends Specification {
 }
 
 trait Graphs extends Scope {
-  import unyo.model._
+  import graphene.model._
 
   case class IntID(value: Int) extends ID
 
