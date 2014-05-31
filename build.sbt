@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 name := "Graphene"
 
-version := "4.2.2"
+version := "4.3.0"
 
 scalaVersion := "2.10.3"
 
