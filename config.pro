@@ -1,27 +1,22 @@
--libraryjars /Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/jre/lib/rt.jar
+-libraryjars /Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home/jre/lib/rt.jar
 
 -verbose
 -allowaccessmodification
 -mergeinterfacesaggressively
--optimizations !method/propagation/*,!method/inlining/*,!code/allocation/*
+-optimizations !code/allocation/*
 -optimizationpasses 9
 -dontobfuscate
 -dontnote
 -dontwarn
 -ignorewarnings
 
--keep public class unyo.** { *; }
-
--keep class scala.concurrent.forkjoin.ForkJoinPool {
-    *** stealCount;
-    *** ctl;
-    *** plock;
-    *** indexSeed;
-    *** parkBlocker;
-    *** qlock;
+-keepclasseswithmembers public class graphene.* {
+  public static void main(java.lang.String[]);
 }
-
--keep class scala.collection.parallel.AdaptiveWorkStealingForkJoinTasks$WrappedTask
+-keep class * extends ch.qos.logback.core.AppenderBase { *; }
+-keep class * implements org.xml.sax.EntityResolver
+-keepclassmembers class * { ** MODULE$; }
+-keepclassmembernames class scala.concurrent.forkjoin.** { *; }
 -keep class ch.qos.** { *; }
 -keep class org.slf4j.** { *; }
 

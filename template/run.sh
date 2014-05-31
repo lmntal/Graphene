@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -Xms128M -Xmx512M -jar unyo.jar
+java -Xms128M -Xmx512M -jar graphene.jar
