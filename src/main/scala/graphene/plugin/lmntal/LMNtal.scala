@@ -60,7 +60,7 @@ object LMNtal extends Plugin {
 
   def importProperties(properties: java.util.Properties) {
     config.lmntalHome        = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
-    config.slimPath          = properties.getProperty("slim_path", "")
+    config.slimPath          = properties.getProperty("slim_path",  config.lmntalHome + "/installed/bin/slim")
     config.baseDirectory     = properties.getProperty("base_directory", "~/")
     config.additionalOptions = properties.getProperty("additional_options", "")
   }
