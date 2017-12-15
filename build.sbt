@@ -1,5 +1,3 @@
-import AssemblyKeys._
-
 name := "Graphene"
 
 version := "4.3.1"
@@ -17,11 +15,9 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.3.7" % "test"
 )
 
-libraryDependencies <+= scalaVersion {
+libraryDependencies += (scalaVersion (
    "org.scala-lang" % "scala-actors" % _
-}
-
-assemblySettings
+)).value
 
 mergeStrategy in assembly ~= {
   old => {
