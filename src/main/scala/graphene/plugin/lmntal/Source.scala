@@ -16,11 +16,12 @@ class LMNtalSource extends LMNtal.Source {
 
   case class Functor(name: String, arity: Int)
 
+  var nullGraph2 = true
+  var graph2: Graph = _
   private var runtime: Runtime = _
   private var graph: Graph = _
   private var colorGen: RandomColorGenerator = _
   private val colorFromFunctor = collection.mutable.Map.empty[Functor,java.awt.Color]
-  //private var state = List[String]()
   private var prevGraphs = List[Graph]()
   private var forwardGraphs = List[Graph]()
   private var prevCount = 0
@@ -38,12 +39,19 @@ class LMNtalSource extends LMNtal.Source {
   def run(options: Seq[String]): Graph = {
     val additionalOptions = LMNtal.config.additionalOptions.split(' ').filter { o => !o.isEmpty }
     runtime = new Runtime(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ additionalOptions ++ options)
+    prevGraphs=Nil
 
     colorFromFunctor.clear
     colorGen = new RandomColorGenerator
 
     val str=runtime.next
     graph = coloring(LMN.fromString(str))
+
+    if(!nullGraph2){
+       while(graph!=graph2){
+         graph=this.next
+       }
+    }
     graph
   }
   def current = graph
@@ -88,6 +96,7 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
 
 
   private val iter = Iterator.continually(reader.readLine).takeWhile(_ != null)
+
   //lmnSource.state=iter.toList
 /*
   import scala.sys.process._

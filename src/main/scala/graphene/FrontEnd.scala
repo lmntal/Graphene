@@ -27,6 +27,10 @@ object Graphene extends App with Logging {
 
   // FIXME
   if (args.size > 0 && args(0) == "--lmntal.file") {
+    if(args.size>2){
+      val file2 = args(2)
+      frame.runWithFile2(file2) //FIX
+    }
     val file = args(1)
     frame.runWithFile(file)
   }
