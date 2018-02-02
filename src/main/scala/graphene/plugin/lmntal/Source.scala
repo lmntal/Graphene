@@ -47,11 +47,6 @@ class LMNtalSource extends LMNtal.Source {
     val str=runtime.next
     graph = coloring(LMN.fromString(str))
 
-    if(!nullGraph2){
-       while(graph!=graph2){
-         graph=this.next
-       }
-    }
     graph
   }
   def current = graph
@@ -59,8 +54,6 @@ class LMNtalSource extends LMNtal.Source {
     prevGraphs=graph::prevGraphs
     if(prevCount==0){
       val str=runtime.next
-        //val str = state.head //test
-        //state=state.tail //test
       graph = coloring(LMN.fromString(str).inheritViews(graph))
       graph
     }else{
@@ -88,7 +81,8 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
 
   private val reader = {
     val pb = new ProcessBuilder(commands)
-    logger.info("run process: " + pb.command.mkString(" "))
+    val temp = pb.command.mkString(" ")
+    logger.info("run process: " + temp)
     pb.redirectErrorStream(true)
     val p = pb.start
     new BufferedReader(new InputStreamReader(p.getInputStream))
@@ -97,32 +91,13 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
 
   private val iter = Iterator.continually(reader.readLine).takeWhile(_ != null)
 
-  //lmnSource.state=iter.toList
-/*
-  import scala.sys.process._
-  import java.io.File
-
-  // 出力先のファイル
-  val f = new File("output.txt")
-  for (element <- lmnSource.state){
-    "echo %s".format(element) #>> f!
-  }
-*/
-
-
   def hasNext = iter.hasNext
-  /*def hasNext={
-    !lmnSource.state.isEmpty
-  }*/
-  //def next=lmnSource.state.head
   def next = iter.next
 }
-
 
 object Atom extends Attr
 object HLAtom extends Attr
 object Mem extends Attr
-
 
 private object LMN {
 

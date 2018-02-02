@@ -41,12 +41,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   }
 
   def runWithFile(file: String): Unit = {
-    // FIXME
     mainPanel.graph = mainPanel.source.run(Seq(file))
-  }
-  def runWithFile2(file2: String): Unit = {
-    mainPanel.source.graph2 = mainPanel.source.run(Seq(file2))
-    mainPanel.source.nullGraph2=false
   }
 }
 
@@ -65,7 +60,6 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
   val controlPanel = plugin.controlPanel
 
   var graph: plugin.GraphType = null
-  var graph2: plugin.GraphType = null
   val graphicsContext = new GraphicsContext
 
   layout_ = new java.awt.BorderLayout

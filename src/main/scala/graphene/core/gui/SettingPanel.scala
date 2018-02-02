@@ -42,12 +42,5 @@ class SettingPanel extends JPanel with JPanelExt {
     panel2.setPreferredSize(new Dimension(10, 50));
     add(panel2, BorderLayout.CENTER)
   }
-  //setPanel2()
-  //panel2.setPreferredSize(new Dimension(10, 50));
-  //add(panel2, BorderLayout.CENTER)
-
-
-
-
 
 }
