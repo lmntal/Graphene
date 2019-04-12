@@ -21,7 +21,7 @@ object MainFrame {
 class MainFrame extends javax.swing.JFrame with JFrameExt {
   import javax.swing.{JMenuBar}
 
-  closeOperation_ = javax.swing.JFrame.EXIT_ON_CLOSE
+  //closeOperation_ = javax.swing.JFrame.EXIT_ON_CLOSE
 
   val mainPanel = new MainPanel
   this << mainPanel
