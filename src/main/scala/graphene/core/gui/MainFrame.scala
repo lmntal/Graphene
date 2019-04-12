@@ -4,7 +4,7 @@ import java.awt.{Dimension}
 import java.awt.event.{ActionListener,ActionEvent}
 import java.awt.event.{KeyEvent,InputEvent}
 
-import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser}
+import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser, WindowConstants}
 import javax.swing.filechooser.{FileNameExtensionFilter}
 
 import com.typesafe.scalalogging.slf4j._
@@ -21,7 +21,7 @@ object MainFrame {
 class MainFrame extends javax.swing.JFrame with JFrameExt {
   import javax.swing.{JMenuBar}
 
-  //closeOperation_ = javax.swing.JFrame.EXIT_ON_CLOSE
+  closeOperation_ = javax.swing.WindowConstants.EXIT_ON_CLOSE
 
   val mainPanel = new MainPanel
   this << mainPanel
