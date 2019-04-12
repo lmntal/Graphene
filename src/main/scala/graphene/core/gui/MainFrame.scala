@@ -32,7 +32,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
       mnemonic_ = KeyEvent.VK_F
 
       this << new JMenuItem("Open File") with JMenuItemExt {
-        accelerator_ = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK)
+        accelerator_ = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK)
         addActionListener(new ActionListener {
           override def actionPerformed(e: ActionEvent) = mainPanel.openFileChooser
         })
