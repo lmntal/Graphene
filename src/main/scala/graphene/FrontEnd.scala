@@ -33,7 +33,7 @@ object Graphene extends App with Logging {
       }
     }
     if(args(0) == "--help"){
-      System.out.println("Usage: java -jar Graphene-assembly-4.3.1.jar [OPTION-OR-FILENAME]")
+      System.out.println("Usage: java -jar Graphene-assembly-x.x.x.jar [OPTION-OR-FILENAME]")
       sys.exit(0)
     }
     if(!args(args.size-1).startsWith("-")){
