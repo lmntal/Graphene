@@ -25,10 +25,15 @@ object Graphene extends App with Logging {
   frame.setVisible(true)
   frame.pack
 
-  // FIXME
-  if (args.size > 0 && args(0) == "--lmntal.file") {
-    val file = args(1)
-    frame.runWithFile(file)
+  if(args.size > 0){
+    if(args(0) == "--lmntal.file"){
+      val file = args(1)
+      frame.runWithFile(file)
+    }
+    else if(!args(0).startsWith("-")){
+      val file = args(0)
+      frame.runWithFile(file)
+    }
   }
 
   graphene.core.Updater.runAsync
