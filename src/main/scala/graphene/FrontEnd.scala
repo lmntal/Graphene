@@ -27,11 +27,13 @@ object Graphene extends App with Logging {
 
   if(args.size > 0){
     if(args(0) == "--lmntal.file"){
-      val file = args(1)
-      frame.runWithFile(file)
+      if(args.size == 1){
+        System.err.println("File name is required.")
+        sys.exit(1)
+      }
     }
-    else if(!args(0).startsWith("-")){
-      val file = args(0)
+    if(!args(args.size-1).startsWith("-")){
+      var file = args(args.size-1)
       frame.runWithFile(file)
     }
   }
