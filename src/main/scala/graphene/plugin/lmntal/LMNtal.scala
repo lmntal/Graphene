@@ -69,7 +69,7 @@ object LMNtal extends Plugin {
     if (!f.exists) {
       println("slimpath: " ++ config.slimPath)
       println("slim not found!")
-      System.exit(1)
+      System.exit(3)
     }
 
     config.baseDirectory     = properties.getProperty("base_directory", "~/")
