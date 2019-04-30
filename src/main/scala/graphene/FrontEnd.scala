@@ -32,6 +32,10 @@ object Graphene extends App with Logging {
         sys.exit(1)
       }
     }
+    if(args(0) == "--help"){
+      System.out.println("Usage: java -jar Graphene-assembly-x.x.x.jar [OPTION-OR-FILENAME]")
+      sys.exit(0)
+    }
     if(!args(args.size-1).startsWith("-")){
       var file = args(args.size-1)
       frame.runWithFile(file)
