@@ -3,7 +3,7 @@
 Version 4
 
 ## Requires
-* Scala (version >= 2.10)
+* Scala (version >= 2.10.7)
 * Java and JDK (version >= 1.7)
 * sbt (See http://scalajp.github.io/sbt-getting-started-guide-ja/setup/)
 
