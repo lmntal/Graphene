@@ -57,42 +57,42 @@ trait ComponentExt {
 
   def listenToMouse() = addMouseListener(new MouseListener {
     override def mouseClicked(e: MouseEvent) =
-      dispatch(MouseClicked(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
+      dispatch(MouseClicked(e.getComponent, e.getPoint, e.getModifiersEx, e.getClickCount, e.isPopupTrigger))
     override def mouseEntered(e: MouseEvent) =
-      dispatch(MouseEntered(e.getComponent, e.getPoint, e.getModifiers))
+      dispatch(MouseEntered(e.getComponent, e.getPoint, e.getModifiersEx))
     override def mouseExited(e: MouseEvent) =
-      dispatch(MouseExited(e.getComponent, e.getPoint, e.getModifiers))
+      dispatch(MouseExited(e.getComponent, e.getPoint, e.getModifiersEx))
     override def mousePressed(e: MouseEvent) =
-      dispatch(MousePressed(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
+      dispatch(MousePressed(e.getComponent, e.getPoint, e.getModifiersEx, e.getClickCount, e.isPopupTrigger))
     override def mouseReleased(e: MouseEvent) =
-      dispatch(MouseReleased(e.getComponent, e.getPoint, e.getModifiers, e.getClickCount, e.isPopupTrigger))
+      dispatch(MouseReleased(e.getComponent, e.getPoint, e.getModifiersEx, e.getClickCount, e.isPopupTrigger))
   })
 
   import java.awt.event.{MouseMotionListener}
 
   def listenToMouseMotion() = addMouseMotionListener(new MouseMotionListener {
     override def mouseMoved(e: MouseEvent) =
-      dispatch(MouseMoved(e.getComponent, e.getPoint, e.getModifiers))
+      dispatch(MouseMoved(e.getComponent, e.getPoint, e.getModifiersEx))
     override def mouseDragged(e: MouseEvent) =
-      dispatch(MouseDragged(e.getComponent, e.getPoint, e.getModifiers))
+      dispatch(MouseDragged(e.getComponent, e.getPoint, e.getModifiersEx))
   })
 
   import java.awt.event.{MouseWheelListener,MouseWheelEvent}
 
   def listenToMouseWheel() = addMouseWheelListener(new MouseWheelListener {
     override def mouseWheelMoved(e: MouseWheelEvent) =
-      dispatch(MouseWheelMoved(e.getComponent, e.getPoint, e.getModifiers, e.getWheelRotation))
+      dispatch(MouseWheelMoved(e.getComponent, e.getPoint, e.getModifiersEx, e.getWheelRotation))
   })
 
   import java.awt.event.{KeyListener,KeyEvent}
 
   def listenToKey() = addKeyListener(new KeyListener {
     override def keyPressed(e: KeyEvent) =
-      dispatch(KeyPressed(e.getComponent, e.getKeyCode, e.getModifiers, e.getKeyLocation))
+      dispatch(KeyPressed(e.getComponent, e.getKeyCode, e.getModifiersEx, e.getKeyLocation))
     override def keyReleased(e: KeyEvent) =
-      dispatch(KeyReleased(e.getComponent, e.getKeyCode, e.getModifiers, e.getKeyLocation))
+      dispatch(KeyReleased(e.getComponent, e.getKeyCode, e.getModifiersEx, e.getKeyLocation))
     override def keyTyped(e: KeyEvent) =
-      dispatch(KeyTyped(e.getComponent, e.getKeyChar, e.getModifiers, e.getKeyLocation))
+      dispatch(KeyTyped(e.getComponent, e.getKeyChar, e.getModifiersEx, e.getKeyLocation))
   })
 
   def bounds_ = getBounds

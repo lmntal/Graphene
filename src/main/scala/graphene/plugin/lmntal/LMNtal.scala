@@ -1,6 +1,8 @@
 package graphene.plugin.lmntal
 
 import graphene.plugin.Plugin
+import java.io.File
+import System.exit
 
 class ForceParams {
   val maxForce = 100.0
@@ -61,6 +63,15 @@ object LMNtal extends Plugin {
   def importProperties(properties: java.util.Properties) {
     config.lmntalHome        = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
     config.slimPath          = properties.getProperty("slim_path",  config.lmntalHome + "/installed/bin/slim")
+
+    // slimpath間違いエラーが出やすく、かつ出るエラーがjsonのパースエラーで大変わかりにくいのでチェック
+    val f = new File(config.slimPath)
+    if (!f.exists) {
+      println("slimpath: " ++ config.slimPath)
+      println("slim not found!")
+      System.exit(3)
+    }
+
     config.baseDirectory     = properties.getProperty("base_directory", "~/")
     config.additionalOptions = properties.getProperty("additional_options", "")
   }
