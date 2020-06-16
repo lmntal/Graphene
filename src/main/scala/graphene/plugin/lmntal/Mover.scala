@@ -116,6 +116,7 @@ object FastMover extends LMNtal.Mover {
     resize(graph.rootNode)
   }
 
+  //NOTE アトムを動かします。固定されている、選択されているものについては動かしません。
   private def move(node: Node, elapsedSec: Double, parentForce: Point, params: ForceParams): Unit = {
     if (node.view.fixed || node.view.selected) return
 

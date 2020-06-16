@@ -2,7 +2,7 @@ name := "Graphene"
 
 version := "4.4.0"
 
-scalaVersion := "2.10.7"
+scalaVersion := "2.10.3"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-Xlint")
 

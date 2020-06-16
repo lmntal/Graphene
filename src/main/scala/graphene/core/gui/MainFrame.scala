@@ -1,24 +1,24 @@
 package graphene.core.gui
 
-import java.awt.{Dimension}
-import java.awt.event.{ActionListener,ActionEvent}
-import java.awt.event.{KeyEvent,InputEvent}
+import java.awt.{Dimension, Toolkit}
+import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.event.{InputEvent, KeyEvent}
 
-import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser, WindowConstants}
-import javax.swing.filechooser.{FileNameExtensionFilter}
-
+import javax.swing.{JFileChooser, JMenu, JMenuItem, KeyStroke, WindowConstants}
+import javax.swing.filechooser.FileNameExtensionFilter
 import com.typesafe.scalalogging.slf4j._
-
 import graphene.util._
 import graphene.util.Geometry._
-import graphene.core.{Env,Properties}
+import graphene.core.{Env, Properties}
 import graphene.swing.scalalike._
 
 object MainFrame {
   val instance = new MainFrame
 }
 
+//NOTE ウィンドウ本体
 class MainFrame extends javax.swing.JFrame with JFrameExt {
+
   import javax.swing.{JMenuBar}
 
   closeOperation_ = javax.swing.WindowConstants.EXIT_ON_CLOSE
@@ -26,7 +26,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   val mainPanel = new MainPanel
   this << mainPanel
 
-  menuBar_ = new JMenuBar with JMenuBarExt {
+  menuBar_ = new JMenuBar with JMenuBarExt { //NOTE メニューバー
 
     this << new JMenu("File") with JMenuExt {
       mnemonic_ = KeyEvent.VK_F
@@ -46,6 +46,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   }
 }
 
+//NOTE アトム画面とメニュー画面両方
 class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
   import graphene.plugin.lmntal.LMNtal
@@ -75,6 +76,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
   this << new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT) with JSplitPaneExt {
     leftComponent_ = new javax.swing.JPanel with JPanelExt {
+
       import scala.actors.Actor._
       import java.awt.event.{KeyEvent}
 
@@ -94,7 +96,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
       }
       reactions += observer.listener
 
-      actor {
+      actor { //NOTE 画面表示の更新プログラム
         var prevMsec = System.currentTimeMillis
         loop {
           val msec = System.currentTimeMillis
@@ -103,7 +105,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
           repaint()
 
           prevMsec = msec
-          Thread.sleep(10)
+          Thread.sleep(50) //TODO 良いSleepの値を見つける
         }
       }
 
@@ -121,22 +123,26 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
           graphicsContext.sSize.height.toInt
         )
 
-        g.translate(graphicsContext.sSize.width/2, graphicsContext.sSize.height/2)
+        g.translate(graphicsContext.sSize.width / 2, graphicsContext.sSize.height / 2)
         g.scale(graphicsContext.magnificationRate, graphicsContext.magnificationRate)
         g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
         if (Env.isAntiAliasEnabled) g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
         renderer.renderAll(g, graph)
       }
-
     }
+
     rightComponent_ = {
+
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
       tabbedPane.addTab(plugin.name, controlPanel)
       tabbedPane.addTab("Log", LogPanel)
       tabbedPane
     }
+
+    //CHANGED 中央の分離バーの位置をピクセル単位で指定
+    setDividerLocation(Env.frameWidth)
   }
 
   def openFileChooser() = {
