@@ -66,7 +66,6 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
   layout_ = new java.awt.BorderLayout
 
-
   Runtime.getRuntime.addShutdownHook(new Thread {
     override def run {
       Properties.save(new java.util.Properties, "graphene.properties")
