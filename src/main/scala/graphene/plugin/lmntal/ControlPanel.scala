@@ -4,6 +4,7 @@ import javax.swing.{JPanel,JSlider,JTextField,JCheckBox,JLabel,JButton}
 
 import graphene.swing.scalalike._
 
+//画面右側のメニュー画面の中身
 class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
   import java.awt.{Color,Dimension,BorderLayout}

@@ -24,6 +24,9 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   closeOperation_ = javax.swing.WindowConstants.EXIT_ON_CLOSE
 
   val mainPanel = new MainPanel
+
+  mainPanel.setPreferredSize(new Dimension(Env.frameWidth, Env.frameHeight))
+
   this << mainPanel
 
   menuBar_ = new JMenuBar with JMenuBarExt { //NOTE メニューバー
@@ -69,12 +72,12 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
   Runtime.getRuntime.addShutdownHook(new Thread {
     override def run {
       Properties.save(new java.util.Properties, "graphene.properties")
-      Properties.save(plugin.exportProperties, plugin.name + ".properties")
+      Properties.save(plugin.exportProperties, plugin.name + ".properties") //LMNtal.properties の読み込み
     }
   })
 
   this << new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT) with JSplitPaneExt {
-    leftComponent_ = new javax.swing.JPanel with JPanelExt {
+    leftComponent_ = new javax.swing.JPanel with JPanelExt { //アトム表示画面
 
       import scala.actors.Actor._
       import java.awt.event.{KeyEvent}
@@ -100,7 +103,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
         loop {
           val msec = System.currentTimeMillis
 
-          if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
+          if (graph != null) mover.moveAll(graph, (msec - prevMsec) / 1000.0)
           repaint()
 
           prevMsec = msec
@@ -131,7 +134,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
       }
     }
 
-    rightComponent_ = {
+    rightComponent_ = { //メニュー画面
 
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
@@ -141,7 +144,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
     }
 
     //CHANGED 中央の分離バーの位置をピクセル単位で指定
-    setDividerLocation(Env.frameWidth)
+    setDividerLocation(Env.frameWidth * 3 / 4)
   }
 
   def openFileChooser() = {

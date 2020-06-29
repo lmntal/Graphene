@@ -14,11 +14,11 @@ import java.awt.{Color}
 
 class View(var rect: Rect, var color: Color) {
 
-  def speed = Point(sx, sy)
+  def speed = Point(sx, sy) // Never Used?
   var sx = 0.0 // speed x
   var sy = 0.0 // speed y
-  var dx = 0.0
-  var dy = 0.0
+  var dx = 0.0 // draw x
+  var dy = 0.0 // draw y
   var fixed = false
   var selected = false
   var didAppear = false
