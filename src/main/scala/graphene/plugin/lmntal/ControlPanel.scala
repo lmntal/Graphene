@@ -1,21 +1,21 @@
 package graphene.plugin.lmntal
 
-import javax.swing.{JPanel,JSlider,JTextField,JCheckBox,JLabel,JButton}
-
+import graphene.model.Hot
+import javax.swing.{JButton, JCheckBox, JLabel, JPanel, JSlider, JTextField}
 import graphene.swing.scalalike._
 
 //画面右側のメニュー画面の中身
 class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
-  import java.awt.{Color,Dimension,BorderLayout}
-  import java.awt.event.{ActionListener,ActionEvent}
+  import java.awt.{Color, Dimension, BorderLayout}
+  import java.awt.event.{ActionListener, ActionEvent}
   import javax.swing.{BoxLayout}
   import javax.swing.border.{TitledBorder}
-  import javax.swing.event.{ChangeListener,ChangeEvent}
+  import javax.swing.event.{ChangeListener, ChangeEvent}
 
   val panel = new JPanel with JPanelExt {
 
-    import graphene.util.view.{ParamControls,LogParamControls}
+    import graphene.util.view.{ParamControls, LogParamControls}
 
     layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
 
@@ -23,7 +23,8 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("LMNtal HOME")
 
-      import javax.swing.event.{DocumentListener,DocumentEvent}
+      import javax.swing.event.{DocumentListener, DocumentEvent}
+
       this << new JTextField(config.lmntalHome) with JTextFieldExt {
         textField =>
         onTextUpdate { _ => config.lmntalHome = textField.getText }
@@ -34,7 +35,8 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("SLIM Path")
 
-      import javax.swing.event.{DocumentListener,DocumentEvent}
+      import javax.swing.event.{DocumentListener, DocumentEvent}
+
       this << new JTextField(config.slimPath) with JTextFieldExt {
         textField =>
         onTextUpdate { _ => config.slimPath = textField.getText }
@@ -45,7 +47,8 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Additional options")
 
-      import javax.swing.event.{DocumentListener,DocumentEvent}
+      import javax.swing.event.{DocumentListener, DocumentEvent}
+
       this << new JTextField(config.additionalOptions) with JTextFieldExt {
         textField =>
         onTextUpdate { _ => config.additionalOptions = textField.getText }
@@ -61,14 +64,18 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       val param = config.forces.repulsion
       this << new ParamPanel("Coefficient 1", BoxLayout.X_AXIS) {
         val paramControls = new LogParamControls(1, 100000, param.coef1)
-        paramControls.onValueChanged { param.coef1 = _ }
+        paramControls.onValueChanged {
+          param.coef1 = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
 
       this << new ParamPanel("Coefficient 2", BoxLayout.X_AXIS) {
         val paramControls = new LogParamControls(1, 100000, param.coef2)
-        paramControls.onValueChanged { param.coef2 = _ }
+        paramControls.onValueChanged {
+          param.coef2 = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
@@ -78,14 +85,18 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       val param = config.forces.spring
       this << new ParamPanel("Force", BoxLayout.X_AXIS) {
         val paramControls = new LogParamControls(0.1, 1000, param.constant)
-        paramControls.onValueChanged { param.constant = _ }
+        paramControls.onValueChanged {
+          param.constant = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
 
       this << new ParamPanel("Length", BoxLayout.X_AXIS) {
         val paramControls = new LogParamControls(10, 1000, param.length)
-        paramControls.onValueChanged { param.length = _ }
+        paramControls.onValueChanged {
+          param.length = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
@@ -95,21 +106,27 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       val param = config.forces.contraction
       this << new ParamPanel("Coefficient", BoxLayout.X_AXIS) {
         val paramControls = new LogParamControls(0.01, 100, param.coef)
-        paramControls.onValueChanged { param.coef = _ }
+        paramControls.onValueChanged {
+          param.coef = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
 
       this << new ParamPanel("Threshold of Surplus Area", BoxLayout.X_AXIS) {
         val paramControls = new ParamControls(0, 100000, param.threshold)
-        paramControls.onValueChanged { param.threshold = _ }
+        paramControls.onValueChanged {
+          param.threshold = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
 
       this << new ParamPanel("Ideal Area per Node", BoxLayout.X_AXIS) {
         val paramControls = new LogParamControls(1000, 100000, param.areaPerNode)
-        paramControls.onValueChanged { param.areaPerNode = _ }
+        paramControls.onValueChanged {
+          param.areaPerNode = _
+        }
         this << paramControls.slider
         this << paramControls.label
       }
@@ -120,22 +137,36 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Options")
 
-      this << new JCheckBox("Show proxy") with JCheckBoxExt { checkBox =>
+      this << new JCheckBox("Show proxy") with JCheckBoxExt {
+        checkBox =>
         onActionPerformed { _ => config.isProxyVisible = checkBox.isSelected }
       }
-      this << new JCheckBox("Show diff") with JCheckBoxExt { checkBox =>
+      this << new JCheckBox("Show diff") with JCheckBoxExt {
+        checkBox =>
         onActionPerformed { _ => config.isDiffAnimationEnabled = checkBox.isSelected }
       }
-      this << new JCheckBox("Auto focus") with JCheckBoxExt { checkBox =>
+      this << new JCheckBox("Auto focus") with JCheckBoxExt {
+        checkBox =>
         onActionPerformed { _ => config.isAutoFocusEnabled = checkBox.isSelected }
       }
+      this << new JButton("HeatUp") with JButtonExt {
+        button =>
+        onActionPerformed { _ => Hot.Temperature = 10.0 }
+      }
+      //*
+      this << new JCheckBox("Always HeatUp") with JCheckBoxExt {
+        checkBox =>
+        onActionPerformed { _ => Hot.Always = checkBox.isSelected }
+      }
+      //*/
     }
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Others")
 
-      this << new JButton("Auto adjust parameters") with JButtonExt { button =>
+      this << new JButton("Auto adjust parameters") with JButtonExt {
+        button =>
         onActionPerformed { _ => AutoAdjuster.runAsync(LMNtal.source.current) }
       }
     }

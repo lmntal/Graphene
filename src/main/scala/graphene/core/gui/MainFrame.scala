@@ -10,6 +10,7 @@ import com.typesafe.scalalogging.slf4j._
 import graphene.util._
 import graphene.util.Geometry._
 import graphene.core.{Env, Properties}
+import graphene.model.Hot
 import graphene.swing.scalalike._
 
 object MainFrame {
@@ -25,6 +26,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
 
   val mainPanel = new MainPanel
 
+  //CHANGED ウィンドウサイズ設定を追加
   mainPanel.setPreferredSize(new Dimension(Env.frameWidth, Env.frameHeight))
 
   this << mainPanel
@@ -104,10 +106,12 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
           val msec = System.currentTimeMillis
 
           if (graph != null) mover.moveAll(graph, (msec - prevMsec) / 1000.0)
+          if (!Hot.Always) Hot.Temperature -= (msec - prevMsec) * 0.1 //* 10
+          if (Hot.Temperature < 0) Hot.Temperature = 0
           repaint()
 
           prevMsec = msec
-          Thread.sleep(50) //TODO 良いSleepの値を見つける
+          Thread.sleep(10) //TODO 良いSleepの値を見つける
         }
       }
 

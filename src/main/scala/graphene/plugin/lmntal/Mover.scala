@@ -2,7 +2,8 @@ package graphene.plugin.lmntal
 
 import graphene.util._
 import graphene.model._
-import graphene.algorithm.{ForceBased}
+import graphene.algorithm.ForceBased
+import sun.nio.cs.ext.DoubleByteEncoder
 
 object DefaultMover extends LMNtal.Mover {
 
@@ -14,7 +15,7 @@ object DefaultMover extends LMNtal.Mover {
 
   private def coverableRect(node: Node): Rect = {
     if (node.childNodes.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
-    else                         node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
+    else node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
   def moveAll(graph: Graph, elapsedSec: Double): Unit =
@@ -50,8 +51,8 @@ object DefaultMover extends LMNtal.Mover {
 
   def forceFor(node: Node, params: ForceParams): Point =
     forceOfRepulsion(node, params) +
-    forceOfSpring(node, params) +
-    forceOfContraction(node, params)
+      forceOfSpring(node, params) +
+      forceOfContraction(node, params)
 
 
   def forceOfRepulsion(self: Node, params: ForceParams): Point = {
@@ -60,7 +61,9 @@ object DefaultMover extends LMNtal.Mover {
     } else {
       val ps = params.repulsion
       val selfRect = self.view.rect
-      val otherRects = self.parent.childNodes.map { _.view.rect }
+      val otherRects = self.parent.childNodes.map {
+        _.view.rect
+      }
       ForceBased.repulsion(selfRect, otherRects, ps.coef1, ps.coef2)
     }
   }
@@ -68,7 +71,9 @@ object DefaultMover extends LMNtal.Mover {
   def forceOfSpring(self: Node, params: ForceParams): Point = {
     val ps = params.spring
     val selfPoint = self.view.rect.center
-    val otherPoints = self.neighborNodes.map { _.view.rect.center }
+    val otherPoints = self.neighborNodes.map {
+      _.view.rect.center
+    }
     ForceBased.spring(selfPoint, otherPoints, ps.constant, ps.length)
   }
 
@@ -92,7 +97,7 @@ object DefaultMover extends LMNtal.Mover {
 
 object FastMover extends LMNtal.Mover {
 
-  import scala.math.{hypot,sqrt}
+  import scala.math.{hypot, sqrt}
 
   private def transaction(graph: Graph)(f: => Unit): Unit = {
     for (node <- graph.allNodes) node.view.reset
@@ -102,7 +107,7 @@ object FastMover extends LMNtal.Mover {
 
   private def coverableRect(node: Node): Rect = {
     if (node.childNodes.isEmpty) Rect(Point(Random.double * 800, Random.double * 800), Dim(80, 80))
-    else                         node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
+    else node.childNodes.map(_.view.rect).reduceLeft(_ << _).pad(Padding(-20, -20, -20, -20))
   }
 
   def moveAll(graph: Graph, elapsedSec: Double): Unit =
@@ -139,9 +144,11 @@ object FastMover extends LMNtal.Mover {
 
   def forceFor(node: Node, params: ForceParams): Point =
     forceOfRepulsion(node, params) +
-    forceOfSpring(node, params) +
-    forceOfContraction(node, params)
+      forceOfSpring(node, params) +
+      forceOfContraction(node, params) +
+      forceOfCross(node, params)
 
+  // NOTE: 自分とそれまでに処理されたノードとの反発を計算 (ROOTノードは0を返す)
   def forceOfRepulsion(self: Node, params: ForceParams): Point = {
     if (self.isRoot) {
       Point.zero
@@ -173,10 +180,11 @@ object FastMover extends LMNtal.Mover {
     }
   }
 
+  // NOTE: 隣り合うノード(接続された)との反発を計算
   def forceOfSpring(self: Node, params: ForceParams): Point = {
     val ps = params.spring
     val selfPoint = self.view.rect.center
-    val others = self.neighborNodes
+    //val others = self.neighborNodes
 
     var rx = 0.0
     var ry = 0.0
@@ -195,6 +203,7 @@ object FastMover extends LMNtal.Mover {
     Point(rx, ry)
   }
 
+  // NOTE: 膜が存在する場合に膜が広がらないように引力を計算
   def forceOfContraction(self: Node, params: ForceParams): Point = {
 
     if (self.isRoot) return Point.zero
@@ -238,8 +247,76 @@ object FastMover extends LMNtal.Mover {
         }
       }
     }
-
     Point(rx, ry)
   }
 
+  //NOTE: 線が重ならないようにする力を計算
+  def forceOfCross(self: Node, params: ForceParams): Point = {
+    var nowforce: Point = Point(0.0, 0.0)
+    var root: Node = self
+
+    if (Hot.Temperature != 0.0) {
+      while (root.isRoot == false) {
+        root = root.parent
+      }
+
+      for (neighbor <- self.neighborNodes) {
+        nowforce += Cross(self, neighbor, root, nowforce)
+      }
+    }
+
+    nowforce
+  }
+
+  //NOTE: rootノードから順に重なり判定
+  def Cross(self: Node, neighbor: Node, other: Node, nowforce: Point): Point = {
+    var f: Point = nowforce
+    var b: Boolean = false
+    if (self != other && neighbor != other) {
+      for (otherNeighbor <- other.neighborNodes) {
+        if (!b && self != otherNeighbor && neighbor != otherNeighbor) {
+          //          System.out.println(CrossJudge(self, neighbor, other, otherNeighbor))
+          if (CrossJudge(self, neighbor, other, otherNeighbor)) {
+            if (self.neighborNodes.size < neighbor.neighborNodes.size) {
+              val dis = math.hypot(neighbor.view.rect.center.x - self.view.rect.center.x, neighbor.view.rect.center.y - self.view.rect.center.y)
+              //              System.out.println((neighbor.view.rect.center - self.view.rect.center) / dis)
+              f += (neighbor.view.rect.center - self.view.rect.center) / dis * Hot.Temperature
+              b = true
+            }
+          }
+        }
+      }
+    }
+
+    for (child <- other.childNodes) {
+      f += Cross(self, neighbor, child, f)
+    }
+    f
+  }
+
+  //NOTE: 交差判定
+  def CrossJudge(a1: Node, a2: Node, b1: Node, b2: Node): Boolean = {
+    var b: Boolean = true
+
+    var s: Double = 0.0
+    var t: Double = 0.0
+    s = CalcCross(a1.view.rect.center, a2.view.rect.center, b1.view.rect.center, b2.view.rect.center)
+    t = CalcCross(a1.view.rect.center, a2.view.rect.center, b2.view.rect.center, b1.view.rect.center)
+    if (s * t > 0) {
+      b = false
+    }
+
+    s = CalcCross(b1.view.rect.center, b2.view.rect.center, a1.view.rect.center, a2.view.rect.center)
+    t = CalcCross(b1.view.rect.center, b2.view.rect.center, a2.view.rect.center, a1.view.rect.center)
+    if (s * t > 0) {
+      b = false
+    }
+
+    b
+  }
+
+  //NOTE: 交差判定計算
+  def CalcCross(a1: Point, a2: Point, b1: Point, b2: Point): Double = {
+    (a1.x - a2.x) * (b1.y - a1.y) - (a1.y - a2.y) * (b1.x - a1.x)
+  }
 }

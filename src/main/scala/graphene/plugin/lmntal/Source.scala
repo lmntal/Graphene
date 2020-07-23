@@ -1,7 +1,7 @@
 package graphene.plugin.lmntal
 
-import java.io.{BufferedReader,InputStreamReader,PrintWriter,OutputStreamWriter}
-import java.io.{File,IOException}
+import java.io.{BufferedReader, InputStreamReader, PrintWriter, OutputStreamWriter}
+import java.io.{File, IOException}
 
 import scala.actors.Actor._
 import scala.collection.mutable.Buffer
@@ -19,7 +19,7 @@ class LMNtalSource extends LMNtal.Source {
   private var runtime: Runtime = _
   private var graph: Graph = _
   private var colorGen: RandomColorGenerator = _
-  private val colorFromFunctor = collection.mutable.Map.empty[Functor,java.awt.Color]
+  private val colorFromFunctor = collection.mutable.Map.empty[Functor, java.awt.Color]
 
   private def coloring(graph: Graph): Graph = {
     for (n <- graph.allNodes) {
@@ -41,11 +41,14 @@ class LMNtalSource extends LMNtal.Source {
     graph = coloring(LMN.fromString(runtime.next))
     graph
   }
+
   def current = graph
+
   def next = {
     graph = coloring(LMN.fromString(runtime.next).inheritViews(graph))
     graph
   }
+
   def hasNext = runtime.hasNext
 
 }
@@ -63,12 +66,15 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
   private val iter = Iterator.continually(reader.readLine).takeWhile(_ != null)
 
   def hasNext = iter.hasNext
+
   def next = iter.next
 }
 
 
 object Atom extends Attr
+
 object HLAtom extends Attr
+
 object Mem extends Attr
 
 
@@ -85,13 +91,19 @@ private object LMN {
   def fromString(s: String): Graph = removeProxies(buildGraph(toJMem(parse(s))))
 
   case class JMem(id: Int, name: String, atoms: Seq[JAtom], mems: Seq[JMem])
+
   case class JAtom(id: Int, name: String, links: Seq[JLink])
+
   trait JLink
+
   case class JRef(id: Int, pos: Int) extends JLink
+
   case class JDataAtom(value: String) extends JLink
+
   case class JHLAtom(value: String) extends JLink
 
   private def toJMem(json: JValue): JMem = {
+    System.out.println("toJMem  : " + json.toString)
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
@@ -100,6 +112,7 @@ private object LMN {
   }
 
   private def toJAtom(json: JValue): JAtom = {
+    System.out.println("toJAtom : " + json.toString)
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     var JArray(links) = json \ "links"
@@ -108,8 +121,12 @@ private object LMN {
   }
 
   private def toJLink(json: JValue): JLink = {
+    System.out.println("toJLink : " + json.toString)
+
     def isRef(attr: Int) = (attr & 0x80) == 0
+
     def getPos(attr: Int) = attr & 0x7F
+
     def isHL(attr: Int) = attr == 0x8a
 
     val JInt(battr) = json \ "attr"
@@ -121,8 +138,8 @@ private object LMN {
       val value = (json \ "data") match {
         case JString(s) => s
         case JDouble(d) => d.toString
-        case JInt(i)    => i.toString
-        case j          => throw new Exception("Unexpected data : " + j.toString)
+        case JInt(i) => i.toString
+        case j => throw new Exception("Unexpected data : " + j.toString)
       }
       if (isHL(attr)) JHLAtom(value) else JDataAtom(value)
     }
@@ -130,8 +147,11 @@ private object LMN {
 
 
   case class AtomID(value: Int) extends graphene.model.ID
+
   case class MemID(value: Int) extends graphene.model.ID
+
   case class DataAtomID(id: graphene.model.ID, pos: Int) extends graphene.model.ID
+
   case class HLAtomID(value: Int) extends graphene.model.ID
 
   val links = mutable.Set.empty[Set[(ID, Int)]]
@@ -143,9 +163,9 @@ private object LMN {
     val graph = new Graph {
       viewBuilder = (n: Node) => {
         val rect = n.attr match {
-          case Atom   => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
+          case Atom => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
           case HLAtom => Rect(Point.randomPointIn(gctx.wRect), Dim(12, 12))
-          case _      => Rect(Point(0, 0), Dim(10, 10))
+          case _ => Rect(Point(0, 0), Dim(10, 10))
         }
         new View(rect, java.awt.Color.BLACK)
       }
@@ -154,7 +174,7 @@ private object LMN {
     val node = graph.createRootNode(MemID(id), name, Mem)
     links.clear()
 
-    for (m <-  mems) buildMem (m, node)
+    for (m <- mems) buildMem(m, node)
     for (a <- atoms) buildAtom(a, node)
 
     for (linkSet <- links) {
@@ -170,7 +190,7 @@ private object LMN {
 
     val node = parent.createNode(MemID(id.toInt), name, Mem)
 
-    for (m <-  mems) buildMem (m, node)
+    for (m <- mems) buildMem(m, node)
     for (a <- atoms) buildAtom(a, node)
   }
 
@@ -178,7 +198,7 @@ private object LMN {
     val JAtom(id, name, links) = jatom
 
     val node = parent.createNode(AtomID(id.toInt), name, Atom)
-    for ((l,i) <- links.zipWithIndex) buildLink(l, parent, node, i)
+    for ((l, i) <- links.zipWithIndex) buildLink(l, parent, node, i)
   }
 
   private def buildLink(jlink: JLink, parent: Node, buddy: Node, buddyPos: Int): Unit = {
