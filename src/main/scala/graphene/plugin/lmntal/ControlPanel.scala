@@ -151,7 +151,7 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       }
       this << new JButton("HeatUp") with JButtonExt {
         button =>
-        onActionPerformed { _ => Hot.Temperature = 10.0 }
+        onActionPerformed { _ => Hot.Temperature = 250.0 }
       }
       //*
       this << new JCheckBox("Always HeatUp") with JCheckBoxExt {

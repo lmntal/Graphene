@@ -261,7 +261,7 @@ object FastMover extends LMNtal.Mover {
       }
 
       for (neighbor <- self.neighborNodes) {
-        nowforce += Cross(self, neighbor, root, nowforce)
+        nowforce = Cross(self, neighbor, root, nowforce, params)
       }
     }
 
@@ -269,32 +269,32 @@ object FastMover extends LMNtal.Mover {
   }
 
   //NOTE: rootノードから順に重なり判定
-  def Cross(self: Node, neighbor: Node, other: Node, nowforce: Point): Point = {
+  def Cross(self: Node, neighbor: Node, other: Node, nowforce: Point, params: ForceParams): Point = {
     var f: Point = nowforce
     var b: Boolean = false
+    val dis = math.hypot(neighbor.view.rect.center.x - self.view.rect.center.x, neighbor.view.rect.center.y - self.view.rect.center.y)
     if (self != other && neighbor != other) {
-      for (otherNeighbor <- other.neighborNodes) {
-        if (!b && self != otherNeighbor && neighbor != otherNeighbor) {
-          //          System.out.println(CrossJudge(self, neighbor, other, otherNeighbor))
-          if (CrossJudge(self, neighbor, other, otherNeighbor)) {
-            if (self.neighborNodes.size < neighbor.neighborNodes.size) {
-              val dis = math.hypot(neighbor.view.rect.center.x - self.view.rect.center.x, neighbor.view.rect.center.y - self.view.rect.center.y)
-              //              System.out.println((neighbor.view.rect.center - self.view.rect.center) / dis)
-              f += (neighbor.view.rect.center - self.view.rect.center) / dis * Hot.Temperature
-              b = true
+      if (math.hypot(self.view.rect.center.x - other.view.rect.center.x, self.view.rect.center.y - other.view.rect.center.y) <= 2.0 * dis)
+        for (otherNeighbor <- other.neighborNodes) {
+          if (!b && self != otherNeighbor && neighbor != otherNeighbor) {
+            if (CrossJudge(self, neighbor, other, otherNeighbor)) {
+              if (self.neighborNodes.size < neighbor.neighborNodes.size) {
+                f += (neighbor.view.rect.center - self.view.rect.center) / dis * Hot.Temperature
+                b = true
+              }
             }
           }
         }
-      }
     }
 
-    for (child <- other.childNodes) {
-      f += Cross(self, neighbor, child, f)
-    }
+    if (!b)
+      for (child <- other.childNodes) {
+        f = Cross(self, neighbor, child, f, params)
+      }
     f
   }
 
-  //NOTE: 交差判定
+  //NOTE: 交差判定 重なっているとtrueを返す
   def CrossJudge(a1: Node, a2: Node, b1: Node, b2: Node): Boolean = {
     var b: Boolean = true
 
