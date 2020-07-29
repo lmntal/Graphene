@@ -278,9 +278,22 @@ object FastMover extends LMNtal.Mover {
         for (otherNeighbor <- other.neighborNodes) {
           if (!b && self != otherNeighbor && neighbor != otherNeighbor) {
             if (CrossJudge(self, neighbor, other, otherNeighbor)) {
-              if (self.neighborNodes.size < neighbor.neighborNodes.size) {
+              if (self.neighborNodes.size < neighbor.neighborNodes.size) { //接続ノードの小さい方を動かす
                 f += (neighbor.view.rect.center - self.view.rect.center) / dis * Hot.Temperature
                 b = true
+              } else if (self.neighborNodes.size == neighbor.neighborNodes.size) { //接続ノードが同数の場合、接続ノードの接続ノードの小さい方を動かす
+                var sel: Int = 0;
+                var nei: Int = 0;
+                for (ne <- self.neighborNodes) {
+                  sel += ne.neighborNodes.size
+                }
+                for (ne <- neighbor.neighborNodes) {
+                  nei += ne.neighborNodes.size
+                }
+                if (sel < nei) {
+                  f += (neighbor.view.rect.center - self.view.rect.center) / dis * Hot.Temperature
+                  b = true
+                }
               }
             }
           }
