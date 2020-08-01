@@ -24,6 +24,8 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
 
   closeOperation_ = javax.swing.WindowConstants.EXIT_ON_CLOSE
 
+  this.setTitle("Graphene (Version: " + Env.version.map(_.toString).getOrElse("unknown") + ")")
+
   val mainPanel = new MainPanel
 
   //CHANGED ウィンドウサイズ設定を追加
