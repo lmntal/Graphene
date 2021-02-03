@@ -1,0 +1,3 @@
+ビルドにはninjaが必要です。
+実行時はrun.shのLMNTAL_HOMEのパスをコンピュータのLaViTのlmntalディレクトリに書き換えてください。
+メインプログラムはMain.cppです。

@@ -1,4 +1,4 @@
-# Install script for directory: /home/suan/IdeaProjects/OpenSiv3D/Linux/App
+# Install script for directory: /home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/suan/IdeaProjects/OpenSiv3D/Linux/App/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

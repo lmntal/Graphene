@@ -308,8 +308,8 @@ int SLIM()
     std::string slimpath = slim;
     slimpath += "/installed/bin/slim";
     std::cout << "slimpath: " << slimpath << std::endl;
-    //char lnmprogram[] = "/home/suan/Downloads/dna.lmn";
-    char lnmprogram[] = "/home/suan/ダウンロード/LaViT2_9_1/demo/unyo/frog.lmn";
+    char lnmprogram[] = "/home/suan/Downloads/dna.lmn";
+    //char lnmprogram[] = "/home/suan/ダウンロード/LaViT2_9_1/demo/unyo/frog.lmn";
     int pipes[2];
     if (pipe(pipes) < 0)
     {

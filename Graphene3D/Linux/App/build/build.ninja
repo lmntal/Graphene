@@ -39,7 +39,7 @@ include CMakeFiles/rules.ninja
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /home/suan/IdeaProjects/OpenSiv3D/Linux/App/build && /usr/local/bin/cmake --regenerate-during-build -S/home/suan/IdeaProjects/OpenSiv3D/Linux/App -B/home/suan/IdeaProjects/OpenSiv3D/Linux/App/build
+  COMMAND = cd /home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App/build && /usr/local/bin/cmake --regenerate-during-build -S/home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App -B/home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App/build
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -51,7 +51,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /home/suan/IdeaProjects/OpenSiv3D/Linux/App/build && /usr/local/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+  COMMAND = cd /home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App/build && /usr/local/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -100,7 +100,7 @@ build Siv3D_App: CXX_EXECUTABLE_LINKER__Siv3D_App_RelWithDebInfo CMakeFiles/Siv3
 # =============================================================================
 
 #############################################
-# Folder: /home/suan/IdeaProjects/OpenSiv3D/Linux/App/build
+# Folder: /home/suan/IdeaProjects/Graphene/Graphene3D/Linux/App/build
 
 build all: phony Siv3D_App
 
