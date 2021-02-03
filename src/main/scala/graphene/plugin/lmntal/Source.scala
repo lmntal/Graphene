@@ -56,6 +56,10 @@ class LMNtalSource extends LMNtal.Source {
 private class Runtime(commands: Seq[String]) extends collection.Iterator[String] with Logging {
 
   private val reader = {
+    for (text: String <- commands) {
+      System.out.print(text + " ")
+    }
+    System.out.println()
     val pb = new ProcessBuilder(commands)
     logger.info("run process: " + pb.command.mkString(" "))
     pb.redirectErrorStream(true)
@@ -103,7 +107,7 @@ private object LMN {
   case class JHLAtom(value: String) extends JLink
 
   private def toJMem(json: JValue): JMem = {
-//    System.out.println("toJMem  : " + json.toString)
+    //    System.out.println("toJMem  : " + json.toString)
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     val JArray(atoms) = json \ "atoms"
@@ -112,7 +116,7 @@ private object LMN {
   }
 
   private def toJAtom(json: JValue): JAtom = {
-//    System.out.println("toJAtom : " + json.toString)
+    //    System.out.println("toJAtom : " + json.toString)
     val JInt(id) = json \ "id"
     val JString(name) = json \ "name"
     var JArray(links) = json \ "links"
@@ -121,7 +125,7 @@ private object LMN {
   }
 
   private def toJLink(json: JValue): JLink = {
-//    System.out.println("toJLink : " + json.toString)
+    //    System.out.println("toJLink : " + json.toString)
 
     def isRef(attr: Int) = (attr & 0x80) == 0
 

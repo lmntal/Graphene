@@ -1,0 +1,3 @@
+/home/suan/IdeaProjects/OpenSiv3D/Linux/Build/CMakeFiles/rebuild_cache.dir
+/home/suan/IdeaProjects/OpenSiv3D/Linux/Build/CMakeFiles/edit_cache.dir
+/home/suan/IdeaProjects/OpenSiv3D/Linux/Build/CMakeFiles/Siv3D.dir

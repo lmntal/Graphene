@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include",
+                "/home/suan/IdeaProjects/OpenSiv3D/Siv3D/include",
+                "/home/suan/IdeaProjects/OpenSiv3D/Siv3D/include/ThirdParty"
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/g++-9",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++17"
+        }
+    ],
+    "version": 4
+}
