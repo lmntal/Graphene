@@ -137,6 +137,9 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
       tabbedPane.addTab("Log", LogPanel)
       tabbedPane
     }
+
+    //CHANGED 中央の分離バーの位置をピクセル単位で指定
+    setDividerLocation(Env.frameWidth)
   }
 
   def openFileChooser() = {
