@@ -9,6 +9,7 @@ Version 4
 
 ## Build
 * sbt assembly
+* (if this does not work due to sbt.internal.ServerAlreadyBootingException, try sbt --batch -Dsbt.server.forcestart=true assembly)
 * then Graphene-assembly-x.x.x.jar will be generated
 
 ## Release
