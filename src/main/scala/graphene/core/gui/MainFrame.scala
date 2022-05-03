@@ -7,7 +7,8 @@ import java.awt.event.{KeyEvent,InputEvent}
 import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser, WindowConstants}
 import javax.swing.filechooser.{FileNameExtensionFilter}
 
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
 import graphene.util._
 import graphene.util.Geometry._
@@ -46,9 +47,11 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   }
 }
 
-class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
+class MainPanel extends javax.swing.JPanel with JPanelExt {
 
   import graphene.plugin.lmntal.LMNtal
+
+  val logger = Logger(LoggerFactory.getLogger("MainPanel"))
 
   val properties = Properties.load("graphene.properties")
 
@@ -75,7 +78,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
   this << new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT) with JSplitPaneExt {
     leftComponent_ = new javax.swing.JPanel with JPanelExt {
-      import scala.actors.Actor._
+//      import scala.actors.Actor._
       import java.awt.event.{KeyEvent}
 
       preferredSize_ = new Dimension(Env.frameWidth, Env.frameHeight)
@@ -94,18 +97,21 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
       }
       reactions += observer.listener
 
-      actor {
-        var prevMsec = System.currentTimeMillis
-        loop {
-          val msec = System.currentTimeMillis
+      val t = new Thread {
+        override def run { 
+          var prevMsec = System.currentTimeMillis
+          while (true) {
+            val msec = System.currentTimeMillis
 
-          if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
-          repaint()
+            if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
+            repaint()
 
-          prevMsec = msec
-          Thread.sleep(10)
+            prevMsec = msec
+            Thread.sleep(10)
+          }
         }
       }
+      t.start
 
       override def paintComponent(gg: java.awt.Graphics) {
         import java.awt.RenderingHints._

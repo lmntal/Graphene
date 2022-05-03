@@ -3,11 +3,11 @@ package graphene.plugin.lmntal
 import java.io.{BufferedReader,InputStreamReader,PrintWriter,OutputStreamWriter}
 import java.io.{File,IOException}
 
-import scala.actors.Actor._
 import scala.collection.mutable.Buffer
 import scala.collection.JavaConversions._
 
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
 import graphene.model._
 import graphene.util._
@@ -15,6 +15,8 @@ import graphene.util._
 class LMNtalSource extends LMNtal.Source {
 
   case class Functor(name: String, arity: Int)
+
+  val logger = Logger(LoggerFactory.getLogger("LMNtalSource"))
 
   private var runtime: Runtime = _
   private var graph: Graph = _
@@ -50,7 +52,9 @@ class LMNtalSource extends LMNtal.Source {
 
 }
 
-private class Runtime(commands: Seq[String]) extends collection.Iterator[String] with Logging {
+private class Runtime(commands: Seq[String]) extends collection.Iterator[String] {
+
+  val logger = Logger(LoggerFactory.getLogger("Runtime"))
 
   private val reader = {
     val pb = new ProcessBuilder(commands)

@@ -1,9 +1,12 @@
 package graphene.core
 
 import java.io.{File,FileReader,PrintWriter,FileWriter}
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
-object Properties extends Logging {
+object Properties {
+
+  val logger = Logger(LoggerFactory.getLogger("Properties"))
 
   def load(filename: String): java.util.Properties = {
     val properties = new java.util.Properties

@@ -50,11 +50,13 @@ object AutoAdjuster {
   }
 
   import scala.math.{log,exp}
-  import scala.actors.Actor.actor
 
-  def runAsync(graph: Graph) = actor { run(graph) }
+  def runAsync(graph: Graph) = (new Thread {
+        override def run { myrun(graph) }
+  }).start
 
-  def run(graph: Graph) = {
+  def myrun(graph: Graph) = {
+    System.out.println("AutoAdjuster run Async start")
     val sa = new SimulatedAnnealing[ForceParams] {
       val mi = -log(1.1)
       val ma = log(1.1)
