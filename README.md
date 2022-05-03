@@ -3,8 +3,8 @@
 Version 4
 
 ## Requires
-* Scala (version >= 2.10.7)
-* Java and JDK (version >= 1.7)
+* Scala (version >= 2.11.12)
+* Java and JDK (version >= 1.11)
 * sbt (See http://scalajp.github.io/sbt-getting-started-guide-ja/setup/)
 
 ## Build
@@ -12,7 +12,7 @@ Version 4
 * (if this does not work due to sbt.internal.ServerAlreadyBootingException, try sbt --batch -Dsbt.server.forcestart=true assembly)
 * then Graphene-assembly-x.x.x.jar will be generated
 
-## Release
+## Release (optional)
 * assemblyで出力したjarはとても大きいので、ProGuardを使って軽量化する
 * target内にGraphene-assembly-x.x.x.jarが1種類だけある状態で、以下のコマンドを実行するとtarget/graphene.x.x.x.zipが生成される
 
