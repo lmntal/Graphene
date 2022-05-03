@@ -1,6 +1,6 @@
 name := "Graphene"
 
-version := "4.4.0"
+version := "4.4.1"
 
 scalaVersion := "2.11.12"
 

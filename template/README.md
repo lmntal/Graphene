@@ -6,6 +6,13 @@
 * ノードを選択している状態で右クリックすると、深さによるノードの色付けができます
 
 ## Release
+### Version 4.4.1
+* JSplitPane の境界線の初期位置を修正しました
+* sbt-assemblyのバージョンを1.1.0に更新しました
+* Scalaのバージョンを2.11.12に更新しました
+* 非推奨となった scala.actor を除去してスレッド化しました
+* build.sbt libraryDependencies を Scala 2.11 対応の最新版にしました．
+
 ### Version 4.4.0
 * sbt-assemblyのバージョンを0.14.6に更新しました
 * Scalaのバージョンを2.10.7に更新しました
