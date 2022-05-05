@@ -12,18 +12,15 @@ Version 4
 * (if this does not work due to sbt.internal.ServerAlreadyBootingException, try sbt --batch -Dsbt.server.forcestart=true assembly)
 * then Graphene-assembly-x.x.x.jar will be generated
 
-## Release (optional)
-* assemblyで出力したjarはとても大きいので、ProGuardを使って軽量化する
-* target内にGraphene-assembly-x.x.x.jarが1種類だけある状態で、以下のコマンドを実行するとtarget/graphene.x.x.x.zipが生成される
+## Release
 
 ```
 $ vim build.sbt # バージョン番号を更新
 $ vim template/README.md # 更新情報を記述
 $ rm -rf target
 $ sbt assembly
-$ ./minify.sh
 $ ./pack.sh
-$ # target/graphene.x.x.x.zipをアップロード
+$ # target/graphene-x.x.x.zipをアップロード
 $ git checkout master
 $ git merge release/vx.x.x
 $ git tag -a vx.x.x -m "Version x.x.x"
