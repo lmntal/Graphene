@@ -25,8 +25,9 @@ object Graphene extends App {
   })
 
   val frame = MainFrame.instance
-  frame.setVisible(true)
   frame.pack
+  frame.setLocationRelativeTo(null)
+  frame.setVisible(true)
 
   if(args.size > 0){
     if(args(0) == "--lmntal.file"){
