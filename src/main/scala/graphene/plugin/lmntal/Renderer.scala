@@ -3,7 +3,7 @@ package graphene.plugin.lmntal
 
 class DefaultRenderer extends LMNtal.Renderer {
 
-  import java.awt.{Graphics,Graphics2D,Color,BasicStroke}
+  import java.awt.{Graphics, Graphics2D, Color, BasicStroke}
 
   import graphene.core.gui.GraphicsContext
   import graphene.model._
@@ -45,6 +45,7 @@ class DefaultRenderer extends LMNtal.Renderer {
       for (n <- node.childNodes) _renderNonAloneNode(g, n, isParentRendered && node.neighborNodes.isEmpty)
       if (!node.neighborNodes.isEmpty || !isParentRendered) renderNode(g, node)
     }
+
     _renderNonAloneNode(g, node, true)
   }
 
@@ -54,8 +55,8 @@ class DefaultRenderer extends LMNtal.Renderer {
     val by = gctx.wCenter.y - gctx.wSize.height / 2
     val ey = gctx.wCenter.y + gctx.wSize.height / 2
     g.setColor(Palette.concrete)
-    for (x <- (bx.toInt/100*100) to (ex.toInt/100*100, 100)) g.drawLine(x, by, x, ey)
-    for (y <- (by.toInt/100*100) to (ey.toInt/100*100, 100)) g.drawLine(bx, y, ex, y)
+    for (x <- (bx.toInt / 100 * 100) to (ex.toInt / 100 * 100, 100)) g.drawLine(x, by, x, ey)
+    for (y <- (by.toInt / 100 * 100) to (ey.toInt / 100 * 100, 100)) g.drawLine(bx, y, ex, y)
   }
 
   private val font = new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16)
@@ -117,9 +118,9 @@ class DefaultRenderer extends LMNtal.Renderer {
 
   private def renderEdges(g: Graphics2D, graph: Graph): Unit = {
     graph.allEdges.groupBy { e => Set(e.source.id, e.target.id) }.foreach { case (idSet, edges) =>
-      if      (idSet.size == 1) renderSelfEdges(g, edges)
+      if (idSet.size == 1) renderSelfEdges(g, edges)
       else if (edges.size == 1) renderEdge(g, edges.head)
-      else                      renderMultipleEdges(g, edges)
+      else renderMultipleEdges(g, edges)
     }
   }
 

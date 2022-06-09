@@ -2,11 +2,14 @@ package graphene
 
 import graphene.core.Env
 import graphene.core.gui.MainFrame
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
-object Graphene extends App with Logging {
+object Graphene extends App {
 
   import scala.collection.JavaConversions._
+
+  val logger = Logger(LoggerFactory.getLogger("Graphene"))
 
   System.setProperty("apple.laf.useScreenMenuBar", "true");
 
@@ -22,8 +25,9 @@ object Graphene extends App with Logging {
   })
 
   val frame = MainFrame.instance
-  frame.setVisible(true)
   frame.pack
+  frame.setLocationRelativeTo(null)
+  frame.setVisible(true)
 
   if(args.size > 0){
     if(args(0) == "--lmntal.file"){

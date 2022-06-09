@@ -2,16 +2,19 @@ package graphene.core
 
 import java.net.{URL}
 import scala.util.control.Exception.{allCatch}
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 import graphene.util._
 
-object Env extends Logging {
+object Env {
 
   import java.io.{File}
   import java.net.{URL}
   import java.awt.{Toolkit,Dimension}
 
   import scala.collection.JavaConversions._
+
+  val logger = Logger(LoggerFactory.getLogger("Env"))
 
   private val tk = Toolkit.getDefaultToolkit
   val frameWidth  = tk.getScreenSize.getWidth.toInt  * 2 / 3
@@ -73,12 +76,14 @@ case class Release(
   description: String
 )
 
-object Meta extends Logging {
+object Meta {
 
   import scala.io.{Source}
   import scala.xml.{XML,Elem,NodeSeq}
 
   val infoUrl = "http://www.ueda.info.waseda.ac.jp/~yaguchi/unyo/info.xml"
+
+  val logger = Logger(LoggerFactory.getLogger("Meta"))
 
   private def infoXML: Option[Elem] = allCatch.opt { XML.loadString(Source.fromURL(infoUrl).mkString) }
   private def latestReleaseNode: Option[NodeSeq] = infoXML.flatMap { xml => (xml \\ "app" \ "releases" \ "latest").headOption }

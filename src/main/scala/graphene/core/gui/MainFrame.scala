@@ -1,32 +1,40 @@
 package graphene.core.gui
 
-import java.awt.{Dimension}
-import java.awt.event.{ActionListener,ActionEvent}
-import java.awt.event.{KeyEvent,InputEvent}
+import java.awt.{Dimension, Toolkit}
+import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.event.{InputEvent, KeyEvent}
 
-import javax.swing.{JMenu,JMenuItem,KeyStroke,JFileChooser, WindowConstants}
-import javax.swing.filechooser.{FileNameExtensionFilter}
-
-import com.typesafe.scalalogging.slf4j._
-
+import javax.swing.{JFileChooser, JMenu, JMenuItem, KeyStroke, WindowConstants}
+import javax.swing.filechooser.FileNameExtensionFilter
+import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 import graphene.util._
 import graphene.util.Geometry._
-import graphene.core.{Env,Properties}
+import graphene.core.{Env, Properties}
+import graphene.model.Hot
 import graphene.swing.scalalike._
 
 object MainFrame {
   val instance = new MainFrame
 }
 
+//NOTE ウィンドウ本体
 class MainFrame extends javax.swing.JFrame with JFrameExt {
+
   import javax.swing.{JMenuBar}
 
   closeOperation_ = javax.swing.WindowConstants.EXIT_ON_CLOSE
 
+  this.setTitle("Graphene (Version: " + Env.version.map(_.toString).getOrElse("unknown") + ")")
+
   val mainPanel = new MainPanel
+
+  //CHANGED ウィンドウサイズ設定を追加
+  mainPanel.setPreferredSize(new Dimension(Env.frameWidth, Env.frameHeight))
+
   this << mainPanel
 
-  menuBar_ = new JMenuBar with JMenuBarExt {
+  menuBar_ = new JMenuBar with JMenuBarExt { //NOTE メニューバー
 
     this << new JMenu("File") with JMenuExt {
       mnemonic_ = KeyEvent.VK_F
@@ -46,9 +54,12 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
   }
 }
 
-class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
+//NOTE アトム画面とメニュー画面両方
+class MainPanel extends javax.swing.JPanel with JPanelExt {
 
   import graphene.plugin.lmntal.LMNtal
+
+  val logger = Logger(LoggerFactory.getLogger("MainPanel"))
 
   val properties = Properties.load("graphene.properties")
 
@@ -65,17 +76,17 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
 
   layout_ = new java.awt.BorderLayout
 
-
   Runtime.getRuntime.addShutdownHook(new Thread {
     override def run {
       Properties.save(new java.util.Properties, "graphene.properties")
+      //LMNtal.properties の読み込み
       Properties.save(plugin.exportProperties, plugin.name + ".properties")
     }
   })
 
   this << new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT) with JSplitPaneExt {
-    leftComponent_ = new javax.swing.JPanel with JPanelExt {
-      import scala.actors.Actor._
+    leftComponent_ = new javax.swing.JPanel with JPanelExt { //アトム表示画面
+
       import java.awt.event.{KeyEvent}
 
       preferredSize_ = new Dimension(Env.frameWidth, Env.frameHeight)
@@ -94,18 +105,23 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
       }
       reactions += observer.listener
 
-      actor {
-        var prevMsec = System.currentTimeMillis
-        loop {
-          val msec = System.currentTimeMillis
+      val t = new Thread { //NOTE 画面表示の更新プログラム
+        override def run { 
+          var prevMsec = System.currentTimeMillis
+          while (true) {
+            val msec = System.currentTimeMillis
 
-          if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
-          repaint()
+            if (graph != null) mover.moveAll(graph, 1.0 * (msec - prevMsec) / 1000)
+            if (!Hot.Always) Hot.Temperature -= (msec - prevMsec) * 0.1 //* 10
+            if (Hot.Temperature < 0) Hot.Temperature = 0
+            repaint()
 
-          prevMsec = msec
-          Thread.sleep(10)
+            prevMsec = msec
+            Thread.sleep(10) //TODO 良いSleepの値を見つける
+          }
         }
       }
+      t.start
 
       override def paintComponent(gg: java.awt.Graphics) {
         import java.awt.RenderingHints._
@@ -121,16 +137,17 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
           graphicsContext.sSize.height.toInt
         )
 
-        g.translate(graphicsContext.sSize.width/2, graphicsContext.sSize.height/2)
+        g.translate(graphicsContext.sSize.width / 2, graphicsContext.sSize.height / 2)
         g.scale(graphicsContext.magnificationRate, graphicsContext.magnificationRate)
         g.translate(-graphicsContext.wCenter.x, -graphicsContext.wCenter.y)
 
         if (Env.isAntiAliasEnabled) g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
         renderer.renderAll(g, graph)
       }
-
     }
-    rightComponent_ = {
+
+    rightComponent_ = { //メニュー画面
+
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
       tabbedPane.addTab(plugin.name, controlPanel)
@@ -139,7 +156,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt with Logging {
     }
 
     //CHANGED 中央の分離バーの位置をピクセル単位で指定
-    setDividerLocation(Env.frameWidth)
+    setDividerLocation(Env.frameWidth * 3 / 4)
   }
 
   def openFileChooser() = {

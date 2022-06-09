@@ -2,7 +2,11 @@ package graphene.core
 
 import scala.util.control.Exception.{allCatch}
 
-import com.typesafe.scalalogging.slf4j._
+// import com.typesafe.scalalogging.slf4j._
+// import com.typesafe.scalalogging._
+import com.typesafe.scalalogging.Logger
+// import org.slf4j._
+import org.slf4j.LoggerFactory
 
 import graphene.util._
 
@@ -93,15 +97,16 @@ private class UpdaterFrame extends javax.swing.JFrame {
 
 }
 
-object Updater extends Logging {
+object Updater {
 
   import java.io.{File,FileOutputStream}
   import java.nio.file.{Paths,Files,StandardCopyOption}
   import java.net.{URL}
   import javax.swing.{JPanel,JOptionPane}
 
-  import scala.actors.Actor.actor
   import graphene.util.Tapper._
+
+  val logger = Logger(LoggerFactory.getLogger("Updater"))
 
   val jarName = "graphene.jar"
   val newJarName = "graphene-latest.jar"
@@ -109,13 +114,14 @@ object Updater extends Logging {
   val defaultJar = new File(Env.rootPath + jarName)
   def noDefaultJarLog() = logger.info("{} does not exist", defaultJar.getAbsolutePath)
 
-  def runAsync() = actor { run }
-
-  def run(): Unit = for (latest <- Meta.latestRelease) if (
-    Meta.needsUpdate &&
-    defaultJar.exists.tap { b => if (!b) noDefaultJarLog } &&
-    confirmDialog(latest)
-  ) update(latest)
+  def runAsync() = (new Thread {
+        override def run {
+          for (latest <- Meta.latestRelease) 
+            if (Meta.needsUpdate &&
+                defaultJar.exists.tap { b => if (!b) noDefaultJarLog } &&
+                confirmDialog(latest)) update(latest)
+        }
+  }).start
 
   def confirmDialog(release: Release): Boolean = {
     val values: Array[Object] = Array("Cancel", "Update")
