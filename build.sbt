@@ -23,3 +23,10 @@ assembly / assemblyMergeStrategy ~= {
   }
 }
 
+packageOptions := Seq(
+  Package.ManifestAttributes(
+    "Implementation-Version" -> version.value,
+    "Main-Class" -> "graphene.Graphene"
+  )
+)
+

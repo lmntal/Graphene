@@ -41,11 +41,26 @@ object Env {
   val manifest: Map[String,String] = {
     import java.util.jar.Manifest
 
-    val url = new URL(jarRootPath + "META-INF/MANIFEST.MF")
-    val res = using(url.openStream) { is => new Manifest(is) }
-    res match {
-      case Right(manif) => manif.getMainAttributes.toSeq.map { e => (e._1.toString, e._2.toString) }.toMap
-      case Left(e)      => Map.empty[String,String]
+    try {
+      // Try to get the manifest from the jar file directly
+      val jarFile = new java.io.File(jarFilePath)
+      if (jarFile.exists()) {
+        val jar = new java.util.jar.JarFile(jarFile)
+        val manifest = jar.getManifest
+        if (manifest != null) {
+          val attrs = manifest.getMainAttributes.toSeq.map { e => (e._1.toString, e._2.toString) }.toMap
+          logger.debug("Jar manifest attributes: {}", attrs)
+          attrs
+        } else {
+          Map.empty[String,String]
+        }
+      } else {
+        Map.empty[String,String]
+      }
+    } catch {
+      case e: Exception => 
+        logger.error("Failed to load manifest: {}", e.getMessage)
+        Map.empty[String,String]
     }
   }
 
