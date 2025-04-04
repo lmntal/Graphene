@@ -5,7 +5,7 @@ Version 4
 ## Requires
 * Scala (version >= 2.11.12)
 * Java and JDK (version >= 1.11)
-* sbt (See http://scalajp.github.io/sbt-getting-started-guide-ja/setup/)
+* sbt (See https://www.scala-sbt.org/0.13/docs/ja/Setup.html)
 
 ## Build
 * sbt assembly
