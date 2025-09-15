@@ -16,11 +16,12 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "2.3.0"
 )
 
-assembly / assemblyMergeStrategy ~= {
-  old => {
-    case "rootdoc.txt" => MergeStrategy.first
-    case x             => old(x)
-  }
+assembly / assemblyMergeStrategy := {
+  case "module-info.class" => MergeStrategy.discard
+  case "rootdoc.txt" => MergeStrategy.first
+  case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
 }
 
 packageOptions := Seq(
