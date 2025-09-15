@@ -118,9 +118,9 @@ class DefaultRenderer extends LMNtal.Renderer {
 
   private def renderEdges(g: Graphics2D, graph: Graph): Unit = {
     graph.allEdges.groupBy { e => Set(e.source.id, e.target.id) }.foreach { case (idSet, edges) =>
-      if (idSet.size == 1) renderSelfEdges(g, edges)
+      if (idSet.size == 1) renderSelfEdges(g, edges.toSeq)
       else if (edges.size == 1) renderEdge(g, edges.head)
-      else renderMultipleEdges(g, edges)
+      else renderMultipleEdges(g, edges.toSeq)
     }
   }
 

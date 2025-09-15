@@ -12,7 +12,7 @@ object Env {
   import java.net.{URL}
   import java.awt.{Toolkit,Dimension}
 
-  import scala.collection.JavaConversions._
+  import scala.jdk.CollectionConverters._
 
   val logger = Logger(LoggerFactory.getLogger("Env"))
 
@@ -23,7 +23,7 @@ object Env {
   var isMultiCoreEnabled = false
   var isAntiAliasEnabled = true
 
-  val property: Map[String,String] = System.getProperties.toMap
+  val property: Map[String,String] = System.getProperties.asScala.toMap
 
   val jarRootPath: String = {
     val cls = graphene.Graphene.getClass
@@ -48,7 +48,7 @@ object Env {
         val jar = new java.util.jar.JarFile(jarFile)
         val manifest = jar.getManifest
         if (manifest != null) {
-          val attrs = manifest.getMainAttributes.toSeq.map { e => (e._1.toString, e._2.toString) }.toMap
+          val attrs = manifest.getMainAttributes.asScala.toSeq.map { e => (e._1.toString, e._2.toString) }.toMap
           logger.debug("Jar manifest attributes: {}", attrs)
           attrs
         } else {

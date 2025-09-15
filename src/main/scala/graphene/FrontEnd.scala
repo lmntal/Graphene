@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 
 object Graphene extends App {
 
-  import scala.collection.JavaConversions._
+  import scala.jdk.CollectionConverters._
 
   val logger = Logger(LoggerFactory.getLogger("Graphene"))
 

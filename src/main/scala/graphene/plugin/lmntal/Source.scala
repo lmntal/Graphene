@@ -4,7 +4,7 @@ import java.io.{BufferedReader, InputStreamReader, PrintWriter, OutputStreamWrit
 import java.io.{File, IOException}
 
 import scala.collection.mutable.Buffer
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
@@ -35,7 +35,7 @@ class LMNtalSource extends LMNtal.Source {
 
   def run(options: Seq[String]): Graph = {
     val additionalOptions = LMNtal.config.additionalOptions.split(' ').filter { o => !o.isEmpty }
-    runtime = new Runtime(Buffer("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ additionalOptions ++ options)
+    runtime = new Runtime(Seq("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ additionalOptions ++ options)
 
     colorFromFunctor.clear
     colorGen = new RandomColorGenerator
@@ -60,8 +60,8 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
   val logger = Logger(LoggerFactory.getLogger("Runtime"))
 
   private val reader = {
-    val pb = new ProcessBuilder(commands)
-    logger.info("run process: " + pb.command.mkString(" "))
+    val pb = new ProcessBuilder(commands.asJava)
+    logger.info("run process: " + pb.command.asScala.mkString(" "))
     pb.redirectErrorStream(true)
     val p = pb.start
     new BufferedReader(new InputStreamReader(p.getInputStream))

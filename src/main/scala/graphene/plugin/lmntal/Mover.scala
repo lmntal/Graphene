@@ -35,7 +35,7 @@ object DefaultMover extends LMNtal.Mover {
 
     node.view.affect(force, elapsedSec)
 
-    val childNodes = if (graphene.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
+    val childNodes = node.childNodes
     for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params)
   }
 
@@ -63,7 +63,7 @@ object DefaultMover extends LMNtal.Mover {
       val otherRects = self.parent.childNodes.map {
         _.view.rect
       }
-      ForceBased.repulsion(selfRect, otherRects, ps.coef1, ps.coef2)
+      ForceBased.repulsion(selfRect, otherRects.toSeq, ps.coef1, ps.coef2)
     }
   }
 
@@ -73,7 +73,7 @@ object DefaultMover extends LMNtal.Mover {
     val otherPoints = self.neighborNodes.map {
       _.view.rect.center
     }
-    ForceBased.spring(selfPoint, otherPoints, ps.constant, ps.length)
+    ForceBased.spring(selfPoint, otherPoints.toSeq, ps.constant, ps.length)
   }
 
   def forceOfContraction(self: Node, params: ForceParams): Point = {
@@ -128,7 +128,7 @@ object FastMover extends LMNtal.Mover {
 
     node.view.affect(force, elapsedSec)
 
-    val childNodes = if (graphene.core.Env.isMultiCoreEnabled) node.childNodes.par else node.childNodes
+    val childNodes = node.childNodes
     for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params)
   }
 

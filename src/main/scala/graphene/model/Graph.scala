@@ -171,7 +171,7 @@ class Node private(val graph: Graph, val parent: Node, val id: ID, var name: Str
 
   def neighborNodeAt(pos: Int) = neighborNodes(pos)
 
-  def allChildNodes: Seq[Node] = childNodes ++ childNodes.flatMap {
+  def allChildNodes: Seq[Node] = childNodes.toSeq ++ childNodes.flatMap {
     _.allChildNodes
   }
 
