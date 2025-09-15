@@ -3,7 +3,7 @@
 Version 4
 
 ## Requires
-* Scala (version >= 2.11.12)
+* Scala (version >= 2.13.13)
 * Java and JDK (version >= 1.11)
 * sbt (See https://www.scala-sbt.org/download/)
 
@@ -21,7 +21,7 @@ $ rm -rf target
 $ sbt assembly
 $ ./pack.sh
 $ # target/graphene-x.x.x.zipをアップロード
-$ git checkout master
+$ git checkout develop
 $ git merge release/vx.x.x
 $ git tag -a vx.x.x -m "Version x.x.x"
 ```
