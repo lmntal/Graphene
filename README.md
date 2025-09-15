@@ -3,9 +3,9 @@
 Version 4
 
 ## Requires
-* Scala (version >= 2.13.13)
 * Java and JDK (version >= 1.11)
 * sbt (See https://www.scala-sbt.org/download/)
+  * sbt will automatically download Scala 2.13.13 as specified in build.sbt
 
 ## Build
 * sbt assembly
