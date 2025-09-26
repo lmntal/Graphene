@@ -52,7 +52,7 @@ object AutoAdjuster {
   import scala.math.{log,exp}
 
   def runAsync(graph: Graph) = (new Thread {
-        override def run { myrun(graph) }
+        override def run(): Unit = { myrun(graph) }
   }).start
 
   def myrun(graph: Graph) = {

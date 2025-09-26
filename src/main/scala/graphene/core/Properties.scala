@@ -1,6 +1,6 @@
 package graphene.core
 
-import java.io.{File, FileReader, PrintWriter, FileWriter}
+import java.io.{FileReader, FileWriter}
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
 
@@ -26,7 +26,7 @@ object Properties {
     properties
   }
 
-  def save(properties: java.util.Properties, filename: String) {
+  def save(properties: java.util.Properties, filename: String): Unit = {
     properties.store(new FileWriter(filename), "Graphene properties")
   }
 }

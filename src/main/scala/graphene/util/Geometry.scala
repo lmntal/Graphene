@@ -3,11 +3,11 @@ package graphene.util
 object Geometry {
   import scala.language.implicitConversions
 
-  implicit def toUnyoDimension(d: java.awt.Dimension) = Dim(d.width, d.height)
-  implicit def toAWTDimension(d: Dim) = new java.awt.Dimension(d.width.toInt, d.height.toInt)
+  implicit def toUnyoDimension(d: java.awt.Dimension): Dim = Dim(d.width, d.height)
+  implicit def toAWTDimension(d: Dim): java.awt.Dimension = new java.awt.Dimension(d.width.toInt, d.height.toInt)
 
-  implicit def toUnyoPoint(p: java.awt.Point) = Point(p.x, p.y)
-  implicit def toAWTPoint(p: Point) = new java.awt.Point(p.x.toInt, p.y.toInt)
+  implicit def toUnyoPoint(p: java.awt.Point): Point = Point(p.x, p.y)
+  implicit def toAWTPoint(p: Point): java.awt.Point = new java.awt.Point(p.x.toInt, p.y.toInt)
 }
 
 case class Dim(width: Double, height: Double) {
@@ -78,7 +78,7 @@ case class Line(from: Point, to: Point) {
 }
 
 case class Rect(point: Point, dim: Dim) {
-  import scala.math.{max,min,abs}
+  import scala.math.{max,min}
 
   val center = Point(point.x + dim.width / 2, point.y + dim.height / 2)
 

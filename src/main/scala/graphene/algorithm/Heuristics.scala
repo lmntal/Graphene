@@ -2,7 +2,6 @@ package graphene.algorithm
 
 abstract class SimulatedAnnealing[T] {
 
-  import math.{E,abs,pow}
   import util.{Random}
 
   val initialTemperature = 100000.0
@@ -26,7 +25,7 @@ abstract class SimulatedAnnealing[T] {
       val newValue = update(value)
       val rank = rate(value)
       val newRank = rate(newValue)
-      value = if (newRank > rank || prob(rank, newRank, t) > rand.nextDouble) newValue else value
+      value = if (newRank > rank || prob(rank, newRank, t) > rand.nextDouble()) newValue else value
       if (newRank > bestRank) {
         bestRank = newRank
         best = newValue

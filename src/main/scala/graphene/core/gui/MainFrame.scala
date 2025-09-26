@@ -1,14 +1,13 @@
 package graphene.core.gui
 
-import java.awt.{Dimension, Toolkit}
+import java.awt.{Dimension}
 import java.awt.event.{ActionEvent, ActionListener}
 import java.awt.event.{InputEvent, KeyEvent}
 
-import javax.swing.{JFileChooser, JMenu, JMenuItem, KeyStroke, WindowConstants}
+import javax.swing.{JFileChooser, JMenu, JMenuItem, KeyStroke}
 import javax.swing.filechooser.FileNameExtensionFilter
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
-import graphene.util._
 import graphene.util.Geometry._
 import graphene.core.{Env, Properties}
 import graphene.model.Hot
@@ -42,7 +41,7 @@ class MainFrame extends javax.swing.JFrame with JFrameExt {
       this << new JMenuItem("Open File") with JMenuItemExt {
         accelerator_ = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK)
         addActionListener(new ActionListener {
-          override def actionPerformed(e: ActionEvent) = mainPanel.openFileChooser
+          override def actionPerformed(e: ActionEvent) = mainPanel.openFileChooser()
         })
       }
     }
@@ -77,7 +76,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
   layout_ = new java.awt.BorderLayout
 
   Runtime.getRuntime.addShutdownHook(new Thread {
-    override def run {
+    override def run(): Unit = {
       Properties.save(new java.util.Properties, "graphene.properties")
       //LMNtal.properties の読み込み
       Properties.save(plugin.exportProperties, plugin.name + ".properties")
@@ -92,12 +91,11 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       preferredSize_ = new Dimension(Env.frameWidth, Env.frameHeight)
       focusable_ = true
 
-      var prevPoint: java.awt.Point = null
-      listenToComponent
-      listenToMouse
-      listenToMouseMotion
-      listenToMouseWheel
-      listenToKey
+      listenToComponent()
+      listenToMouse()
+      listenToMouseMotion()
+      listenToMouseWheel()
+      listenToKey()
       reactions += {
         case MousePressed(_, p, _, _, _) => requestFocusInWindow
         case KeyPressed(_, key, _, _) => if (key == KeyEvent.VK_SPACE && source.hasNext) graph = source.next
@@ -106,7 +104,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       reactions += observer.listener
 
       val t = new Thread { //NOTE 画面表示の更新プログラム
-        override def run { 
+        override def run(): Unit = {
           var prevMsec = System.currentTimeMillis
           while (true) {
             val msec = System.currentTimeMillis
@@ -123,7 +121,7 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
       }
       t.start
 
-      override def paintComponent(gg: java.awt.Graphics) {
+      override def paintComponent(gg: java.awt.Graphics): Unit = {
         import java.awt.RenderingHints._
 
         val g = gg.asInstanceOf[java.awt.Graphics2D]

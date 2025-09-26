@@ -7,9 +7,9 @@ import graphene.algorithm.ForceBased
 object DefaultMover extends LMNtal.Mover {
 
   private def transaction(graph: Graph)(f: => Unit): Unit = {
-    for (node <- graph.allNodes) node.view.reset
+    for (node <- graph.allNodes) node.view.reset()
     f
-    for (node <- graph.allNodes) node.view.move
+    for (node <- graph.allNodes) node.view.move()
   }
 
   private def coverableRect(node: Node): Rect = {
@@ -99,9 +99,9 @@ object FastMover extends LMNtal.Mover {
   import scala.math.{hypot, sqrt}
 
   private def transaction(graph: Graph)(f: => Unit): Unit = {
-    for (node <- graph.allNodes) node.view.reset
+    for (node <- graph.allNodes) node.view.reset()
     f
-    for (node <- graph.allNodes) node.view.move
+    for (node <- graph.allNodes) node.view.move()
   }
 
   private def coverableRect(node: Node): Rect = {

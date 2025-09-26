@@ -2,7 +2,7 @@ package graphene.core
 
 object Version {
   def fromString(s: String): Option[Version] = try {
-    Some(Version(s.split('.').map(_.toInt)))
+    Some(Version(s.split('.').map(_.toInt).toIndexedSeq))
   } catch {
     case _: Exception => Option.empty[Version]
   }

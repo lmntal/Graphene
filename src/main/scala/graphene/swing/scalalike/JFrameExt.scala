@@ -183,9 +183,9 @@ trait JSliderExt extends JComponentExt {
 
   import javax.swing.event.{ChangeListener,ChangeEvent}
 
-  def onStateChanged(f: ChangeEvent => Unit) {
+  def onStateChanged(f: ChangeEvent => Unit): Unit = {
     addChangeListener(new ChangeListener {
-      override def stateChanged(e: ChangeEvent) { f(e) }
+      override def stateChanged(e: ChangeEvent): Unit = { f(e) }
     })
   }
 
@@ -206,9 +206,9 @@ trait AbstractButtonExt extends JComponentExt {
 
   import java.awt.event.{ActionListener,ActionEvent}
 
-  def onActionPerformed(f: ActionEvent => Unit) {
+  def onActionPerformed(f: ActionEvent => Unit): Unit = {
     addActionListener(new ActionListener {
-      override def actionPerformed(e: ActionEvent) { f(e) }
+      override def actionPerformed(e: ActionEvent): Unit = { f(e) }
     })
   }
 
@@ -296,7 +296,6 @@ trait JPanelExt extends JComponentExt{
 trait JFrameExt extends ContainerExt {
   self: javax.swing.JFrame =>
 
-  import java.awt.{Component}
   import javax.swing.{JMenuBar}
 
   def closeOperation_ = getDefaultCloseOperation
@@ -354,11 +353,11 @@ trait JTextComponentExt extends JComponentExt {
 
   import javax.swing.event.{DocumentListener,DocumentEvent}
 
-  def onTextUpdate(f: DocumentEvent => Unit) {
+  def onTextUpdate(f: DocumentEvent => Unit): Unit = {
     getDocument.addDocumentListener(new DocumentListener {
-      override def changedUpdate(e: DocumentEvent) { f(e) }
-      override def insertUpdate(e: DocumentEvent) { f(e) }
-      override def removeUpdate(e: DocumentEvent) { f(e) }
+      override def changedUpdate(e: DocumentEvent): Unit = { f(e) }
+      override def insertUpdate(e: DocumentEvent): Unit = { f(e) }
+      override def removeUpdate(e: DocumentEvent): Unit = { f(e) }
     })
   }
 }

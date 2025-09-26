@@ -17,7 +17,6 @@ class LogPanelAppender extends AppenderBase[ILoggingEvent] {
 }
 
 import graphene.swing.scalalike._
-import graphene.util._
 
 object LogPanel extends javax.swing.JPanel with JPanelExt {
 

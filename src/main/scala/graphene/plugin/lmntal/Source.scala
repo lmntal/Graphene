@@ -1,9 +1,7 @@
 package graphene.plugin.lmntal
 
-import java.io.{BufferedReader, InputStreamReader, PrintWriter, OutputStreamWriter}
-import java.io.{File, IOException}
+import java.io.{BufferedReader, InputStreamReader}
 
-import scala.collection.mutable.Buffer
 import scala.jdk.CollectionConverters._
 
 import com.typesafe.scalalogging.Logger
@@ -37,17 +35,17 @@ class LMNtalSource extends LMNtal.Source {
     val additionalOptions = LMNtal.config.additionalOptions.split(' ').filter { o => !o.isEmpty }
     runtime = new Runtime(Seq("env", s"LMNTAL_HOME=${LMNtal.config.lmntalHome}", LMNtal.config.slimPath, "-t", "--dump-json", "--hl") ++ additionalOptions ++ options)
 
-    colorFromFunctor.clear
+    colorFromFunctor.clear()
     colorGen = new RandomColorGenerator
 
-    graph = coloring(LMN.fromString(runtime.next))
+    graph = coloring(LMN.fromString(runtime.next()))
     graph
   }
 
   def current = graph
 
   def next = {
-    graph = coloring(LMN.fromString(runtime.next).inheritViews(graph))
+    graph = coloring(LMN.fromString(runtime.next()).inheritViews(graph))
     graph
   }
 
@@ -71,7 +69,7 @@ private class Runtime(commands: Seq[String]) extends collection.Iterator[String]
 
   def hasNext = iter.hasNext
 
-  def next = iter.next
+  def next() = iter.next()
 }
 
 
@@ -210,12 +208,12 @@ private object LMN {
       case JRef(id, pos) => links += Set((buddy.id, buddyPos), (AtomID(id), pos))
       case JDataAtom(value) => {
         val id = DataAtomID(buddy.id, buddyPos)
-        val node = parent.createNode(id, value, Atom)
+        parent.createNode(id, value, Atom)
         links += Set((id, 0), (buddy.id, buddyPos))
       }
       case JHLAtom(value) => {
         val id = HLAtomID(value.toInt)
-        val node = parent.createNode(id, value, HLAtom)
+        parent.createNode(id, value, HLAtom)
         links += Set((id, 0), (buddy.id, buddyPos))
       }
     }

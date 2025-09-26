@@ -2,7 +2,6 @@ package graphene.util
 
 import java.awt.{Color => JColor}
 
-import scala.collection.{Iterator}
 
 object Color {
   def fromHSB(h: Float, s: Float, b: Float) = new JColor(JColor.HSBtoRGB(h, s, b))

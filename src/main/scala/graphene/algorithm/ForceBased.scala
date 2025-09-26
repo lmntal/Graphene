@@ -1,7 +1,7 @@
 package graphene.algorithm
 
 import graphene.util._
-import math.{pow,sqrt}
+import math.sqrt
 
 object ForceBased {
   def repulsion(self: Rect, others: Seq[Rect], coef1: Double, coef2: Double): Point =

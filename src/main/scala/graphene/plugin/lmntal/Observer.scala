@@ -9,7 +9,6 @@ import graphene.model._
 
 object Observer {
 
-  private def doSmoothColoring(node: Node): Unit = doSmoothColoring(Set(node))
   private def doSmoothColoring(nodes: Set[Node]): Unit = {
     if (nodes.isEmpty) return
 
@@ -47,7 +46,6 @@ class Observer extends LMNtal.Observer {
   import java.awt.event.{KeyEvent}
   import java.awt.{Point => JPoint}
 
-  import scala.annotation.tailrec
   import scala.collection.mutable
 
   private lazy val gctx = graphene.core.gui.MainFrame.instance.mainPanel.graphicsContext
@@ -70,7 +68,7 @@ class Observer extends LMNtal.Observer {
 
   private def resetSelection() = {
     for (n <- selectedNodes) n.view.selected = false
-    selectedNodes.clear
+    selectedNodes.clear()
   }
 
   def listener: Reactions.Reaction = {
@@ -78,12 +76,12 @@ class Observer extends LMNtal.Observer {
     case MousePressed(_, p, _, _, _)  => {
       Observer.nodeOptAt(gctx.worldPointFrom(p)) match {
         case Some(n) => {
-          if (!isMultiSelectionEnabled) resetSelection
+          if (!isMultiSelectionEnabled) resetSelection()
           n.view.selected = true
           selectedNodes += n
           canMoveNode = true
         }
-        case None => resetSelection
+        case None => resetSelection()
       }
       prevPoint = p
     }

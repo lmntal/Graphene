@@ -27,19 +27,19 @@ class View(var rect: Rect, var color: Color) {
   val mass = 0.1
   val decayRate = 0.90
 
-  def reset() {
+  def reset(): Unit = {
     dx = 0.0
     dy = 0.0
   }
 
-  def affect(f: Point, elapsedSec: Double) {
+  def affect(f: Point, elapsedSec: Double): Unit = {
     sx = sx * decayRate + f.x / mass * elapsedSec //* (Hot.Temperature + 1.0) //+ ((0.5 - Random.r.nextDouble()) * Hot.Temperature * mass * elapsedSec)
     sy = sy * decayRate + f.y / mass * elapsedSec //* (Hot.Temperature + 1.0) //+ ((0.5 - Random.r.nextDouble()) * Hot.Temperature * mass * elapsedSec)
     dx = sx * elapsedSec //+ ((0.5 - Random.r.nextDouble()) * Hot.Temperature * 0.2)
     dy = sy * elapsedSec //+ ((0.5 - Random.r.nextDouble()) * Hot.Temperature * 0.2)
   }
 
-  def move() {
+  def move(): Unit = {
     val abs = math.hypot(dx, dy)
     // TODO: Magic number
     if (abs < 100) {
@@ -52,7 +52,7 @@ class View(var rect: Rect, var color: Color) {
   override def toString = "View(rect: " + rect + ", speed: " + s"($sx, $sy)" + ")"
 
   def deepcopy = {
-    var v = new View(rect, color)
+    val v = new View(rect, color)
 
     v.sx = sx
     v.sy = sy
@@ -143,7 +143,7 @@ class Graph {
     g.viewBuilder = viewBuilder
     for ((id, view) <- viewFromID) g.viewFromID += id -> view.deepcopy
 
-    val root = copyRootNode(g, this)
+    copyRootNode(g, this)
 
     for (e <- allEdges) g.createEdge(e.source.id, e.target.id)
 

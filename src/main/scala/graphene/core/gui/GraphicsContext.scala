@@ -24,12 +24,12 @@ class GraphicsContext {
   def worldRectFrom(sr: Rect) = Rect(worldPointFrom(sr.point), worldDimFrom(sr.dim))
   def screenRectFrom(wr: Rect) = Rect(screenPointFrom(wr.point), screenDimFrom(wr.dim))
 
-  def moveBy(sv: Point) {
+  def moveBy(sv: Point): Unit = {
     wCenter = wCenter + sv / magnificationRate
   }
 
-  def resize(sd: Dim) { sSize = sd }
-  def zoom(m: Double, sBase: Point) {
+  def resize(sd: Dim): Unit = { sSize = sd }
+  def zoom(m: Double, sBase: Point): Unit = {
     val sCenter = Point(sSize.width / 2, sSize.height / 2)
     wCenter += (sBase - sCenter) / magnificationRate
     magnificationRate *= m

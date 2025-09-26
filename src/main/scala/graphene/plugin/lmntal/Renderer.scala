@@ -5,11 +5,9 @@ class DefaultRenderer extends LMNtal.Renderer {
 
   import java.awt.{Graphics, Graphics2D, Color, BasicStroke}
 
-  import graphene.core.gui.GraphicsContext
   import graphene.model._
   import graphene.swing.Graphics.GraphicsExt
   import graphene.util._
-  import graphene.util.Geometry._
 
 
   lazy val gctx = graphene.core.gui.MainFrame.instance.mainPanel.graphicsContext
@@ -46,7 +44,7 @@ class DefaultRenderer extends LMNtal.Renderer {
       if (!node.neighborNodes.isEmpty || !isParentRendered) renderNode(g, node)
     }
 
-    _renderNonAloneNode(g, node, true)
+    _renderNonAloneNode(g, node, isParentRendered = true)
   }
 
   private def renderGrid(g: Graphics2D): Unit = {
@@ -55,8 +53,8 @@ class DefaultRenderer extends LMNtal.Renderer {
     val by = gctx.wCenter.y - gctx.wSize.height / 2
     val ey = gctx.wCenter.y + gctx.wSize.height / 2
     g.setColor(Palette.concrete)
-    for (x <- (bx.toInt / 100 * 100) to (ex.toInt / 100 * 100, 100)) g.drawLine(x, by, x, ey)
-    for (y <- (by.toInt / 100 * 100) to (ey.toInt / 100 * 100, 100)) g.drawLine(bx, y, ex, y)
+    for (x <- (bx.toInt / 100 * 100) to (ex.toInt / 100 * 100) by 100) g.drawLine(x, by, x, ey)
+    for (y <- (by.toInt / 100 * 100) to (ey.toInt / 100 * 100) by 100) g.drawLine(bx, y, ex, y)
   }
 
   private val font = new java.awt.Font("Helvetica", java.awt.Font.PLAIN, 16)
@@ -73,14 +71,14 @@ class DefaultRenderer extends LMNtal.Renderer {
 
     if (view.willDisappear) {
       val oldPaint = g.getPaint
-      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toInt, rect.center.y.toInt, 30, Array(0.0f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
+      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toFloat, rect.center.y.toFloat, 30, Array(0.0f, 1.0f), Array(Color.RED, new Color(255, 255, 255, 0))))
       g.fillOval(rect.pad(Padding(-30, -30, -30, -30)))
       g.setPaint(oldPaint)
     }
 
     if (view.didAppear) {
       val oldPaint = g.getPaint
-      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toInt, rect.center.y.toInt, 30, Array(0.7f, 1.0f), Array(Color.GREEN, new Color(255, 255, 255, 0))))
+      g.setPaint(new java.awt.RadialGradientPaint(rect.center.x.toFloat, rect.center.y.toFloat, 30, Array(0.7f, 1.0f), Array(Color.GREEN, new Color(255, 255, 255, 0))))
       g.fillOval(rect.pad(Padding(-30, -30, -30, -30)))
       g.setPaint(oldPaint)
     }

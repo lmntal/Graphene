@@ -4,7 +4,7 @@ package object util {
 
   import scala.language.reflectiveCalls
 
-  type Closable = { def close() }
+  type Closable = { def close(): Unit }
 
   /** Loan patternの実装。
    *  リソースの初期化時に例外が出る場合にも対応するため、resourceは名前渡しで渡している。*/
@@ -16,7 +16,7 @@ package object util {
       } catch {
         case e: Exception => Left(e)
       } finally {
-        if (r != null) r.close
+        if (r != null) r.close()
       }
     } catch {
       case e: Exception => Left(e)

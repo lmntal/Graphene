@@ -1,17 +1,15 @@
 package graphene.plugin.lmntal
 
 import graphene.model.Hot
-import javax.swing.{JPanel,JSlider,JTextField,JCheckBox,JLabel,JButton}
+import javax.swing.{JPanel,JTextField,JCheckBox,JButton}
 import graphene.swing.scalalike._
 
 //画面右側のメニュー画面の中身
 class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
-  import java.awt.{Color, Dimension, BorderLayout}
-  import java.awt.event.{ActionListener, ActionEvent}
+  import java.awt.{BorderLayout}
   import javax.swing.{BoxLayout}
   import javax.swing.border.{TitledBorder}
-  import javax.swing.event.{ChangeListener, ChangeEvent}
 
   val panel = new JPanel with JPanelExt {
 
@@ -23,8 +21,6 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("LMNtal HOME")
 
-      import javax.swing.event.{DocumentListener, DocumentEvent}
-
       this << new JTextField(config.lmntalHome) with JTextFieldExt {
         textField =>
         onTextUpdate { _ => config.lmntalHome = textField.getText }
@@ -35,8 +31,6 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("SLIM Path")
 
-      import javax.swing.event.{DocumentListener, DocumentEvent}
-
       this << new JTextField(config.slimPath) with JTextFieldExt {
         textField =>
         onTextUpdate { _ => config.slimPath = textField.getText }
@@ -46,8 +40,6 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Additional options")
-
-      import javax.swing.event.{DocumentListener, DocumentEvent}
 
       this << new JTextField(config.additionalOptions) with JTextFieldExt {
         textField =>

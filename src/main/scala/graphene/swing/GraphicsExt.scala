@@ -1,7 +1,6 @@
 package graphene.swing
 
 import graphene.util._
-import graphene.util.Geometry._
 
 object Graphics {
 
@@ -41,7 +40,7 @@ object Graphics {
     def fillRoundRect(p: Point, d: Dim, arc: Dim): Unit = fillRoundRect(p.x, p.y, d.width, d.height, arc.width, arc.height)
     def fillRoundRect(r: Rect, arc: Dim): Unit = fillRoundRect(r.point, r.dim, arc)
 
-    def drawString(s: String, p: Point) {
+    def drawString(s: String, p: Point): Unit = {
       g.drawString(s, p.x.toInt, p.y.toInt)
     }
   }

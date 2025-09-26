@@ -1,6 +1,5 @@
 package graphene.util.view
 
-import javax.swing.{JPanel}
 import graphene.swing.scalalike._
 
 
@@ -12,10 +11,9 @@ import graphene.swing.scalalike._
  */
 class ParamControls(min: Double, max: Double, iv: Double) {
 
-  import java.awt.{Color,Dimension,BorderLayout}
+  import java.awt.{Dimension}
 
-  import javax.swing.{BoxLayout,JSlider,JLabel}
-  import javax.swing.border.{TitledBorder}
+  import javax.swing.{JSlider,JLabel}
 
   val slider = new JSlider(encode(min), encode(max), encode(iv)) with JSliderExt
   val label = new JLabel("%g".format(iv), javax.swing.SwingConstants.RIGHT) with JLabelExt {
@@ -49,13 +47,13 @@ class ParamControls(min: Double, max: Double, iv: Double) {
 
   var _value = iv
   def value = _value
-  def value_=(v: Int) {
+  def value_=(v: Int): Unit = {
     slider.setValue(encode(v))
     label.setText("%g".format(_value))
   }
 
   var listener = Option[Double => Unit](null)
-  def onValueChanged(f: Double => Unit) {
+  def onValueChanged(f: Double => Unit): Unit = {
     listener = Option(f)
   }
 

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 
 object Graphene extends App {
 
-  import scala.jdk.CollectionConverters._
 
   val logger = Logger(LoggerFactory.getLogger("Graphene"))
 
@@ -41,11 +40,11 @@ object Graphene extends App {
       sys.exit(0)
     }
     if(!args(args.size-1).startsWith("-")){
-      var file = args(args.size-1)
+      val file = args(args.size-1)
       frame.runWithFile(file)
     }
   }
 
-  graphene.core.Updater.runAsync
+  graphene.core.Updater.runAsync()
 
 }

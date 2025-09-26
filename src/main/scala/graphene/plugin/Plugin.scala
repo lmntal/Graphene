@@ -15,7 +15,7 @@ trait Plugin {
   def controlPanel: javax.swing.JPanel
 
   trait Renderer {
-    def renderAll(g: java.awt.Graphics, graph: GraphType)
+    def renderAll(g: java.awt.Graphics, graph: GraphType): Unit
   }
 
   trait Observer {
@@ -30,7 +30,7 @@ trait Plugin {
   }
 
   trait Mover {
-    def moveAll(graph: GraphType, elapsed: Double)
+    def moveAll(graph: GraphType, elapsed: Double): Unit
   }
 
 }

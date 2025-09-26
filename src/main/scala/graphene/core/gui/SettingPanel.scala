@@ -1,6 +1,6 @@
 package graphene.core.gui
 
-import java.awt.{Color,Dimension,BorderLayout}
+import java.awt.{BorderLayout}
 import javax.swing.{JPanel,JCheckBox}
 import javax.swing.{BoxLayout}
 import graphene.swing.scalalike._

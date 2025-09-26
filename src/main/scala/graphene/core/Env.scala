@@ -1,16 +1,14 @@
 package graphene.core
 
-import java.net.{URL}
+import java.net.{URL, URI}
 import scala.util.control.Exception.{allCatch}
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
-import graphene.util._
 
 object Env {
 
   import java.io.{File}
-  import java.net.{URL}
-  import java.awt.{Toolkit,Dimension}
+  import java.awt.{Toolkit}
 
   import scala.jdk.CollectionConverters._
 
@@ -39,7 +37,6 @@ object Env {
   }
 
   val manifest: Map[String,String] = {
-    import java.util.jar.Manifest
 
     try {
       // Try to get the manifest from the jar file directly
@@ -78,7 +75,7 @@ object Release {
   def fromXML(node: NodeSeq): Option[Release] = for {
     version <- (node \ "version").headOption.flatMap { n => Version.fromString(n.text) }
     updated <- (node \ "updated").headOption.map { _.text }
-    url     <- (node \ "url").headOption.map { n => new URL(n.text) }
+    url     <- (node \ "url").headOption.map { n => URI.create(n.text).toURL }
     description <- (node \ "description").headOption.map { _.text.trim }
   } yield Release(version, updated, url, description)
 

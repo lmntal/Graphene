@@ -2,7 +2,6 @@ package graphene.plugin.lmntal
 
 import graphene.plugin.Plugin
 import java.io.File
-import System.exit
 
 class ForceParams {
   val maxForce = 100.0
@@ -60,7 +59,7 @@ object LMNtal extends Plugin {
 
   val config = new Config
 
-  def importProperties(properties: java.util.Properties) {
+  def importProperties(properties: java.util.Properties): Unit = {
     config.lmntalHome        = properties.getProperty("lmntal_home", System.getenv("LMNTAL_HOME"))
     config.slimPath          = properties.getProperty("slim_path",  config.lmntalHome + "/installed/bin/slim")
 

@@ -1,6 +1,5 @@
 package graphene.core
 
-import scala.util.control.Exception.{allCatch}
 
 // import com.typesafe.scalalogging.slf4j._
 // import com.typesafe.scalalogging._
@@ -17,16 +16,13 @@ object Downloader {
 class Downloader(url: java.net.URL) {
 
   import java.io.{ByteArrayOutputStream}
-  import java.net.{URL,URLConnection}
 
   private val blockSize = 2048
   private var progress: Double => Unit = _
   private var complete: Array[Byte] => Unit = _
-  private var failure: Exception => Unit = _
 
   def onProgress(f: Double => Unit): Downloader = { progress = f; this }
   def onComplete(f: Array[Byte] => Unit): Downloader = { complete = f; this }
-  def onFailure(f: Exception => Unit): Downloader = { failure = f; this }
 
   def start(): Unit = {
     val conn = url.openConnection
@@ -102,7 +98,7 @@ object Updater {
   import java.io.{File,FileOutputStream}
   import java.nio.file.{Paths,Files,StandardCopyOption}
   import java.net.{URL}
-  import javax.swing.{JPanel,JOptionPane}
+  import javax.swing.{JOptionPane}
 
   import graphene.util.Tapper._
 
@@ -112,19 +108,18 @@ object Updater {
   val newJarName = "graphene-latest.jar"
 
   val defaultJar = new File(Env.rootPath + jarName)
-  def noDefaultJarLog() = logger.info("{} does not exist", defaultJar.getAbsolutePath)
+  def noDefaultJarLog(): Unit = logger.info("{} does not exist", defaultJar.getAbsolutePath)
 
   def runAsync() = (new Thread {
-        override def run {
+        override def run(): Unit = {
           for (latest <- Meta.latestRelease) 
             if (Meta.needsUpdate &&
-                defaultJar.exists.tap { b => if (!b) noDefaultJarLog } &&
+                defaultJar.exists.tap { b => if (!b) noDefaultJarLog() } &&
                 confirmDialog(latest)) update(latest)
         }
-  }).start
+  }).start()
 
   def confirmDialog(release: Release): Boolean = {
-    val values: Array[Object] = Array("Cancel", "Update")
     val res = JOptionPane.showConfirmDialog(
       null,
       s"バージョン${release.version}が利用できます。更新しますか？",
@@ -139,8 +134,8 @@ object Updater {
       frame.progress = per
     }.onComplete { res =>
       using(new FileOutputStream(file)) { _.write(res) }
-      frame.complete
-    }.start
+      frame.complete()
+    }.start()
   }
 
   def update(release: Release): Unit = {
@@ -168,7 +163,7 @@ object Updater {
   def restart = {
     val command = s"java -jar ${Env.rootPath}/${jarName}"
     logger.info("run process: " + command)
-    sys.process.Process(command).run
+    sys.process.Process(command).run()
     sys.exit(0)
   }
 
