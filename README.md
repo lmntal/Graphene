@@ -18,7 +18,8 @@ Graphene is a graph visualization tool for LMNtal (Language for Modeling with Ne
 
 ### System Requirements
 - **Java**: JDK version >= 11 (Java 17 recommended for best performance)
-- **sbt**: Scala Build Tool (See https://www.scala-sbt.org/download/)
+- **sbt**: Scala Build Tool version >= 1.3.0 (project uses 1.11.6)
+  - See https://www.scala-sbt.org/download/ for installation
   - sbt will automatically download Scala 2.13.13 as specified in build.sbt
 - **Platform**: Windows, macOS, Linux
 

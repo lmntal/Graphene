@@ -2,7 +2,7 @@
 
 # リリース用のZIP作成用script
 
-scalaversion=scala-2.11
+scalaversion=scala-2.13
 version=`ls target/$scalaversion | grep '\.jar$' | sed -e 's/Graphene-assembly-//' | sed -e 's/\.jar//'`
 rm -rf target/graphene
 cp -R template target/graphene/
