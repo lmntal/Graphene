@@ -1,7 +1,7 @@
 package graphene.plugin.lmntal
 
 import graphene.model.Hot
-import javax.swing.{JPanel,JTextField,JCheckBox,JButton}
+import javax.swing.{JPanel,JTextField,JCheckBox,JButton,JToggleButton,JLabel,JList,JScrollPane,JComboBox,JColorChooser,JSlider,DefaultListModel,ListSelectionModel}
 import graphene.swing.scalalike._
 
 //画面右側のメニュー画面の中身
@@ -127,6 +127,42 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
 
     this << new JPanel with JPanelExt {
       layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      border_ = new TitledBorder("Tree Layout")
+
+      this << new ParamPanel("Vertical Gap", BoxLayout.X_AXIS) {
+        val param = config.tree
+        val paramControls = new LogParamControls(10, 500, param.verticalGap)
+        paramControls.onValueChanged {
+          param.verticalGap = _
+        }
+        this << paramControls.slider
+        this << paramControls.label
+      }
+
+      this << new ParamPanel("Vertical Strength", BoxLayout.X_AXIS) {
+        val param = config.tree
+        val paramControls = new LogParamControls(0.01, 10, param.verticalStrength)
+        paramControls.onValueChanged {
+          param.verticalStrength = _
+        }
+        this << paramControls.slider
+        this << paramControls.label
+      }
+
+      this << new JButton("Arrange Children by Link Order") with JButtonExt {
+        button =>
+        onActionPerformed { _ =>
+          val graph = LMNtal.source.current
+          if (graph != null) {
+            TreeLayout.arrangeChildren(graph)
+          }
+        }
+      }
+
+    }
+
+    this << new JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
       border_ = new TitledBorder("Options")
 
       this << new JCheckBox("Show proxy") with JCheckBoxExt {
@@ -141,6 +177,55 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
         checkBox =>
         onActionPerformed { _ => config.isAutoFocusEnabled = checkBox.isSelected }
       }
+      
+      var autoLayoutButton: JToggleButton = null
+      var treeLayoutButton: JToggleButton = null
+      
+      autoLayoutButton = new JToggleButton(
+        if (LMNtal.config.isAutoLayoutEnabled) "Auto Layout: ON" else "Auto Layout: OFF", 
+        LMNtal.config.isAutoLayoutEnabled
+      ) with JToggleButtonExt {
+        toggleButton =>
+        onActionPerformed { _ =>
+          val isEnabled = toggleButton.isSelected
+          config.isAutoLayoutEnabled = isEnabled
+          if (isEnabled) {
+            toggleButton.setText("Auto Layout: ON")
+            // オートレイアウトを有効にしたときはツリーレイアウトを無効化
+            config.isTreeLayoutEnabled = false
+            if (treeLayoutButton != null) {
+              treeLayoutButton.setSelected(false)
+              treeLayoutButton.setText("Tree Layout: OFF")
+            }
+          } else {
+            toggleButton.setText("Auto Layout: OFF")
+          }
+        }
+      }
+      this << autoLayoutButton
+      
+      treeLayoutButton = new JToggleButton(
+        if (LMNtal.config.isTreeLayoutEnabled) "Tree Layout: ON" else "Tree Layout: OFF", 
+        LMNtal.config.isTreeLayoutEnabled
+      ) with JToggleButtonExt {
+        toggleButton =>
+        onActionPerformed { _ =>
+          val isEnabled = toggleButton.isSelected
+          config.isTreeLayoutEnabled = isEnabled
+          if (isEnabled) {
+            toggleButton.setText("Tree Layout: ON")
+            // ツリーレイアウトを有効にしたときはオートレイアウトを無効化
+            config.isAutoLayoutEnabled = false
+            if (autoLayoutButton != null) {
+              autoLayoutButton.setSelected(false)
+              autoLayoutButton.setText("Auto Layout: OFF")
+            }
+          } else {
+            toggleButton.setText("Tree Layout: OFF")
+          }
+        }
+      }
+      this << treeLayoutButton
       this << new JButton("HeatUp") with JButtonExt {
         button =>
         onActionPerformed { _ => Hot.Temperature = 250.0 }
@@ -151,6 +236,145 @@ class ControlPanel(config: Config) extends JPanel with JPanelExt {
         onActionPerformed { _ => Hot.Always = checkBox.isSelected }
       }
       //*/
+    }
+
+    this << new JPanel with JPanelExt {
+      layout_ = new BoxLayout(this, BoxLayout.Y_AXIS)
+      border_ = new TitledBorder("Atom Style")
+
+      import java.awt.{Color, Dimension}
+      import javax.swing.event.{ListSelectionListener, ListSelectionEvent}
+
+      val styleListModel = new DefaultListModel[String]
+      val styleList = new JList[String](styleListModel)
+      styleList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+      val listScroll = new JScrollPane(styleList)
+      listScroll.setPreferredSize(new Dimension(200, 120))
+
+      val nameField = new JTextField("")
+      val shapeCombo = new JComboBox[String](AtomShape.values.map(_.label).toArray)
+
+      val sizeLabel = new JLabel("Size: 24")
+      val sizeSlider = new JSlider(10, 80, 24) with JSliderExt
+      sizeSlider.onStateChanged { _ => sizeLabel.setText("Size: " + sizeSlider.getValue) }
+
+      var fillColor: Color = Color.WHITE
+      var strokeColor: Color = Color.BLACK
+
+      def colorHex(c: Color): String = f"#${c.getRed}%02X${c.getGreen}%02X${c.getBlue}%02X"
+
+      def updateColorButton(button: JButton, color: Color): Unit = {
+        button.setBackground(color)
+        button.setForeground(if (color.getRed + color.getGreen + color.getBlue > 400) Color.BLACK else Color.WHITE)
+        button.setOpaque(true)
+        button.setBorderPainted(false)
+        button.setText(colorHex(color))
+      }
+
+      def chooseColor(current: Color): Color = {
+        val selected = JColorChooser.showDialog(this, "Select Color", current)
+        if (selected != null) selected else current
+      }
+
+      val fillButton = new JButton("") with JButtonExt
+      updateColorButton(fillButton, fillColor)
+      fillButton.onActionPerformed { _ =>
+        fillColor = chooseColor(fillColor)
+        updateColorButton(fillButton, fillColor)
+      }
+
+      val strokeButton = new JButton("") with JButtonExt
+      updateColorButton(strokeButton, strokeColor)
+      strokeButton.onActionPerformed { _ =>
+        strokeColor = chooseColor(strokeColor)
+        updateColorButton(strokeButton, strokeColor)
+      }
+
+      def refreshList(): Unit = {
+        styleListModel.clear()
+        for ((name, style) <- AtomStyleRegistry.all) {
+          styleListModel.addElement(s"${name} : ${style.shape.label}, size=${style.size}, fill=${colorHex(style.fillColor)}, stroke=${colorHex(style.strokeColor)}")
+        }
+      }
+
+      def applyAndRepaint(): Unit = {
+        val graph = LMNtal.source.current
+        AtomStyleRegistry.applyToGraph(graph)
+        graphene.core.gui.MainFrame.instance.mainPanel.repaint()
+      }
+
+      styleList.addListSelectionListener(new ListSelectionListener {
+        override def valueChanged(e: ListSelectionEvent): Unit = {
+          if (!e.getValueIsAdjusting) {
+            val idx = styleList.getSelectedIndex
+            if (idx >= 0 && idx < AtomStyleRegistry.all.size) {
+              val (name, style) = AtomStyleRegistry.all(idx)
+              nameField.setText(name)
+              shapeCombo.setSelectedItem(style.shape.label)
+              sizeSlider.setValue(style.size)
+              fillColor = style.fillColor
+              strokeColor = style.strokeColor
+              updateColorButton(fillButton, fillColor)
+              updateColorButton(strokeButton, strokeColor)
+            }
+          }
+        }
+      })
+
+      val applyButton = new JButton("Apply / Update") with JButtonExt
+      applyButton.onActionPerformed { _ =>
+        val name = nameField.getText.trim
+        if (name.nonEmpty) {
+          val shape = AtomShape.fromLabel(shapeCombo.getSelectedItem.toString)
+          val size = sizeSlider.getValue
+          val corner = math.max(6, size / 3)
+          val style = AtomStyle(fillColor, strokeColor, strokeColor, shape, size, corner)
+          AtomStyleRegistry.upsert(name, style)
+          refreshList()
+          applyAndRepaint()
+        }
+      }
+
+      val removeButton = new JButton("Remove") with JButtonExt
+      removeButton.onActionPerformed { _ =>
+        val name = nameField.getText.trim
+        if (name.nonEmpty) {
+          AtomStyleRegistry.remove(name)
+          refreshList()
+          applyAndRepaint()
+        }
+      }
+
+      val clearButton = new JButton("Clear All") with JButtonExt
+      clearButton.onActionPerformed { _ =>
+        AtomStyleRegistry.clear()
+        refreshList()
+        applyAndRepaint()
+      }
+
+      this << new JLabel("Atom name")
+      this << nameField
+
+      this << new JLabel("Shape")
+      this << shapeCombo
+
+      this << sizeLabel
+      this << sizeSlider
+
+      this << new JLabel("Fill color")
+      this << fillButton
+
+      this << new JLabel("Stroke color")
+      this << strokeButton
+
+      this << applyButton
+      this << removeButton
+      this << clearButton
+
+      this << new JLabel("Rules")
+      this << listScroll
+
+      refreshList()
     }
 
     this << new JPanel with JPanelExt {

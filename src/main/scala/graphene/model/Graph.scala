@@ -91,6 +91,7 @@ class Graph {
 
   private val viewFromID = Map.empty[ID, View]
   private val nodeFromID = Map.empty[ID, Node]
+  private val portOrders = Map.empty[Node, Map[Int, Node]]
 
   var rootNode: Node = _
   var viewBuilder = (n: Node) => new View(Rect(Point.zero, Dim(20, 20)), Color.BLACK)
@@ -111,9 +112,23 @@ class Graph {
     e.target.removeEdge(e)
   }
 
+  def recordPortOrder(node: Node, pos: Int, neighbor: Node): Unit = {
+    val orders = portOrders.getOrElseUpdate(node, Map.empty)
+    orders += pos -> neighbor
+  }
+
+  def orderedNeighbors(node: Node): Seq[Node] =
+    portOrders.get(node).map(_.toSeq.sortBy(_._1).map(_._2)).getOrElse(Seq.empty)
+
   private[model] def register(node: Node) = nodeFromID += node.id -> node
 
-  private[model] def unregister(node: Node) = nodeFromID -= node.id
+  private[model] def unregister(node: Node) = {
+    nodeFromID -= node.id
+    portOrders -= node
+    for ((_, orders) <- portOrders) {
+      orders.retain { case (_, n) => n != node }
+    }
+  }
 
   def viewOf(node: Node): View = viewFromID.getOrElseUpdate(node.id, viewBuilder(node))
 
@@ -146,6 +161,13 @@ class Graph {
     copyRootNode(g, this)
 
     for (e <- allEdges) g.createEdge(e.source.id, e.target.id)
+
+    for ((srcNode, posMap) <- portOrders if nodeFromID.contains(srcNode.id)) {
+      val dstNode = g.nodeOf(srcNode.id)
+      for ((pos, neighbor) <- posMap if nodeFromID.contains(neighbor.id)) {
+        g.recordPortOrder(dstNode, pos, g.nodeOf(neighbor.id))
+      }
+    }
 
     g
   }

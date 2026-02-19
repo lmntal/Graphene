@@ -46,24 +46,39 @@ class Observer extends LMNtal.Observer {
   import java.awt.event.{KeyEvent}
   import java.awt.{Point => JPoint}
 
-  import scala.collection.mutable
+  import scala.collection.mutable.{Set => MutableSet}
 
   private lazy val gctx = graphene.core.gui.MainFrame.instance.mainPanel.graphicsContext
 
-  private val selectedNodes = mutable.Set.empty[Node]
+  private val selectedNodes = MutableSet.empty[Node]
   private var prevPoint: JPoint = null
   private var canMoveNode = false
   private var isMultiSelectionEnabled = false
+  private var lastRightClickedPoint: JPoint = null
 
   val popupMenu = new javax.swing.JPopupMenu {
     import java.awt.event.{ActionListener,ActionEvent}
     import javax.swing.{JMenuItem}
 
-    val item = new JMenuItem("Propagation coloring")
-    item.addActionListener(new ActionListener {
+    val coloringItem = new JMenuItem("Propagation coloring")
+    coloringItem.addActionListener(new ActionListener {
       def actionPerformed(e: ActionEvent) = Observer.doSmoothColoring(selectedNodes.toSet)
     })
-    add(item)
+    add(coloringItem)
+
+    val treeLayoutItem = new JMenuItem("Tree layout")
+    treeLayoutItem.addActionListener(new ActionListener {
+      def actionPerformed(e: ActionEvent) = {
+        val graph = LMNtal.source.current
+        val rootNodeOpt = Observer.nodeOptAt(gctx.worldPointFrom(lastRightClickedPoint))
+        
+        for (graph <- Option(graph); rootNode <- rootNodeOpt if selectedNodes.contains(rootNode)) {
+          TreeLayoutManager.layout(graph, rootNode)
+          graphene.core.gui.MainFrame.instance.mainPanel.repaint()
+        }
+      }
+    })
+    add(treeLayoutItem)
   }
 
   private def resetSelection() = {
@@ -72,7 +87,10 @@ class Observer extends LMNtal.Observer {
   }
 
   def listener: Reactions.Reaction = {
-    case MousePressed(source, p, _, _, true) => popupMenu.show(source, p.x, p.y)
+    case MousePressed(source, p, _, _, true) => {
+      lastRightClickedPoint = p
+      popupMenu.show(source, p.x, p.y)
+    }
     case MousePressed(_, p, _, _, _)  => {
       Observer.nodeOptAt(gctx.worldPointFrom(p)) match {
         case Some(n) => {
