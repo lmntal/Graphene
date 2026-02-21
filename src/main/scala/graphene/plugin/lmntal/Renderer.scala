@@ -149,7 +149,6 @@ class DefaultRenderer extends LMNtal.Renderer {
   }
 
   private def renderSelfEdges(g: Graphics2D, edges: Seq[Edge]): Unit = {
-    // g.setColor(Palette.concrete)
     val isHL = edges.head.source.attr == HLAtom
     g.setColor(if (isHL) Palette.hlLink else Palette.concrete)
     g.setStroke(linkStroke)
