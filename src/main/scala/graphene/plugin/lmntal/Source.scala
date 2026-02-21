@@ -28,6 +28,7 @@ class LMNtalSource extends LMNtal.Source {
         case _ => Palette.lightGray
       }
     }
+    AtomStyleRegistry.applyToGraph(graph)
     graph
   }
 
@@ -165,7 +166,9 @@ private object LMN {
     val graph = new Graph {
       viewBuilder = (n: Node) => {
         val rect = n.attr match {
-          case Atom => Rect(Point.randomPointIn(gctx.wRect), Dim(24, 24))
+          case Atom =>
+            val size = AtomStyleRegistry.get(n.name).map(_.size).getOrElse(AtomStyleRegistry.DefaultAtomSize)
+            Rect(Point.randomPointIn(gctx.wRect), Dim(size, size))
           case HLAtom => Rect(Point.randomPointIn(gctx.wRect), Dim(12, 12))
           case _ => Rect(Point(0, 0), Dim(10, 10))
         }
@@ -181,7 +184,13 @@ private object LMN {
 
     for (linkSet <- links) {
       val ls = linkSet.toSeq
-      graph.createEdge(ls(0)._1, ls(1)._1)
+      val (id1, pos1) = ls(0)
+      val (id2, pos2) = ls(1)
+      val n1 = graph.nodeOf(id1)
+      val n2 = graph.nodeOf(id2)
+      graph.createEdge(n1, n2)
+      graph.recordPortOrder(n1, pos1, n2)
+      graph.recordPortOrder(n2, pos2, n1)
     }
 
     graph

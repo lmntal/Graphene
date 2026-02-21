@@ -21,22 +21,36 @@ object DefaultMover extends LMNtal.Mover {
     moveAll(graph, elapsedSec, LMNtal.config.forces)
 
   def moveAll(graph: Graph, elapsedSec: Double, params: ForceParams): Unit = {
-    if (graph == null) return
+    val useAuto = LMNtal.config.isAutoLayoutEnabled
+    val useTree = LMNtal.config.isTreeLayoutEnabled
+    if (graph == null || (!useAuto && !useTree)) return
+
+    val treeParams = TreeLayout.Params(
+      LMNtal.config.tree.verticalGap,
+      LMNtal.config.tree.verticalStrength
+    )
+    val treeCtx = if (useTree) TreeLayout.buildContext(graph) else TreeLayout.EmptyContext
+
     transaction(graph) {
-      move(graph.rootNode, elapsedSec, Point.zero, params)
+      moveAll(graph.rootNode, elapsedSec, Point.zero, params, useAuto, useTree, treeCtx, treeParams)
     }
     resize(graph.rootNode)
   }
 
-  private def move(node: Node, elapsedSec: Double, parentForce: Point, params: ForceParams): Unit = {
+  private def moveAll(node: Node, elapsedSec: Double, parentForce: Point, params: ForceParams, useAuto: Boolean, useTree: Boolean, treeCtx: TreeLayout.Context, treeParams: TreeLayout.Params): Unit = {
     if (node.view.fixed || node.view.selected) return
 
-    val force = forceFor(node, params) + parentForce
+    val baseForce = if (useAuto) forceFor(node, params) else Point.zero
+    val treeForce = if (useTree) TreeLayout.forceFor(node, treeCtx, treeParams) else Point.zero
+    val rawForce = baseForce + treeForce + parentForce
+    val force =
+      if (useTree && treeCtx.noParent.contains(node)) Point(rawForce.x, 0.0)
+      else rawForce
 
     node.view.affect(force, elapsedSec)
 
     val childNodes = node.childNodes
-    for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params)
+    for (n <- childNodes) moveAll(n, elapsedSec, force / node.childNodes.size, params, useAuto, useTree, treeCtx, treeParams)
   }
 
   private def resize(node: Node): Unit = {
@@ -113,23 +127,37 @@ object FastMover extends LMNtal.Mover {
     moveAll(graph, elapsedSec, LMNtal.config.forces)
 
   def moveAll(graph: Graph, elapsedSec: Double, params: ForceParams): Unit = {
-    if (graph == null) return
+    val useAuto = LMNtal.config.isAutoLayoutEnabled
+    val useTree = LMNtal.config.isTreeLayoutEnabled
+    if (graph == null || (!useAuto && !useTree)) return
+
+    val treeParams = TreeLayout.Params(
+      LMNtal.config.tree.verticalGap,
+      LMNtal.config.tree.verticalStrength
+    )
+    val treeCtx = if (useTree) TreeLayout.buildContext(graph) else TreeLayout.EmptyContext
+
     transaction(graph) {
-      move(graph.rootNode, elapsedSec, Point.zero, params)
+      move(graph.rootNode, elapsedSec, Point.zero, params, useAuto, useTree, treeCtx, treeParams)
     }
     resize(graph.rootNode)
   }
 
   //NOTE アトムを動かします。固定されている、選択されているものについては動かしません。
-  private def move(node: Node, elapsedSec: Double, parentForce: Point, params: ForceParams): Unit = {
+  private def move(node: Node, elapsedSec: Double, parentForce: Point, params: ForceParams, useAuto: Boolean, useTree: Boolean, treeCtx: TreeLayout.Context, treeParams: TreeLayout.Params): Unit = {
     if (node.view.fixed || node.view.selected) return
 
-    val force = forceFor(node, params) + parentForce
+    val baseForce = if (useAuto) forceFor(node, params) else Point.zero
+    val treeForce = if (useTree) TreeLayout.forceFor(node, treeCtx, treeParams, params) else Point.zero
+    val rawForce = baseForce + treeForce + parentForce
+    val force =
+      if (useTree && treeCtx.noParent.contains(node)) Point(rawForce.x, 0.0)
+      else rawForce
 
     node.view.affect(force, elapsedSec)
 
     val childNodes = node.childNodes
-    for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params)
+    for (n <- childNodes) move(n, elapsedSec, force / node.childNodes.size, params, useAuto, useTree, treeCtx, treeParams)
   }
 
   private def resize(node: Node): Unit = {

@@ -4,7 +4,7 @@ import java.awt.{Dimension}
 import java.awt.event.{ActionEvent, ActionListener}
 import java.awt.event.{InputEvent, KeyEvent}
 
-import javax.swing.{JFileChooser, JMenu, JMenuItem, KeyStroke}
+import javax.swing.{JFileChooser, JMenu, JMenuItem, KeyStroke, JScrollPane, ScrollPaneConstants}
 import javax.swing.filechooser.FileNameExtensionFilter
 import com.typesafe.scalalogging.Logger
 import org.slf4j.LoggerFactory
@@ -148,7 +148,9 @@ class MainPanel extends javax.swing.JPanel with JPanelExt {
 
       val tabbedPane = new javax.swing.JTabbedPane
       tabbedPane.addTab("General", new SettingPanel)
-      tabbedPane.addTab(plugin.name, controlPanel)
+      val controlPanelScroll = new JScrollPane(controlPanel)
+      controlPanelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+      tabbedPane.addTab(plugin.name, controlPanelScroll)
       tabbedPane.addTab("Log", LogPanel)
       tabbedPane
     }

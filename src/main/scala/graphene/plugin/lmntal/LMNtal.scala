@@ -40,6 +40,11 @@ class ForceParams {
 
 }
 
+class TreeLayoutParams {
+  var verticalGap = 80.0
+  var verticalStrength = 1.0
+}
+
 class Config {
   var lmntalHome = ""
   var slimPath = ""
@@ -48,7 +53,10 @@ class Config {
   var isProxyVisible = false
   var isDiffAnimationEnabled = false
   var isAutoFocusEnabled = false
+  var isAutoLayoutEnabled: Boolean = true
+  var isTreeLayoutEnabled: Boolean = false
   val forces = new ForceParams
+  val tree = new TreeLayoutParams
 }
 
 object LMNtal extends Plugin {
@@ -73,6 +81,8 @@ object LMNtal extends Plugin {
 
     config.baseDirectory     = properties.getProperty("base_directory", "~/")
     config.additionalOptions = properties.getProperty("additional_options", "")
+    config.isAutoLayoutEnabled = properties.getProperty("auto_layout_enabled", "true").toBoolean
+    config.isTreeLayoutEnabled = properties.getProperty("tree_layout_enabled", "false").toBoolean
   }
 
   def exportProperties: java.util.Properties = {
@@ -81,6 +91,8 @@ object LMNtal extends Plugin {
     properties.setProperty("slim_path", config.slimPath)
     properties.setProperty("base_directory", config.baseDirectory)
     properties.setProperty("additional_options", config.additionalOptions)
+    properties.setProperty("auto_layout_enabled", config.isAutoLayoutEnabled.toString)
+    properties.setProperty("tree_layout_enabled", config.isTreeLayoutEnabled.toString)
     properties
   }
 

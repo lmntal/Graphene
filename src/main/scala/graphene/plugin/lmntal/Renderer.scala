@@ -85,20 +85,38 @@ class DefaultRenderer extends LMNtal.Renderer {
 
     node.attr match {
       case Atom => {
+        val styleOpt = AtomStyleRegistry.styleFor(node)
+        val shape = styleOpt.map(_.shape).getOrElse(AtomShape.Circle)
+        val fillColor = styleOpt.map(_.fillColor).getOrElse(Color.WHITE)
+        val strokeColor = styleOpt.map(_.strokeColor).getOrElse(node.view.color)
+        val textColor = styleOpt.map(_.textColor).getOrElse(node.view.color)
+        val cornerRadius = styleOpt.map(_.cornerRadius).getOrElse(8)
+
         g.setFont(font)
-        g.setColor(node.view.color)
+        g.setColor(textColor)
         g.drawString(node.name, rect.point)
 
-        g.setColor(if (view.selected) Palette.asbestos else Color.WHITE)
-        g.fillOval(rect)
+        g.setColor(if (view.selected) Palette.asbestos else fillColor)
+        shape match {
+          case AtomShape.Circle =>
+            g.fillOval(rect)
+          case AtomShape.RoundedRect =>
+            g.fillRoundRect(rect, Dim(cornerRadius, cornerRadius))
+        }
 
         g.setStroke(atomStroke)
-        g.setColor(node.view.color)
-        g.drawOval(rect)
+        g.setColor(strokeColor)
+        shape match {
+          case AtomShape.Circle =>
+            g.drawOval(rect)
+          case AtomShape.RoundedRect =>
+            g.drawRoundRect(rect, Dim(cornerRadius, cornerRadius))
+        }
       }
       case HLAtom => {
         g.setFont(font)
-        g.setColor(node.view.color)
+        // g.setColor(node.view.color)
+        g.setColor(Palette.hlLink)
         g.drawString(node.name, rect.point)
         g.fillOval(rect)
       }
@@ -123,13 +141,17 @@ class DefaultRenderer extends LMNtal.Renderer {
   }
 
   private def renderEdge(g: Graphics2D, edge: Edge): Unit = {
-    g.setColor(Palette.concrete)
+    // g.setColor(Palette.concrete)
+    val isHL = edge.source.attr == HLAtom || edge.target.attr == HLAtom
+    g.setColor(if (isHL) Palette.hlLink else Palette.concrete)
     g.setStroke(linkStroke)
     g.drawLine(edge.source.view.rect.center, edge.target.view.rect.center)
   }
 
   private def renderSelfEdges(g: Graphics2D, edges: Seq[Edge]): Unit = {
-    g.setColor(Palette.concrete)
+    // g.setColor(Palette.concrete)
+    val isHL = edges.head.source.attr == HLAtom
+    g.setColor(if (isHL) Palette.hlLink else Palette.concrete)
     g.setStroke(linkStroke)
     val size = edges.size
     val edge = edges.head
@@ -144,7 +166,9 @@ class DefaultRenderer extends LMNtal.Renderer {
   }
 
   private def renderMultipleEdges(g: Graphics2D, edges: Seq[Edge]): Unit = {
-    g.setColor(Palette.concrete)
+    // g.setColor(Palette.concrete)
+    val isHL = edges.head.source.attr == HLAtom || edges.head.target.attr == HLAtom
+    g.setColor(if (isHL) Palette.hlLink else Palette.concrete)
     g.setStroke(linkStroke)
     val edge = edges.head
     val size = edges.size

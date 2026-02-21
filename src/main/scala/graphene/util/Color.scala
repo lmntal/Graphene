@@ -24,4 +24,5 @@ object Palette {
   val lightGray = Color.fromHSB(0.8f, 0.05f, 0.75f)
   val asbestos = new JColor(127, 140, 141)
   val concrete = new JColor(149, 165, 166)
+  val hlLink = new JColor(0x6C, 0x8E, 0xBF)
 }
